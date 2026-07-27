@@ -1,4 +1,4 @@
-"""Generic adapter for text-classification datasets on Hugging Face Hub."""
+"""Generic adapter for text-classification datasets loaded with Hugging Face."""
 
 from __future__ import annotations
 
@@ -10,11 +10,17 @@ from llm_classifier_bench.datasets.base import DatasetBundle
 
 
 DatasetLoader = Callable[..., Any]
+DataFileValue = str | Sequence[str]
 
 
 @dataclass(frozen=True, slots=True)
 class HFDatasetSpec:
-    """Declarative mapping from a Hugging Face dataset to our common contract."""
+    """Declarative mapping from a Hugging Face dataset to our common contract.
+
+    ``path`` can be either a Hub dataset id (for example ``fancyzhx/ag_news``)
+    or a generic loader such as ``csv`` or ``parquet``. When a generic loader
+    is used, provide ``data_files`` keyed by split name.
+    """
 
     name: str
     path: str
@@ -24,6 +30,7 @@ class HFDatasetSpec:
     test_split: str = "test"
     config_name: str | None = None
     revision: str | None = None
+    data_files: Mapping[str, DataFileValue] | None = None
     label_names: tuple[str, ...] | None = None
     label_descriptions: Mapping[str, str] = field(default_factory=dict)
     label_description_template: str = "Category: {readable_label}."
@@ -47,9 +54,21 @@ class HFDatasetSpec:
             if len(self.label_names) != len(set(self.label_names)):
                 raise ValueError("label_names must be unique")
 
+        if self.data_files is not None:
+            if not self.data_files:
+                raise ValueError("data_files cannot be empty")
+            for split_name, files in self.data_files.items():
+                if not isinstance(split_name, str) or not split_name.strip():
+                    raise ValueError("data_files split names cannot be empty")
+                if isinstance(files, str):
+                    if not files.strip():
+                        raise ValueError("data_files paths cannot be empty")
+                elif not files:
+                    raise ValueError("data_files path sequences cannot be empty")
+
 
 class HuggingFaceClassificationDataset:
-    """Load any compatible Hugging Face dataset through an ``HFDatasetSpec``."""
+    """Load any compatible dataset through an ``HFDatasetSpec``."""
 
     def __init__(
         self,
@@ -87,6 +106,7 @@ class HuggingFaceClassificationDataset:
                 "path": self.spec.path,
                 "config_name": self.spec.config_name,
                 "revision": self.spec.revision,
+                "data_files": dict(self.spec.data_files or {}),
                 "train_split": self.spec.train_split,
                 "test_split": self.spec.test_split,
                 "text_column": self.spec.text_column,
@@ -103,6 +123,8 @@ class HuggingFaceClassificationDataset:
             kwargs["name"] = self.spec.config_name
         if self.spec.revision is not None:
             kwargs["revision"] = self.spec.revision
+        if self.spec.data_files is not None:
+            kwargs["data_files"] = dict(self.spec.data_files)
         return self._loader(**kwargs)
 
     def _resolve_label_names(self, train_raw: Any, test_raw: Any) -> tuple[str, ...]:
@@ -212,7 +234,16 @@ def _normalize_label(raw_label: Any, label_names: tuple[str, ...]) -> str:
 
 
 def _load_dataset(**kwargs: Any) -> Any:
-    """Import lazily so unit tests do not need network or Hugging Face installed."""
+    """Import lazily and load variables from the repository's ``.env`` file."""
+
+    try:
+        from dotenv import load_dotenv
+    except ImportError as exc:  # pragma: no cover
+        raise RuntimeError(
+            "python-dotenv is not installed. Run pip install -r requirements.txt."
+        ) from exc
+
+    load_dotenv(override=False)
 
     try:
         from datasets import load_dataset

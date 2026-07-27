@@ -83,6 +83,37 @@ def test_huggingface_adapter_normalizes_splits_and_classes() -> None:
     ]
 
 
+def test_data_files_are_forwarded_to_generic_loader() -> None:
+    calls: list[dict[str, Any]] = []
+
+    def loader(**kwargs: Any) -> list[dict[str, str]]:
+        calls.append(kwargs)
+        return [{"text": "Where is my card?", "category": "card_arrival"}]
+
+    data_files = {
+        "train": "https://example.test/train.csv",
+        "test": "https://example.test/test.csv",
+    }
+    dataset = HuggingFaceClassificationDataset(
+        HFDatasetSpec(
+            name="banking_test",
+            path="csv",
+            label_column="category",
+            data_files=data_files,
+            label_names=("card_arrival", "card_not_working"),
+        ),
+        loader=loader,
+    )
+
+    bundle = dataset.load()
+
+    assert bundle.train[0].label == "card_arrival"
+    assert calls == [
+        {"path": "csv", "split": "train", "data_files": data_files},
+        {"path": "csv", "split": "test", "data_files": data_files},
+    ]
+
+
 def test_bundle_inputs_do_not_expose_gold_labels() -> None:
     bundle = build_dataset(FakeLoader()).load()
 
