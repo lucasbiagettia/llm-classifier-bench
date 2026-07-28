@@ -1,0 +1,173 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 4
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "labels": [
+        "Business",
+        "Sci/Tech",
+        "Sports",
+        "World"
+      ],
+      "per_class_f1": {
+        "Business": 1.0,
+        "Sci/Tech": 1.0,
+        "Sports": 1.0,
+        "World": 1.0
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": 0.050551071763038635,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "n_bins": 10,
+      "binning": "fixed_width",
+      "bins": [
+        {
+          "bin_index": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 4,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9494489282369614,
+          "absolute_gap": 0.050551071763038635
+        }
+      ]
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": 0.050551071763038635,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "requested_bins": 10,
+      "effective_bins": 4,
+      "binning": "equal_frequency",
+      "bins": [
+        {
+          "bin_index": 0,
+          "min_confidence": 0.9110918641090393,
+          "max_confidence": 0.9110918641090393,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9110918641090393,
+          "absolute_gap": 0.0889081358909607
+        },
+        {
+          "bin_index": 1,
+          "min_confidence": 0.9528423547744751,
+          "max_confidence": 0.9528423547744751,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9528423547744751,
+          "absolute_gap": 0.0471576452255249
+        },
+        {
+          "bin_index": 2,
+          "min_confidence": 0.9668743014335632,
+          "max_confidence": 0.9668743014335632,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9668743014335632,
+          "absolute_gap": 0.03312569856643677
+        },
+        {
+          "bin_index": 3,
+          "min_confidence": 0.9669871926307678,
+          "max_confidence": 0.9669871926307678,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9669871926307678,
+          "absolute_gap": 0.03301280736923218
+        }
+      ]
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": 0.052168541307278604,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "epsilon": 1e-15,
+      "natural_log": true
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": 0.004354031810833361,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "classwise_reduction": "sum",
+      "sample_reduction": "mean",
+      "range": [
+        0.0,
+        2.0
+      ]
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 172.49285725000618,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 171.2885985000412,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 179.26891062990535,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}
