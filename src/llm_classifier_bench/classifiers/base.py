@@ -17,8 +17,7 @@ class Prediction:
     """Normalized prediction returned by every classifier implementation.
 
     ``probabilities`` is optional because not every classification API exposes a
-    full distribution. Emissary currently does when called with
-    ``data_format='probs'``.
+    full distribution.
     """
 
     sample_id: str
