@@ -1,0 +1,163 @@
+from __future__ import annotations
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Sequence
+
+import pytest
+
+from llm_classifier_bench.classifiers.base import Prediction
+from llm_classifier_bench.core import ClassDefinition, ClassificationInput, LabeledExample
+from llm_classifier_bench.datasets.base import DatasetBundle
+from llm_classifier_bench.runner import BenchmarkRunConfig, run_benchmark
+
+
+@dataclass
+class FakeDataset:
+    bundle: DatasetBundle
+
+    @property
+    def name(self) -> str:
+        return self.bundle.name
+
+    def load(self) -> DatasetBundle:
+        return self.bundle
+
+
+class FakeClassifier:
+    def __init__(self) -> None:
+        self.fit_sample_ids: list[str] = []
+
+    @property
+    def name(self) -> str:
+        return "fake_classifier"
+
+    def fit(self, examples: Sequence[LabeledExample]) -> None:
+        self.fit_sample_ids = [example.sample_id for example in examples]
+
+    def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
+        predictions: list[Prediction] = []
+        for example in examples:
+            label = "Sports" if "goal" in example.text else "World"
+            probabilities = (
+                {"World": 0.1, "Sports": 0.9}
+                if label == "Sports"
+                else {"World": 0.8, "Sports": 0.2}
+            )
+            predictions.append(
+                Prediction(
+                    sample_id=example.sample_id,
+                    predicted_label=label,
+                    confidence=probabilities[label],
+                    probabilities=probabilities,
+                    latency_ms=1.5,
+                    model="fake-v1",
+                    request_id=f"request-{example.sample_id}",
+                    raw_response={"fixture": True},
+                )
+            )
+        return predictions
+
+
+class WrongOrderClassifier(FakeClassifier):
+    @property
+    def name(self) -> str:
+        return "wrong_order"
+
+    def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
+        predictions = super().predict(examples)
+        return list(reversed(predictions))
+
+
+def build_bundle() -> DatasetBundle:
+    return DatasetBundle(
+        name="tiny_news",
+        classes=(
+            ClassDefinition(name="World", description="World news."),
+            ClassDefinition(name="Sports", description="Sports news."),
+        ),
+        train=(
+            LabeledExample(sample_id="train-1", text="world leaders met", label="World"),
+            LabeledExample(sample_id="train-2", text="the team scored a goal", label="Sports"),
+        ),
+        test=(
+            LabeledExample(sample_id="test-1", text="the striker scored a goal", label="Sports"),
+            LabeledExample(sample_id="test-2", text="leaders signed a treaty", label="World"),
+        ),
+        metadata={"source": "unit-test"},
+    )
+
+
+def test_runner_fits_predicts_persists_and_evaluates(tmp_path: Path) -> None:
+    dataset = FakeDataset(build_bundle())
+    classifier = FakeClassifier()
+
+    result = run_benchmark(
+        dataset,
+        classifier,
+        BenchmarkRunConfig(
+            output_root=tmp_path,
+            run_id="tiny-run",
+            metadata={"code_version": "test", "seed": 1},
+        ),
+    )
+
+    assert classifier.fit_sample_ids == ["train-1", "train-2"]
+    assert result.example_count == 2
+    assert result.predictions_path.exists()
+    assert result.metrics_path is not None and result.metrics_path.exists()
+
+    config_payload = json.loads(result.config_path.read_text(encoding="utf-8"))
+    assert config_payload["dataset"]["test_sample_ids"] == ["test-1", "test-2"]
+    assert config_payload["run_metadata"] == {"code_version": "test", "seed": 1}
+
+    prediction_rows = [
+        json.loads(line)
+        for line in result.predictions_path.read_text(encoding="utf-8").splitlines()
+    ]
+    assert [row["sample_id"] for row in prediction_rows] == ["test-1", "test-2"]
+    assert [row["gold_label"] for row in prediction_rows] == ["Sports", "World"]
+    assert [row["predicted_label"] for row in prediction_rows] == ["Sports", "World"]
+    assert all(row["correct"] for row in prediction_rows)
+
+    status_payload = json.loads(result.status_path.read_text(encoding="utf-8"))
+    assert status_payload["status"] == "completed"
+    assert status_payload["stage"] == "completed"
+
+
+def test_runner_records_failure_stage_and_re_raises(tmp_path: Path) -> None:
+    dataset = FakeDataset(build_bundle())
+
+    with pytest.raises(ValueError, match="preserve input order/sample_id"):
+        run_benchmark(
+            dataset,
+            WrongOrderClassifier(),
+            BenchmarkRunConfig(
+                output_root=tmp_path,
+                run_id="failed-run",
+                evaluate=False,
+            ),
+        )
+
+    status_path = tmp_path / "failed-run" / "status.json"
+    status_payload = json.loads(status_path.read_text(encoding="utf-8"))
+    assert status_payload["status"] == "failed"
+    assert status_payload["stage"] == "predicting"
+    assert status_payload["error_type"] == "ValueError"
+
+
+def test_runner_refuses_to_overwrite_an_existing_run(tmp_path: Path) -> None:
+    existing = tmp_path / "same-run"
+    existing.mkdir()
+
+    with pytest.raises(FileExistsError):
+        run_benchmark(
+            FakeDataset(build_bundle()),
+            FakeClassifier(),
+            BenchmarkRunConfig(
+                output_root=tmp_path,
+                run_id="same-run",
+                evaluate=False,
+            ),
+        )
