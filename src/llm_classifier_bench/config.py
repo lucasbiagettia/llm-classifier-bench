@@ -8,7 +8,7 @@ from dataclasses import dataclass
 # OpenAI's cheapest GPT-5 model is a useful low-cost generative classification
 # baseline. Pin the snapshot for reproducible benchmark runs; change it here when a
 # different model is intentionally selected.
-DEFAULT_OPENAI_MODEL = "gpt-5-nano-2025-08-07"
+DEFAULT_OPENAI_MODEL = "gpt-5-nano"
 # GPT-5 family supports configurable reasoning effort. Classification is a
 # latency-sensitive closed-set task, so keep reasoning at the minimum level.
 DEFAULT_OPENAI_REASONING_EFFORT = "minimal"
