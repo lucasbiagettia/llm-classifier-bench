@@ -52,7 +52,8 @@ def run_classification_cycle(
     if len(sample_ids) != len(set(sample_ids)):
         raise ValueError("Selected examples must have unique sample ids")
 
-    classifier.fit(bundle.train)
+    classifier.prepare(bundle.classes)
+    classifier.fit(bundle.train, validation_examples=())
     predictions = tuple(
         classifier.predict(tuple(example.as_input() for example in selected))
     )

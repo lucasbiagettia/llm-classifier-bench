@@ -1,0 +1,125 @@
+{
+  "run_id": "20260803T030052045329Z__ag_news_smoke__sentence-transformer-logreg",
+  "created_at_utc": "2026-08-03T03:00:52.045739+00:00",
+  "dataset": {
+    "name": "ag_news_smoke",
+    "metadata": {
+      "source": "huggingface",
+      "path": "fancyzhx/ag_news",
+      "config_name": null,
+      "revision": null,
+      "data_files": {},
+      "train_split": "train",
+      "test_split": "test",
+      "text_column": "text",
+      "label_column": "label",
+      "smoke_only": true,
+      "source_dataset": "ag_news",
+      "train_per_class": 12,
+      "test_per_class": 1
+    },
+    "classes": [
+      {
+        "name": "World",
+        "description": "News about international affairs, governments, conflicts, and world events."
+      },
+      {
+        "name": "Sports",
+        "description": "News about sports, athletes, teams, matches, and competitions."
+      },
+      {
+        "name": "Business",
+        "description": "News about companies, markets, finance, trade, and the economy."
+      },
+      {
+        "name": "Sci/Tech",
+        "description": "News about science, technology, computing, research, and engineering."
+      }
+    ],
+    "source_train_size": 48,
+    "fit_train_sample_ids": [
+      "ag_news:train:492",
+      "ag_news:train:493",
+      "ag_news:train:494",
+      "ag_news:train:495",
+      "ag_news:train:496",
+      "ag_news:train:497",
+      "ag_news:train:498",
+      "ag_news:train:501",
+      "ag_news:train:502",
+      "ag_news:train:448",
+      "ag_news:train:449",
+      "ag_news:train:450",
+      "ag_news:train:451",
+      "ag_news:train:452",
+      "ag_news:train:454",
+      "ag_news:train:455",
+      "ag_news:train:457",
+      "ag_news:train:459",
+      "ag_news:train:0",
+      "ag_news:train:1",
+      "ag_news:train:3",
+      "ag_news:train:4",
+      "ag_news:train:6",
+      "ag_news:train:8",
+      "ag_news:train:9",
+      "ag_news:train:10",
+      "ag_news:train:11",
+      "ag_news:train:78",
+      "ag_news:train:79",
+      "ag_news:train:81",
+      "ag_news:train:82",
+      "ag_news:train:84",
+      "ag_news:train:86",
+      "ag_news:train:87",
+      "ag_news:train:88",
+      "ag_news:train:89"
+    ],
+    "validation_sample_ids": [
+      "ag_news:train:499",
+      "ag_news:train:500",
+      "ag_news:train:503",
+      "ag_news:train:453",
+      "ag_news:train:456",
+      "ag_news:train:458",
+      "ag_news:train:2",
+      "ag_news:train:5",
+      "ag_news:train:7",
+      "ag_news:train:80",
+      "ag_news:train:83",
+      "ag_news:train:85"
+    ],
+    "test_sample_ids": [
+      "ag_news:test:32",
+      "ag_news:test:26",
+      "ag_news:test:0",
+      "ag_news:test:1"
+    ],
+    "fit_train_size": 36,
+    "validation_size": 12,
+    "test_size": 4
+  },
+  "split": {
+    "validation_fraction": 0.25,
+    "seed": 42,
+    "strategy": "deterministic_stratified_by_label"
+  },
+  "classifier": {
+    "name": "sentence-transformer-logreg",
+    "model": "sentence-transformers/all-MiniLM-L6-v2",
+    "training": {
+      "embedding_batch_size": 32,
+      "c_values": [
+        0.1,
+        1.0,
+        10.0
+      ],
+      "max_iter": 1000,
+      "seed": 42
+    }
+  },
+  "run_metadata": {
+    "smoke": true,
+    "supervision_regime": "supervised"
+  }
+}

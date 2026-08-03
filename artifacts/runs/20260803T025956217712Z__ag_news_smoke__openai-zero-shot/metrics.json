@@ -1,0 +1,117 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 4
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "labels": [
+        "Business",
+        "Sci/Tech",
+        "Sports",
+        "World"
+      ],
+      "per_class_f1": {
+        "Business": 1.0,
+        "Sci/Tech": 1.0,
+        "Sports": 1.0,
+        "World": 1.0
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 4575.939387998005,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 4774.11930299786,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 5476.375408439781,
+    "available": true,
+    "metadata": {
+      "n_samples": 4,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 4,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

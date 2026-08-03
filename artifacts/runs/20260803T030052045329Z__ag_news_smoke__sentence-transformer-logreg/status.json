@@ -1,0 +1,9 @@
+{
+  "run_id": "20260803T030052045329Z__ag_news_smoke__sentence-transformer-logreg",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-08-03T03:01:10.363895+00:00",
+  "dataset": "ag_news_smoke",
+  "classifier": "sentence-transformer-logreg",
+  "example_count": 4
+}

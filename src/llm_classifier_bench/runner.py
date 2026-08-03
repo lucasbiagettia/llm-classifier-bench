@@ -1,21 +1,19 @@
-"""General benchmark-run orchestration.
-
-The runner intentionally depends only on the stable dataset, classifier, and metrics
-contracts. It does not know how any concrete dataset is loaded internally or how a
-classifier is trained/invoked.
-"""
+"""General benchmark-run orchestration."""
 
 from __future__ import annotations
 
 import json
 import math
+import random
 import re
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field, is_dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from llm_classifier_bench.classifiers.base import Classifier, Prediction
+from llm_classifier_bench.config import DEFAULT_SPLIT_SEED, DEFAULT_VALIDATION_FRACTION
+from llm_classifier_bench.core import LabeledExample
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
 
@@ -24,19 +22,20 @@ from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results
 class BenchmarkRunConfig:
     """Configuration for one benchmark run.
 
-    Sampling and class-subset policy deliberately do not live here yet. The formal
-    experimental protocol for 5/10/20-label subsets is still an open methodological
-    decision. This runner executes the dataset bundle it receives from ``dataset.load``.
-
-    ``metadata`` is the escape hatch for reproducibility information that is specific
-    to a classifier or experiment but is not part of the frozen Classifier contract,
-    for example model version, prompt version, or training hyperparameters.
+    The dataset's original ``test`` split is always the final held-out benchmark
+    evaluation set. Only ``train`` is partitioned into fit/validation examples.
     """
 
     output_root: Path = Path("artifacts/runs")
     run_id: str | None = None
     evaluate: bool = True
+    validation_fraction: float = DEFAULT_VALIDATION_FRACTION
+    split_seed: int = DEFAULT_SPLIT_SEED
     metadata: Mapping[str, Any] = field(default_factory=dict)
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.validation_fraction < 1.0:
+            raise ValueError("validation_fraction must be in [0, 1)")
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,27 +58,21 @@ def run_benchmark(
 ) -> BenchmarkRunResult:
     """Execute one dataset/classifier benchmark run.
 
-    Order of operations is intentionally explicit:
+    Lifecycle:
 
-    1. load the dataset;
-    2. persist the exact run configuration and sample IDs;
-    3. call ``classifier.fit`` on the training split (possibly a no-op);
-    4. classify the test split without exposing gold labels;
-    5. validate the normalized prediction contract;
-    6. persist raw normalized predictions as JSONL;
-    7. compute metrics from that persisted artifact.
-
-    Failures are written to ``status.json`` and then re-raised. A future matrix
-    orchestrator can therefore catch one failed run and continue with the remaining
-    jobs without losing the failure record.
+    1. load and normalize the dataset;
+    2. split only the dataset train split into fit/validation partitions;
+    3. persist the exact data identity and run configuration;
+    4. ``classifier.prepare(classes)``;
+    5. ``classifier.fit(train, validation_examples=validation)``;
+    6. predict the untouched dataset test split;
+    7. validate and persist normalized predictions;
+    8. compute metrics from the persisted artifact.
     """
 
     resolved_config = config or BenchmarkRunConfig()
     run_id = resolved_config.run_id or _default_run_id(dataset.name, classifier.name)
     run_dir = Path(resolved_config.output_root) / run_id
-
-    # Refuse to overwrite a previous run. This is especially important when classifier
-    # calls are paid: an accidental rerun must be an explicit choice.
     run_dir.mkdir(parents=True, exist_ok=False)
 
     config_path = run_dir / "config.json"
@@ -100,15 +93,33 @@ def run_benchmark(
     try:
         bundle = dataset.load()
 
-        # Persist the exact data identity before fitting or making inference calls.
-        # If a later stage fails, we still know which examples the run intended to use.
+        stage = "splitting_training_data"
+        fit_train, validation = split_train_validation(
+            bundle.train,
+            validation_fraction=resolved_config.validation_fraction,
+            seed=resolved_config.split_seed,
+        )
+
         _write_run_config(
             config_path,
             run_id=run_id,
             dataset=bundle,
-            classifier_name=classifier.name,
+            classifier=classifier,
             config=resolved_config,
+            fit_train=fit_train,
+            validation=validation,
         )
+
+        stage = "preparing_classifier"
+        _write_status(
+            status_path,
+            status="running",
+            stage=stage,
+            run_id=run_id,
+            dataset=bundle.name,
+            classifier=classifier.name,
+        )
+        classifier.prepare(bundle.classes)
 
         stage = "fitting_classifier"
         _write_status(
@@ -119,7 +130,7 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        classifier.fit(bundle.train)
+        classifier.fit(fit_train, validation_examples=validation)
 
         stage = "predicting"
         _write_status(
@@ -199,6 +210,49 @@ def run_benchmark(
         raise
 
 
+def split_train_validation(
+    examples: Sequence[LabeledExample],
+    *,
+    validation_fraction: float,
+    seed: int,
+) -> tuple[tuple[LabeledExample, ...], tuple[LabeledExample, ...]]:
+    """Create a deterministic stratified split from the dataset train split.
+
+    At least one example per class is kept in training whenever that class exists.
+    Classes with only one training example therefore contribute no validation item.
+    The original example order is preserved inside each returned partition.
+    """
+
+    frozen = tuple(examples)
+    if not frozen:
+        raise ValueError("Dataset training split cannot be empty")
+    if not 0.0 <= validation_fraction < 1.0:
+        raise ValueError("validation_fraction must be in [0, 1)")
+    if validation_fraction == 0.0:
+        return frozen, ()
+
+    by_label: dict[str, list[LabeledExample]] = {}
+    for example in frozen:
+        by_label.setdefault(example.label, []).append(example)
+
+    validation_ids: set[str] = set()
+    rng = random.Random(seed)
+    for label in sorted(by_label):
+        group = list(by_label[label])
+        if len(group) < 2:
+            continue
+        rng.shuffle(group)
+        desired = max(1, int(round(len(group) * validation_fraction)))
+        validation_count = min(desired, len(group) - 1)
+        validation_ids.update(item.sample_id for item in group[:validation_count])
+
+    train = tuple(item for item in frozen if item.sample_id not in validation_ids)
+    validation = tuple(item for item in frozen if item.sample_id in validation_ids)
+    if not train:
+        raise ValueError("Train/validation split produced an empty training partition")
+    return train, validation
+
+
 def _validate_predictions(
     bundle: DatasetBundle,
     predictions: Sequence[Prediction],
@@ -210,20 +264,17 @@ def _validate_predictions(
         )
 
     valid_labels = set(bundle.class_names)
-
-    for index, (example, prediction) in enumerate(zip(bundle.test, predictions)):
+    for index, (example, prediction) in enumerate(zip(bundle.test, predictions, strict=True)):
         if prediction.sample_id != example.sample_id:
             raise ValueError(
                 "Classifier did not preserve input order/sample_id at position "
                 f"{index}: expected {example.sample_id!r}, got {prediction.sample_id!r}"
             )
-
         if prediction.predicted_label not in valid_labels:
             raise ValueError(
                 f"Prediction for {prediction.sample_id!r} returned unknown label "
                 f"{prediction.predicted_label!r}"
             )
-
         if prediction.latency_ms < 0 or not math.isfinite(prediction.latency_ms):
             raise ValueError(
                 f"Prediction for {prediction.sample_id!r} has invalid latency_ms "
@@ -233,20 +284,14 @@ def _validate_predictions(
         probabilities = prediction.probabilities
         if probabilities is None:
             continue
-
-        if prediction.predicted_label not in probabilities:
+        if set(probabilities) != valid_labels:
             raise ValueError(
-                f"Prediction probabilities for {prediction.sample_id!r} do not contain "
-                "the predicted label"
+                f"Prediction probabilities for {prediction.sample_id!r} must contain "
+                "exactly the configured class set"
             )
 
         normalized: dict[str, float] = {}
         for label, value in probabilities.items():
-            if label not in valid_labels:
-                raise ValueError(
-                    f"Prediction probabilities for {prediction.sample_id!r} contain "
-                    f"unknown label {label!r}"
-                )
             probability = float(value)
             if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
                 raise ValueError(
@@ -259,14 +304,12 @@ def _validate_predictions(
             raise ValueError(
                 f"Prediction probabilities for {prediction.sample_id!r} do not sum to 1"
             )
-
         argmax_label = max(normalized, key=normalized.__getitem__)
         if argmax_label != prediction.predicted_label:
             raise ValueError(
                 f"Prediction for {prediction.sample_id!r} is not the argmax of its "
                 "probability distribution"
             )
-
         if prediction.confidence is not None and not math.isclose(
             float(prediction.confidence),
             normalized[prediction.predicted_label],
@@ -287,7 +330,7 @@ def _write_predictions_jsonl(
     predictions: Sequence[Prediction],
 ) -> None:
     with path.open("w", encoding="utf-8") as output_file:
-        for example, prediction in zip(bundle.test, predictions):
+        for example, prediction in zip(bundle.test, predictions, strict=True):
             payload = {
                 "dataset": bundle.name,
                 "classifier": classifier_name,
@@ -297,7 +340,6 @@ def _write_predictions_jsonl(
                 "predicted_label": prediction.predicted_label,
                 "correct": example.label == prediction.predicted_label,
                 "confidence": prediction.confidence,
-                # Preserve the current artifact convention used by the smoke probe.
                 "probabilities": dict(prediction.probabilities or {}),
                 "latency_ms": prediction.latency_ms,
                 "model": prediction.model,
@@ -312,8 +354,10 @@ def _write_run_config(
     *,
     run_id: str,
     dataset: DatasetBundle,
-    classifier_name: str,
+    classifier: Classifier,
     config: BenchmarkRunConfig,
+    fit_train: Sequence[LabeledExample],
+    validation: Sequence[LabeledExample],
 ) -> None:
     payload = {
         "run_id": run_id,
@@ -322,20 +366,40 @@ def _write_run_config(
             "name": dataset.name,
             "metadata": dict(dataset.metadata),
             "classes": [
-                {"name": class_definition.name, "description": class_definition.description}
-                for class_definition in dataset.classes
+                {"name": item.name, "description": item.description}
+                for item in dataset.classes
             ],
-            "train_sample_ids": [example.sample_id for example in dataset.train],
-            "test_sample_ids": [example.sample_id for example in dataset.test],
-            "train_size": len(dataset.train),
+            "source_train_size": len(dataset.train),
+            "fit_train_sample_ids": [item.sample_id for item in fit_train],
+            "validation_sample_ids": [item.sample_id for item in validation],
+            "test_sample_ids": [item.sample_id for item in dataset.test],
+            "fit_train_size": len(fit_train),
+            "validation_size": len(validation),
             "test_size": len(dataset.test),
         },
-        "classifier": {
-            "name": classifier_name,
+        "split": {
+            "validation_fraction": config.validation_fraction,
+            "seed": config.split_seed,
+            "strategy": "deterministic_stratified_by_label",
         },
+        "classifier": _classifier_metadata(classifier),
         "run_metadata": dict(config.metadata),
     }
     _write_json(path, payload)
+
+
+def _classifier_metadata(classifier: Classifier) -> dict[str, Any]:
+    payload: dict[str, Any] = {"name": classifier.name}
+    model = getattr(classifier, "model", None)
+    if isinstance(model, str):
+        payload["model"] = model
+    model_id = getattr(classifier, "model_id", None)
+    if isinstance(model_id, str):
+        payload["model_id"] = model_id
+    training = getattr(classifier, "training", None)
+    if training is not None and is_dataclass(training) and not isinstance(training, type):
+        payload["training"] = asdict(training)
+    return payload
 
 
 def _write_status(
@@ -378,3 +442,11 @@ def _slug(value: str) -> str:
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
+
+
+__all__ = [
+    "BenchmarkRunConfig",
+    "BenchmarkRunResult",
+    "run_benchmark",
+    "split_train_validation",
+]

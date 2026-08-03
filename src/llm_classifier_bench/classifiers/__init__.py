@@ -7,6 +7,7 @@ from .base import (
     LabeledExample,
     Prediction,
 )
+from .bert import BertClassifier
 from .emissary import (
     EmissaryAPIError,
     EmissaryClassifier,
@@ -15,6 +16,8 @@ from .emissary import (
     Experiment,
     parse_classification_response,
 )
+from .openai import OpenAIClassifier
+from .sentence_transformer import SentenceTransformerLogisticClassifier
 
 __all__ = [
     "ClassificationInput",
@@ -22,10 +25,13 @@ __all__ = [
     "Classifier",
     "LabeledExample",
     "Prediction",
+    "BertClassifier",
     "EmissaryAPIError",
     "EmissaryClassifier",
     "EmissaryClient",
     "EmissaryResponseError",
     "Experiment",
+    "OpenAIClassifier",
+    "SentenceTransformerLogisticClassifier",
     "parse_classification_response",
 ]

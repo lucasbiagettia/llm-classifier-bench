@@ -1,72 +1,27 @@
-# Runner patch
+# Runner notes
 
-This ZIP is intended to be extracted at the repository root.
-
-It adds only:
-
-```text
-src/llm_classifier_bench/runner.py
-tests/test_runner.py
-```
-
-It does **not** modify the existing Dataset, Classifier, Prediction, Emissary, workflow, or Metric contracts.
-
-## What the runner does
-
-For one `ClassificationDataset × Classifier` run:
+The runner now supports both zero-shot and supervised classifiers through one lifecycle:
 
 ```text
 load dataset
-→ persist run config/sample IDs
-→ classifier.fit(train)
-→ classifier.predict(test inputs)
-→ validate predictions
-→ predictions.jsonl
-→ metrics.json
+-> split DatasetBundle.train into fit_train + validation
+-> persist exact split/sample IDs
+-> classifier.prepare(classes)
+-> classifier.fit(fit_train, validation_examples=validation)
+-> classifier.predict(DatasetBundle.test)
+-> validate normalized predictions
+-> predictions.jsonl
+-> metrics.json
 ```
 
-A run directory contains:
+The original dataset test split is the final holdout and is never used for training or model selection.
 
-```text
-artifacts/runs/<run_id>/
-  config.json
-  predictions.jsonl
-  metrics.json        # when evaluate=True
-  status.json
-```
+Zero-shot classifiers implement `fit()` as a no-op. The runner never branches on classifier type.
 
-`status.json` is updated with the current stage. If a run fails, the failure stage,
-exception type, and message are persisted before the exception is re-raised. A future
-matrix runner can catch that exception and continue with other jobs.
+The runner still does not decide the formal 5/10/20-class subset policy or benchmark repetitions. Those remain explicit experimental-protocol decisions.
 
-## Deliberate non-features
-
-The runner does **not** decide how to select 5/10/20 classes, how many examples per
-class to sample, whether class subsets are nested, or how many seeds to run. Those are
-methodological decisions that are not frozen yet and should not be smuggled into the
-runner implementation.
-
-It also does not branch on classifier type. `fit()` is always called; a zero-shot
-classifier simply implements it as a no-op.
-
-## Test it
-
-From the repository root:
+Run its unit tests with:
 
 ```bash
 PYTHONPATH=src pytest tests/test_runner.py -q
 ```
-
-The runner tests use fake datasets/classifiers and make no external API calls.
-
-Then run the full unit suite:
-
-```bash
-PYTHONPATH=src pytest -m "not integration"
-```
-
-## Important before a real API run
-
-Do not point the runner at a paid classifier over a full dataset just to test the
-runner. The unit test is enough to validate orchestration. Freeze or build the intended
-sampling/subset layer first, then run the actual benchmark configuration.
