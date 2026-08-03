@@ -8,8 +8,10 @@ from dataclasses import dataclass
 # OpenAI's cheapest GPT-5 model is a useful low-cost generative classification
 # baseline. Pin the snapshot for reproducible benchmark runs; change it here when a
 # different model is intentionally selected.
-# DEFAULT_OPENAI_MODEL = "gpt-5-nano-2025-08-07"
-DEFAULT_OPENAI_MODEL = "gpt-5-nano"
+DEFAULT_OPENAI_MODEL = "gpt-5-nano-2025-08-07"
+# GPT-5 family supports configurable reasoning effort. Classification is a
+# latency-sensitive closed-set task, so keep reasoning at the minimum level.
+DEFAULT_OPENAI_REASONING_EFFORT = "minimal"
 
 # Canonical Hugging Face checkpoints for the two supervised baselines.
 DEFAULT_BERT_MODEL = "google-bert/bert-base-uncased"
@@ -61,6 +63,7 @@ __all__ = [
     "BertTrainingConfig",
     "DEFAULT_BERT_MODEL",
     "DEFAULT_OPENAI_MODEL",
+    "DEFAULT_OPENAI_REASONING_EFFORT",
     "DEFAULT_SENTENCE_TRANSFORMER_MODEL",
     "DEFAULT_SPLIT_SEED",
     "DEFAULT_VALIDATION_FRACTION",
