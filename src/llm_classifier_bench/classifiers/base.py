@@ -17,7 +17,8 @@ class Prediction:
     """Normalized prediction returned by every classifier implementation.
 
     ``probabilities`` is optional because not every classification API exposes a
-    full distribution.
+    full distribution. Emissary and the supervised local classifiers do; the OpenAI
+    generative baseline intentionally does not fabricate one.
     """
 
     sample_id: str
@@ -32,14 +33,31 @@ class Prediction:
 
 @runtime_checkable
 class Classifier(Protocol):
-    """Minimal behavior required by the future benchmark runner."""
+    """Behavior required by the benchmark runner.
+
+    Lifecycle:
+
+    ``prepare(classes) -> fit(train, validation) -> predict(test)``
+
+    ``prepare`` communicates the closed label space without leaking labeled
+    examples. ``fit`` may be a no-op for zero-shot classifiers.
+    """
 
     @property
     def name(self) -> str:
         """Stable human-readable classifier name."""
         ...
 
-    def fit(self, examples: Sequence[LabeledExample]) -> None:
+    def prepare(self, classes: Sequence[ClassDefinition]) -> None:
+        """Configure the closed label space used by subsequent predictions."""
+        ...
+
+    def fit(
+        self,
+        examples: Sequence[LabeledExample],
+        *,
+        validation_examples: Sequence[LabeledExample] = (),
+    ) -> None:
         """Fit the classifier, or do nothing for zero-shot/API classifiers."""
         ...
 

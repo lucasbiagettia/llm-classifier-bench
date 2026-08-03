@@ -255,17 +255,24 @@ class EmissaryClassifier:
         self,
         *,
         client: EmissaryClient,
-        model_id: str,
+        model_id: str | None = None,
+        experiment_name: str | None = None,
         classifier_name: str = "emissary-zero-shot",
     ) -> None:
-        if not model_id.strip():
+        if model_id is not None and not model_id.strip():
             raise ValueError("model_id cannot be empty")
+        if experiment_name is not None and not experiment_name.strip():
+            raise ValueError("experiment_name cannot be empty")
+        if model_id is None and experiment_name is None:
+            raise ValueError("Provide either model_id or experiment_name")
         if not classifier_name.strip():
             raise ValueError("classifier_name cannot be empty")
 
         self.client = client
         self.model_id = model_id
+        self.experiment_name = experiment_name
         self._name = classifier_name
+        self._classes: tuple[ClassDefinition, ...] = ()
 
     @classmethod
     def create(
@@ -285,6 +292,7 @@ class EmissaryClassifier:
         return cls(
             client=client,
             model_id=experiment.model_id,
+            experiment_name=experiment_name,
             classifier_name=classifier_name,
         )
 
@@ -292,11 +300,37 @@ class EmissaryClassifier:
     def name(self) -> str:
         return self._name
 
-    def fit(self, examples: Sequence[LabeledExample]) -> None:
+    def prepare(self, classes: Sequence[ClassDefinition]) -> None:
+        """Configure classes and create an experiment when one was not pre-created."""
+
+        frozen = tuple(classes)
+        if len(frozen) < 2:
+            raise ValueError("At least two classes are required")
+        self._classes = frozen
+
+        if self.model_id is None:
+            if self.experiment_name is None:  # defensive; constructor prevents this
+                raise RuntimeError("No experiment_name is available")
+            experiment = self.client.create_experiment(
+                name=self.experiment_name,
+                classes=frozen,
+                mode="routing",
+            )
+            self.model_id = experiment.model_id
+
+    def fit(
+        self,
+        examples: Sequence[LabeledExample],
+        *,
+        validation_examples: Sequence[LabeledExample] = (),
+    ) -> None:
         """Zero-shot Emissary requires no local fitting."""
         return None
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
+        if self.model_id is None:
+            raise RuntimeError("Call prepare(classes) before predict()")
+
         predictions: list[Prediction] = []
 
         for example in examples:

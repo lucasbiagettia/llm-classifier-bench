@@ -28,13 +28,24 @@ class FakeDataset:
 class FakeClassifier:
     def __init__(self) -> None:
         self.fit_sample_ids: list[str] = []
+        self.validation_sample_ids: list[str] = []
+        self.prepared_classes: list[str] = []
 
     @property
     def name(self) -> str:
         return "fake_classifier"
 
-    def fit(self, examples: Sequence[LabeledExample]) -> None:
+    def prepare(self, classes: Sequence[ClassDefinition]) -> None:
+        self.prepared_classes = [item.name for item in classes]
+
+    def fit(
+        self,
+        examples: Sequence[LabeledExample],
+        *,
+        validation_examples: Sequence[LabeledExample] = (),
+    ) -> None:
         self.fit_sample_ids = [example.sample_id for example in examples]
+        self.validation_sample_ids = [example.sample_id for example in validation_examples]
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         predictions: list[Prediction] = []
@@ -103,13 +114,17 @@ def test_runner_fits_predicts_persists_and_evaluates(tmp_path: Path) -> None:
         ),
     )
 
+    assert classifier.prepared_classes == ["World", "Sports"]
     assert classifier.fit_sample_ids == ["train-1", "train-2"]
+    assert classifier.validation_sample_ids == []
     assert result.example_count == 2
     assert result.predictions_path.exists()
     assert result.metrics_path is not None and result.metrics_path.exists()
 
     config_payload = json.loads(result.config_path.read_text(encoding="utf-8"))
     assert config_payload["dataset"]["test_sample_ids"] == ["test-1", "test-2"]
+    assert config_payload["dataset"]["fit_train_sample_ids"] == ["train-1", "train-2"]
+    assert config_payload["dataset"]["validation_sample_ids"] == []
     assert config_payload["run_metadata"] == {"code_version": "test", "seed": 1}
 
     prediction_rows = [
@@ -161,3 +176,32 @@ def test_runner_refuses_to_overwrite_an_existing_run(tmp_path: Path) -> None:
                 evaluate=False,
             ),
         )
+
+
+def test_split_train_validation_is_stratified_and_deterministic() -> None:
+    from llm_classifier_bench.runner import split_train_validation
+
+    examples = tuple(
+        LabeledExample(f"world-{index}", f"world {index}", "World")
+        for index in range(5)
+    ) + tuple(
+        LabeledExample(f"sports-{index}", f"sports {index}", "Sports")
+        for index in range(5)
+    )
+
+    train_a, validation_a = split_train_validation(
+        examples,
+        validation_fraction=0.2,
+        seed=42,
+    )
+    train_b, validation_b = split_train_validation(
+        examples,
+        validation_fraction=0.2,
+        seed=42,
+    )
+
+    assert [item.sample_id for item in train_a] == [item.sample_id for item in train_b]
+    assert [item.sample_id for item in validation_a] == [item.sample_id for item in validation_b]
+    assert {item.label for item in validation_a} == {"World", "Sports"}
+    assert len(validation_a) == 2
+    assert len(train_a) == 8

@@ -1,0 +1,8 @@
+{
+  "run_id": "20260803T025550795329Z__ag_news_smoke__sentence-transformer-logreg",
+  "status": "running",
+  "stage": "fitting_classifier",
+  "updated_at_utc": "2026-08-03T02:55:50.796439+00:00",
+  "dataset": "ag_news_smoke",
+  "classifier": "sentence-transformer-logreg"
+}

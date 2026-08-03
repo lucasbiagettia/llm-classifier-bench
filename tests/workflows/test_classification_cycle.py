@@ -16,8 +16,17 @@ class StubClassifier:
     def __init__(self, labels_by_sample_id: dict[str, str]) -> None:
         self.labels_by_sample_id = labels_by_sample_id
         self.fitted_examples: tuple[LabeledExample, ...] | None = None
+        self.prepared_classes: tuple[ClassDefinition, ...] = ()
 
-    def fit(self, examples: Sequence[LabeledExample]) -> None:
+    def prepare(self, classes: Sequence[ClassDefinition]) -> None:
+        self.prepared_classes = tuple(classes)
+
+    def fit(
+        self,
+        examples: Sequence[LabeledExample],
+        *,
+        validation_examples: Sequence[LabeledExample] = (),
+    ) -> None:
         self.fitted_examples = tuple(examples)
 
     def predict(
@@ -65,6 +74,7 @@ def test_cycle_connects_dataset_and_classifier_contracts() -> None:
         examples=bundle.test,
     )
 
+    assert classifier.prepared_classes == bundle.classes
     assert classifier.fitted_examples == bundle.train
     assert [record.example.sample_id for record in records] == [
         "test-1",
