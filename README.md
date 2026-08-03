@@ -272,3 +272,43 @@ The infrastructure is sufficient to begin pilot measurements after the regressio
 5. supervision-regime reporting and training-budget policy.
 
 Do not use the existing small smoke runs as scientific evidence.
+
+
+## Contributing
+
+### Setup
+
+Follow the Installation steps above, then install dev dependencies if listed separately in `requirements.txt` or a `requirements-dev.txt`.
+
+### Before opening a PR
+
+1. Run the unit tests:
+
+```bash
+   PYTHONPATH=src pytest -m "not integration"
+```
+
+2. If you touched a specific classifier or the runner, also run its targeted tests:
+
+```bash
+   PYTHONPATH=src pytest tests/classifiers -m "not integration" -q
+   PYTHONPATH=src pytest tests/test_runner.py -q
+```
+
+3. Format and lint (adjust to whatever tools the project uses, e.g. `black`, `ruff`, `mypy`).
+
+Integration tests that call paid APIs or download models are not run in CI by default; only run them locally when relevant, and never rely on them as a merge gate.
+
+### Guidelines
+
+- New classifiers must implement the `Classifier` protocol in `src/llm_classifier_bench/classifiers/base.py` and respect the existing lifecycle (`prepare -> fit -> predict`).
+- The runner must remain classifier-agnostic — don't add classifier-specific branches to `runner.py`.
+- Never let `fit()` or `prepare()` see the test split; the held-out test set must stay untouched.
+- Report the supervision regime (zero-shot vs. supervised) for any new classifier, and don't frame results as benchmark-ready without following the "Before formal benchmark claims" checklist.
+- Keep commits focused and add/update tests for any behavior change.
+
+### Pull requests
+
+- Branch from `main`, use a descriptive branch name (e.g. `feat/add-xyz-classifier`).
+- Describe what changed and why; link related issues if any.
+- Keep PRs scoped to one logical change when possible.
