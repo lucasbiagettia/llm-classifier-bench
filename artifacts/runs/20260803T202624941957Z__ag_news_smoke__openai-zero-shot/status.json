@@ -1,0 +1,9 @@
+{
+  "run_id": "20260803T202624941957Z__ag_news_smoke__openai-zero-shot",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-08-03T20:26:30.560749+00:00",
+  "dataset": "ag_news_smoke",
+  "classifier": "openai-zero-shot",
+  "example_count": 4
+}
