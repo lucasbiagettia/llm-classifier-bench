@@ -399,6 +399,19 @@ def _classifier_metadata(classifier: Classifier) -> dict[str, Any]:
     training = getattr(classifier, "training", None)
     if training is not None and is_dataclass(training) and not isinstance(training, type):
         payload["training"] = asdict(training)
+
+    # Optional experiment metadata exposed by classifier implementations. Keeping
+    # this generic avoids branching on classifier names while making supervision
+    # and inference settings explicit in persisted run configuration.
+    for attribute in (
+        "supervision_regime",
+        "training_examples_used",
+        "validation_examples_used",
+        "reasoning_effort",
+    ):
+        value = getattr(classifier, attribute, None)
+        if value is not None:
+            payload[attribute] = value
     return payload
 
 

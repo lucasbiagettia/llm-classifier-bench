@@ -50,6 +50,7 @@ Current defaults:
 
 ```text
 OpenAI:             gpt-5-nano-2025-08-07
+OpenAI reasoning:   minimal
 BERT:               google-bert/bert-base-uncased
 SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
 ```
@@ -94,6 +95,8 @@ class Classifier(Protocol):
 ```
 
 `Prediction` remains the common output contract. Probabilities and confidence are optional.
+
+OpenAI uses strict JSON Schema Structured Outputs and explicitly sets GPT-5 reasoning effort to `minimal` for the latency-sensitive classification baseline. The requested model snapshot and reasoning effort are persisted in run configuration.
 
 OpenAI intentionally returns `confidence=None` and `probabilities=None`; the benchmark does not use model self-reported confidence as probabilistic evidence. Metrics that require probabilities therefore become unavailable for that classifier.
 
@@ -248,7 +251,7 @@ artifacts/runs/<run_id>/
   status.json
 ```
 
-`config.json` records the exact fit-train, validation, and final-test sample IDs plus split seed and classifier configuration where available.
+`config.json` records the exact fit-train, validation, and final-test sample IDs plus split seed and classifier configuration where available. For zero-shot classifiers it also records `training_examples_used=0` and `validation_examples_used=0`, so the existence of dataset train partitions cannot be mistaken for labeled supervision actually consumed by the classifier.
 
 `predictions.jsonl` is the primary reproducibility artifact. Metrics can be recalculated from it without repeating model/API inference.
 
@@ -272,43 +275,3 @@ The infrastructure is sufficient to begin pilot measurements after the regressio
 5. supervision-regime reporting and training-budget policy.
 
 Do not use the existing small smoke runs as scientific evidence.
-
-
-## Contributing
-
-### Setup
-
-Follow the Installation steps above, then install dev dependencies if listed separately in `requirements.txt` or a `requirements-dev.txt`.
-
-### Before opening a PR
-
-1. Run the unit tests:
-
-```bash
-   PYTHONPATH=src pytest -m "not integration"
-```
-
-2. If you touched a specific classifier or the runner, also run its targeted tests:
-
-```bash
-   PYTHONPATH=src pytest tests/classifiers -m "not integration" -q
-   PYTHONPATH=src pytest tests/test_runner.py -q
-```
-
-3. Format and lint (adjust to whatever tools the project uses, e.g. `black`, `ruff`, `mypy`).
-
-Integration tests that call paid APIs or download models are not run in CI by default; only run them locally when relevant, and never rely on them as a merge gate.
-
-### Guidelines
-
-- New classifiers must implement the `Classifier` protocol in `src/llm_classifier_bench/classifiers/base.py` and respect the existing lifecycle (`prepare -> fit -> predict`).
-- The runner must remain classifier-agnostic — don't add classifier-specific branches to `runner.py`.
-- Never let `fit()` or `prepare()` see the test split; the held-out test set must stay untouched.
-- Report the supervision regime (zero-shot vs. supervised) for any new classifier, and don't frame results as benchmark-ready without following the "Before formal benchmark claims" checklist.
-- Keep commits focused and add/update tests for any behavior change.
-
-### Pull requests
-
-- Branch from `main`, use a descriptive branch name (e.g. `feat/add-xyz-classifier`).
-- Describe what changed and why; link related issues if any.
-- Keep PRs scoped to one logical change when possible.

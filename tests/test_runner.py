@@ -81,6 +81,17 @@ class WrongOrderClassifier(FakeClassifier):
         return list(reversed(predictions))
 
 
+class ZeroShotMetadataClassifier(FakeClassifier):
+    supervision_regime = "zero_shot"
+    training_examples_used = 0
+    validation_examples_used = 0
+    reasoning_effort = "minimal"
+
+    @property
+    def name(self) -> str:
+        return "zero_shot_metadata"
+
+
 def build_bundle() -> DatasetBundle:
     return DatasetBundle(
         name="tiny_news",
@@ -205,3 +216,22 @@ def test_split_train_validation_is_stratified_and_deterministic() -> None:
     assert {item.label for item in validation_a} == {"World", "Sports"}
     assert len(validation_a) == 2
     assert len(train_a) == 8
+
+
+def test_runner_persists_optional_classifier_experiment_metadata(tmp_path: Path) -> None:
+    result = run_benchmark(
+        FakeDataset(build_bundle()),
+        ZeroShotMetadataClassifier(),
+        BenchmarkRunConfig(
+            output_root=tmp_path,
+            run_id="metadata-run",
+            evaluate=False,
+        ),
+    )
+
+    config_payload = json.loads(result.config_path.read_text(encoding="utf-8"))
+    classifier_metadata = config_payload["classifier"]
+    assert classifier_metadata["supervision_regime"] == "zero_shot"
+    assert classifier_metadata["training_examples_used"] == 0
+    assert classifier_metadata["validation_examples_used"] == 0
+    assert classifier_metadata["reasoning_effort"] == "minimal"

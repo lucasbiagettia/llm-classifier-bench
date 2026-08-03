@@ -8,7 +8,10 @@ from time import perf_counter
 from typing import Any, Sequence
 
 from llm_classifier_bench.classifiers.base import Prediction
-from llm_classifier_bench.config import DEFAULT_OPENAI_MODEL
+from llm_classifier_bench.config import (
+    DEFAULT_OPENAI_MODEL,
+    DEFAULT_OPENAI_REASONING_EFFORT,
+)
 from llm_classifier_bench.core import ClassificationInput, ClassDefinition, LabeledExample
 
 
@@ -26,6 +29,7 @@ class OpenAIClassifier:
         *,
         model: str = DEFAULT_OPENAI_MODEL,
         api_key: str | None = None,
+        reasoning_effort: str = DEFAULT_OPENAI_REASONING_EFFORT,
         client: Any | None = None,
         classifier_name: str = "openai-zero-shot",
     ) -> None:
@@ -33,11 +37,20 @@ class OpenAIClassifier:
             raise ValueError("model cannot be empty")
         if not classifier_name.strip():
             raise ValueError("classifier_name cannot be empty")
+        if not reasoning_effort.strip():
+            raise ValueError("reasoning_effort cannot be empty")
 
         self.model = model
+        self.reasoning_effort = reasoning_effort
         self._name = classifier_name
         self._classes: tuple[ClassDefinition, ...] = ()
         self._client = client or _build_openai_client(api_key)
+
+        # Explicit experiment metadata. The runner can persist these fields
+        # without special-casing OpenAI by classifier name.
+        self.supervision_regime = "zero_shot"
+        self.training_examples_used = 0
+        self.validation_examples_used = 0
 
     @property
     def name(self) -> str:
@@ -83,6 +96,7 @@ class OpenAIClassifier:
         started_at = perf_counter()
         response = self._client.chat.completions.create(
             model=self.model,
+            reasoning_effort=self.reasoning_effort,
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},

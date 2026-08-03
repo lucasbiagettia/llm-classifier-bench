@@ -32,7 +32,11 @@ class StubClient:
 
 def test_openai_classifier_is_zero_shot_and_normalizes_prediction() -> None:
     client = StubClient()
-    classifier = OpenAIClassifier(model="test-model", client=client)
+    classifier = OpenAIClassifier(
+        model="test-model",
+        reasoning_effort="minimal",
+        client=client,
+    )
     classes = (
         ClassDefinition("World", "World news."),
         ClassDefinition("Sports", "Sports news."),
@@ -51,8 +55,12 @@ def test_openai_classifier_is_zero_shot_and_normalizes_prediction() -> None:
     assert prediction.probabilities is None
     assert prediction.model == "test-model"
     assert prediction.request_id == "resp-123"
+    assert classifier.supervision_regime == "zero_shot"
+    assert classifier.training_examples_used == 0
+    assert classifier.validation_examples_used == 0
 
     call = client.chat.completions.calls[0]
+    assert call["reasoning_effort"] == "minimal"
     assert call["response_format"]["json_schema"]["schema"]["properties"]["label"]["enum"] == [
         "World",
         "Sports",
