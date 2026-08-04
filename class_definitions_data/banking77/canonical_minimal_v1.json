@@ -1,0 +1,322 @@
+{
+  "schema_version": 1,
+  "dataset": "banking77",
+  "profile": "canonical_minimal_v1",
+  "review_status": "not_required",
+  "generation": {
+    "method": "deterministic",
+    "uses_train_examples": false,
+    "uses_validation_examples": false,
+    "uses_test_examples": false
+  },
+  "classes": [
+    {
+      "canonical_name": "card_arrival",
+      "description": "Category: card arrival."
+    },
+    {
+      "canonical_name": "card_linking",
+      "description": "Category: card linking."
+    },
+    {
+      "canonical_name": "exchange_rate",
+      "description": "Category: exchange rate."
+    },
+    {
+      "canonical_name": "card_payment_wrong_exchange_rate",
+      "description": "Category: card payment wrong exchange rate."
+    },
+    {
+      "canonical_name": "extra_charge_on_statement",
+      "description": "Category: extra charge on statement."
+    },
+    {
+      "canonical_name": "pending_cash_withdrawal",
+      "description": "Category: pending cash withdrawal."
+    },
+    {
+      "canonical_name": "fiat_currency_support",
+      "description": "Category: fiat currency support."
+    },
+    {
+      "canonical_name": "card_delivery_estimate",
+      "description": "Category: card delivery estimate."
+    },
+    {
+      "canonical_name": "automatic_top_up",
+      "description": "Category: automatic top up."
+    },
+    {
+      "canonical_name": "card_not_working",
+      "description": "Category: card not working."
+    },
+    {
+      "canonical_name": "exchange_via_app",
+      "description": "Category: exchange via app."
+    },
+    {
+      "canonical_name": "lost_or_stolen_card",
+      "description": "Category: lost or stolen card."
+    },
+    {
+      "canonical_name": "age_limit",
+      "description": "Category: age limit."
+    },
+    {
+      "canonical_name": "pin_blocked",
+      "description": "Category: pin blocked."
+    },
+    {
+      "canonical_name": "contactless_not_working",
+      "description": "Category: contactless not working."
+    },
+    {
+      "canonical_name": "top_up_by_bank_transfer_charge",
+      "description": "Category: top up by bank transfer charge."
+    },
+    {
+      "canonical_name": "pending_top_up",
+      "description": "Category: pending top up."
+    },
+    {
+      "canonical_name": "cancel_transfer",
+      "description": "Category: cancel transfer."
+    },
+    {
+      "canonical_name": "top_up_limits",
+      "description": "Category: top up limits."
+    },
+    {
+      "canonical_name": "wrong_amount_of_cash_received",
+      "description": "Category: wrong amount of cash received."
+    },
+    {
+      "canonical_name": "card_payment_fee_charged",
+      "description": "Category: card payment fee charged."
+    },
+    {
+      "canonical_name": "transfer_not_received_by_recipient",
+      "description": "Category: transfer not received by recipient."
+    },
+    {
+      "canonical_name": "supported_cards_and_currencies",
+      "description": "Category: supported cards and currencies."
+    },
+    {
+      "canonical_name": "getting_virtual_card",
+      "description": "Category: getting virtual card."
+    },
+    {
+      "canonical_name": "card_acceptance",
+      "description": "Category: card acceptance."
+    },
+    {
+      "canonical_name": "top_up_reverted",
+      "description": "Category: top up reverted."
+    },
+    {
+      "canonical_name": "balance_not_updated_after_cheque_or_cash_deposit",
+      "description": "Category: balance not updated after cheque or cash deposit."
+    },
+    {
+      "canonical_name": "card_payment_not_recognised",
+      "description": "Category: card payment not recognised."
+    },
+    {
+      "canonical_name": "edit_personal_details",
+      "description": "Category: edit personal details."
+    },
+    {
+      "canonical_name": "why_verify_identity",
+      "description": "Category: why verify identity."
+    },
+    {
+      "canonical_name": "unable_to_verify_identity",
+      "description": "Category: unable to verify identity."
+    },
+    {
+      "canonical_name": "get_physical_card",
+      "description": "Category: get physical card."
+    },
+    {
+      "canonical_name": "visa_or_mastercard",
+      "description": "Category: visa or mastercard."
+    },
+    {
+      "canonical_name": "topping_up_by_card",
+      "description": "Category: topping up by card."
+    },
+    {
+      "canonical_name": "disposable_card_limits",
+      "description": "Category: disposable card limits."
+    },
+    {
+      "canonical_name": "compromised_card",
+      "description": "Category: compromised card."
+    },
+    {
+      "canonical_name": "atm_support",
+      "description": "Category: atm support."
+    },
+    {
+      "canonical_name": "direct_debit_payment_not_recognised",
+      "description": "Category: direct debit payment not recognised."
+    },
+    {
+      "canonical_name": "passcode_forgotten",
+      "description": "Category: passcode forgotten."
+    },
+    {
+      "canonical_name": "declined_cash_withdrawal",
+      "description": "Category: declined cash withdrawal."
+    },
+    {
+      "canonical_name": "pending_card_payment",
+      "description": "Category: pending card payment."
+    },
+    {
+      "canonical_name": "lost_or_stolen_phone",
+      "description": "Category: lost or stolen phone."
+    },
+    {
+      "canonical_name": "request_refund",
+      "description": "Category: request refund."
+    },
+    {
+      "canonical_name": "declined_transfer",
+      "description": "Category: declined transfer."
+    },
+    {
+      "canonical_name": "Refund_not_showing_up",
+      "description": "Category: Refund not showing up."
+    },
+    {
+      "canonical_name": "declined_card_payment",
+      "description": "Category: declined card payment."
+    },
+    {
+      "canonical_name": "pending_transfer",
+      "description": "Category: pending transfer."
+    },
+    {
+      "canonical_name": "terminate_account",
+      "description": "Category: terminate account."
+    },
+    {
+      "canonical_name": "card_swallowed",
+      "description": "Category: card swallowed."
+    },
+    {
+      "canonical_name": "transaction_charged_twice",
+      "description": "Category: transaction charged twice."
+    },
+    {
+      "canonical_name": "verify_source_of_funds",
+      "description": "Category: verify source of funds."
+    },
+    {
+      "canonical_name": "transfer_timing",
+      "description": "Category: transfer timing."
+    },
+    {
+      "canonical_name": "reverted_card_payment?",
+      "description": "Category: reverted card payment?."
+    },
+    {
+      "canonical_name": "change_pin",
+      "description": "Category: change pin."
+    },
+    {
+      "canonical_name": "beneficiary_not_allowed",
+      "description": "Category: beneficiary not allowed."
+    },
+    {
+      "canonical_name": "transfer_fee_charged",
+      "description": "Category: transfer fee charged."
+    },
+    {
+      "canonical_name": "receiving_money",
+      "description": "Category: receiving money."
+    },
+    {
+      "canonical_name": "failed_transfer",
+      "description": "Category: failed transfer."
+    },
+    {
+      "canonical_name": "transfer_into_account",
+      "description": "Category: transfer into account."
+    },
+    {
+      "canonical_name": "verify_top_up",
+      "description": "Category: verify top up."
+    },
+    {
+      "canonical_name": "getting_spare_card",
+      "description": "Category: getting spare card."
+    },
+    {
+      "canonical_name": "top_up_by_cash_or_cheque",
+      "description": "Category: top up by cash or cheque."
+    },
+    {
+      "canonical_name": "order_physical_card",
+      "description": "Category: order physical card."
+    },
+    {
+      "canonical_name": "virtual_card_not_working",
+      "description": "Category: virtual card not working."
+    },
+    {
+      "canonical_name": "wrong_exchange_rate_for_cash_withdrawal",
+      "description": "Category: wrong exchange rate for cash withdrawal."
+    },
+    {
+      "canonical_name": "get_disposable_virtual_card",
+      "description": "Category: get disposable virtual card."
+    },
+    {
+      "canonical_name": "top_up_failed",
+      "description": "Category: top up failed."
+    },
+    {
+      "canonical_name": "balance_not_updated_after_bank_transfer",
+      "description": "Category: balance not updated after bank transfer."
+    },
+    {
+      "canonical_name": "cash_withdrawal_not_recognised",
+      "description": "Category: cash withdrawal not recognised."
+    },
+    {
+      "canonical_name": "exchange_charge",
+      "description": "Category: exchange charge."
+    },
+    {
+      "canonical_name": "top_up_by_card_charge",
+      "description": "Category: top up by card charge."
+    },
+    {
+      "canonical_name": "activate_my_card",
+      "description": "Category: activate my card."
+    },
+    {
+      "canonical_name": "cash_withdrawal_charge",
+      "description": "Category: cash withdrawal charge."
+    },
+    {
+      "canonical_name": "card_about_to_expire",
+      "description": "Category: card about to expire."
+    },
+    {
+      "canonical_name": "apple_pay_or_google_pay",
+      "description": "Category: apple pay or google pay."
+    },
+    {
+      "canonical_name": "verify_my_identity",
+      "description": "Category: verify my identity."
+    },
+    {
+      "canonical_name": "country_support",
+      "description": "Category: country support."
+    }
+  ]
+}

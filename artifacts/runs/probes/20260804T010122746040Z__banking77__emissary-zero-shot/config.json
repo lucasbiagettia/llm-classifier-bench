@@ -1,0 +1,157 @@
+{
+  "run_id": "20260804T010122746040Z__banking77__emissary-zero-shot",
+  "created_at_utc": "2026-08-04T01:01:22.747118+00:00",
+  "dataset": {
+    "name": "banking77",
+    "metadata": {
+      "source": "huggingface",
+      "path": "csv",
+      "config_name": null,
+      "revision": null,
+      "data_files": {
+        "train": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/train.csv",
+        "test": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/test.csv"
+      },
+      "train_split": "train",
+      "test_split": "test",
+      "text_column": "text",
+      "label_column": "category",
+      "pilot": true,
+      "source_dataset": "banking77",
+      "class_count": 5,
+      "examples_per_class": 10,
+      "class_subset_seed": 42,
+      "class_subset_strategy": "nested_shuffled_prefix",
+      "selected_class_names": [
+        "topping_up_by_card",
+        "terminate_account",
+        "automatic_top_up",
+        "unable_to_verify_identity",
+        "pending_transfer"
+      ],
+      "definition_profile": "canonical_llm_enriched_v1",
+      "definition_profile_path": "class_definitions_data/banking77/canonical_llm_enriched_v1.json",
+      "definition_profile_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2",
+      "definition_review_status": "unreviewed"
+    },
+    "classes": [
+      {
+        "name": "topping_up_by_card",
+        "description": "Topping up the account using a card."
+      },
+      {
+        "name": "terminate_account",
+        "description": "Steps or status related to closing or terminating the account."
+      },
+      {
+        "name": "automatic_top_up",
+        "description": "Automatic top-up functionality or issues enabling automatic top-ups."
+      },
+      {
+        "name": "unable_to_verify_identity",
+        "description": "Difficulty or failure in completing identity verification."
+      },
+      {
+        "name": "pending_transfer",
+        "description": "Transfers awaiting processing or approval."
+      }
+    ],
+    "source_train_size": 5,
+    "fit_train_sample_ids": [
+      "banking77:train:4235",
+      "banking77:train:6137",
+      "banking77:train:1118",
+      "banking77:train:3892",
+      "banking77:train:5989"
+    ],
+    "validation_sample_ids": [],
+    "test_sample_ids": [
+      "banking77:test:1321",
+      "banking77:test:1327",
+      "banking77:test:1331",
+      "banking77:test:1346",
+      "banking77:test:1347",
+      "banking77:test:1349",
+      "banking77:test:1350",
+      "banking77:test:1351",
+      "banking77:test:1355",
+      "banking77:test:1358",
+      "banking77:test:1881",
+      "banking77:test:1886",
+      "banking77:test:1888",
+      "banking77:test:1889",
+      "banking77:test:1893",
+      "banking77:test:1896",
+      "banking77:test:1898",
+      "banking77:test:1900",
+      "banking77:test:1907",
+      "banking77:test:1919",
+      "banking77:test:321",
+      "banking77:test:324",
+      "banking77:test:339",
+      "banking77:test:342",
+      "banking77:test:344",
+      "banking77:test:347",
+      "banking77:test:350",
+      "banking77:test:355",
+      "banking77:test:356",
+      "banking77:test:357",
+      "banking77:test:1205",
+      "banking77:test:1208",
+      "banking77:test:1209",
+      "banking77:test:1210",
+      "banking77:test:1212",
+      "banking77:test:1214",
+      "banking77:test:1221",
+      "banking77:test:1224",
+      "banking77:test:1231",
+      "banking77:test:1238",
+      "banking77:test:1846",
+      "banking77:test:1856",
+      "banking77:test:1859",
+      "banking77:test:1862",
+      "banking77:test:1868",
+      "banking77:test:1871",
+      "banking77:test:1872",
+      "banking77:test:1874",
+      "banking77:test:1875",
+      "banking77:test:1876"
+    ],
+    "fit_train_size": 5,
+    "validation_size": 0,
+    "test_size": 50
+  },
+  "class_definitions": {
+    "source": "dataset_bundle",
+    "profile": null
+  },
+  "split": {
+    "validation_fraction": 0.0,
+    "seed": 42,
+    "strategy": "deterministic_stratified_by_label"
+  },
+  "classifier": {
+    "name": "emissary-zero-shot",
+    "model_id": "ex-gukiurxb7sxynzk79ldknb/0.0.0"
+  },
+  "run_metadata": {
+    "pilot": true,
+    "supervision_regime": "zero_shot",
+    "training_examples_used": 0,
+    "validation_examples_used": 0,
+    "class_count": 5,
+    "examples_per_class": 10,
+    "class_subset_seed": 42,
+    "class_subset_strategy": "nested_shuffled_prefix",
+    "selected_class_names": [
+      "topping_up_by_card",
+      "terminate_account",
+      "automatic_top_up",
+      "unable_to_verify_identity",
+      "pending_transfer"
+    ],
+    "definition_profile": "canonical_llm_enriched_v1",
+    "definition_profile_path": "class_definitions_data/banking77/canonical_llm_enriched_v1.json",
+    "definition_profile_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2"
+  }
+}

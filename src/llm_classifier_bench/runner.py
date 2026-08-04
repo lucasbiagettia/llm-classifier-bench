@@ -6,12 +6,13 @@ import json
 import math
 import random
 import re
-from dataclasses import asdict, dataclass, field, is_dataclass
+from dataclasses import asdict, dataclass, field, is_dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from llm_classifier_bench.classifiers.base import Classifier, Prediction
+from llm_classifier_bench.class_definitions.loader import load_class_definition_profile
 from llm_classifier_bench.config import DEFAULT_SPLIT_SEED, DEFAULT_VALIDATION_FRACTION
 from llm_classifier_bench.core import LabeledExample
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
@@ -32,6 +33,7 @@ class BenchmarkRunConfig:
     validation_fraction: float = DEFAULT_VALIDATION_FRACTION
     split_seed: int = DEFAULT_SPLIT_SEED
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    class_definitions_path: Path | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.validation_fraction < 1.0:
@@ -61,13 +63,15 @@ def run_benchmark(
     Lifecycle:
 
     1. load and normalize the dataset;
-    2. split only the dataset train split into fit/validation partitions;
-    3. persist the exact data identity and run configuration;
-    4. ``classifier.prepare(classes)``;
-    5. ``classifier.fit(train, validation_examples=validation)``;
-    6. predict the untouched dataset test split;
-    7. validate and persist normalized predictions;
-    8. compute metrics from the persisted artifact.
+    2. optionally load a frozen class-definition profile and validate that it
+       matches the dataset's canonical label inventory exactly;
+    3. split only the dataset train split into fit/validation partitions;
+    4. persist the exact data identity and run configuration;
+    5. ``classifier.prepare(classes)``;
+    6. ``classifier.fit(train, validation_examples=validation)``;
+    7. predict the untouched dataset test split;
+    8. validate and persist normalized predictions;
+    9. compute metrics from the persisted artifact.
     """
 
     resolved_config = config or BenchmarkRunConfig()
@@ -93,6 +97,22 @@ def run_benchmark(
     try:
         bundle = dataset.load()
 
+        class_definitions_metadata: Mapping[str, Any] = {
+            "source": "dataset_bundle",
+            "profile": None,
+        }
+        if resolved_config.class_definitions_path is not None:
+            stage = "loading_class_definitions"
+            loaded_definitions = load_class_definition_profile(
+                resolved_config.class_definitions_path
+            )
+            resolved_classes = loaded_definitions.definitions_for(
+                dataset_name=bundle.name,
+                canonical_names=bundle.class_names,
+            )
+            bundle = replace(bundle, classes=resolved_classes)
+            class_definitions_metadata = loaded_definitions.benchmark_metadata()
+
         stage = "splitting_training_data"
         fit_train, validation = split_train_validation(
             bundle.train,
@@ -108,6 +128,7 @@ def run_benchmark(
             config=resolved_config,
             fit_train=fit_train,
             validation=validation,
+            class_definitions_metadata=class_definitions_metadata,
         )
 
         stage = "preparing_classifier"
@@ -358,6 +379,7 @@ def _write_run_config(
     config: BenchmarkRunConfig,
     fit_train: Sequence[LabeledExample],
     validation: Sequence[LabeledExample],
+    class_definitions_metadata: Mapping[str, Any],
 ) -> None:
     payload = {
         "run_id": run_id,
@@ -377,6 +399,7 @@ def _write_run_config(
             "validation_size": len(validation),
             "test_size": len(dataset.test),
         },
+        "class_definitions": dict(class_definitions_metadata),
         "split": {
             "validation_fraction": config.validation_fraction,
             "seed": config.split_seed,
