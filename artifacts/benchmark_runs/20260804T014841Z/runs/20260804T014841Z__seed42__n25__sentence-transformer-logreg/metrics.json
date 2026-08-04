@@ -1,0 +1,332 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.946,
+    "available": true,
+    "metadata": {
+      "n_samples": 500
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.9455805536189452,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "labels": [
+        "activate_my_card",
+        "age_limit",
+        "beneficiary_not_allowed",
+        "card_about_to_expire",
+        "card_delivery_estimate",
+        "card_not_working",
+        "card_payment_not_recognised",
+        "cash_withdrawal_not_recognised",
+        "change_pin",
+        "direct_debit_payment_not_recognised",
+        "disposable_card_limits",
+        "edit_personal_details",
+        "failed_transfer",
+        "order_physical_card",
+        "passcode_forgotten",
+        "pending_card_payment",
+        "pending_transfer",
+        "reverted_card_payment?",
+        "supported_cards_and_currencies",
+        "top_up_reverted",
+        "transfer_into_account",
+        "transfer_not_received_by_recipient",
+        "unable_to_verify_identity",
+        "verify_source_of_funds",
+        "wrong_amount_of_cash_received"
+      ],
+      "per_class_f1": {
+        "activate_my_card": 1.0,
+        "age_limit": 1.0,
+        "beneficiary_not_allowed": 0.8421052631578947,
+        "card_about_to_expire": 0.975609756097561,
+        "card_delivery_estimate": 0.9743589743589743,
+        "card_not_working": 0.975609756097561,
+        "card_payment_not_recognised": 0.95,
+        "cash_withdrawal_not_recognised": 0.9302325581395349,
+        "change_pin": 1.0,
+        "direct_debit_payment_not_recognised": 0.8108108108108109,
+        "disposable_card_limits": 0.9743589743589743,
+        "edit_personal_details": 1.0,
+        "failed_transfer": 0.8837209302325582,
+        "order_physical_card": 0.9743589743589743,
+        "passcode_forgotten": 1.0,
+        "pending_card_payment": 0.9,
+        "pending_transfer": 0.7368421052631579,
+        "reverted_card_payment?": 0.9743589743589743,
+        "supported_cards_and_currencies": 0.975609756097561,
+        "top_up_reverted": 1.0,
+        "transfer_into_account": 0.9743589743589743,
+        "transfer_not_received_by_recipient": 0.8372093023255814,
+        "unable_to_verify_identity": 1.0,
+        "verify_source_of_funds": 0.975609756097561,
+        "wrong_amount_of_cash_received": 0.9743589743589743
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": 0.05840964204072947,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "n_bins": 10,
+      "binning": "fixed_width",
+      "bins": [
+        {
+          "bin_index": 2,
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 5,
+          "accuracy": 0.4,
+          "mean_confidence": 0.27459911108016966,
+          "absolute_gap": 0.12540088891983037
+        },
+        {
+          "bin_index": 3,
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 6,
+          "accuracy": 0.16666666666666666,
+          "mean_confidence": 0.35286083320776623,
+          "absolute_gap": 0.18619416654109958
+        },
+        {
+          "bin_index": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 12,
+          "accuracy": 0.6666666666666666,
+          "mean_confidence": 0.45682600637276966,
+          "absolute_gap": 0.20984066029389697
+        },
+        {
+          "bin_index": 5,
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 17,
+          "accuracy": 0.5882352941176471,
+          "mean_confidence": 0.5482041134553797,
+          "absolute_gap": 0.04003118066226741
+        },
+        {
+          "bin_index": 6,
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 19,
+          "accuracy": 0.7368421052631579,
+          "mean_confidence": 0.6518585713286149,
+          "absolute_gap": 0.08498353393454294
+        },
+        {
+          "bin_index": 7,
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 34,
+          "accuracy": 0.9705882352941176,
+          "mean_confidence": 0.757784003720564,
+          "absolute_gap": 0.21280423157355366
+        },
+        {
+          "bin_index": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 45,
+          "accuracy": 0.9777777777777777,
+          "mean_confidence": 0.856493686305152,
+          "absolute_gap": 0.12128409147262575
+        },
+        {
+          "bin_index": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 362,
+          "accuracy": 0.9972375690607734,
+          "mean_confidence": 0.9697397280463856,
+          "absolute_gap": 0.02749784101438779
+        }
+      ]
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": 0.053940982043743146,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "requested_bins": 10,
+      "effective_bins": 10,
+      "binning": "equal_frequency",
+      "bins": [
+        {
+          "bin_index": 0,
+          "min_confidence": 0.2509496808052063,
+          "max_confidence": 0.6520036458969116,
+          "count": 50,
+          "accuracy": 0.52,
+          "mean_confidence": 0.49167581140995026,
+          "absolute_gap": 0.02832418859004976
+        },
+        {
+          "bin_index": 1,
+          "min_confidence": 0.6525089740753174,
+          "max_confidence": 0.8189323544502258,
+          "count": 50,
+          "accuracy": 0.98,
+          "mean_confidence": 0.7509768712520599,
+          "absolute_gap": 0.22902312874794006
+        },
+        {
+          "bin_index": 2,
+          "min_confidence": 0.819415807723999,
+          "max_confidence": 0.9121154546737671,
+          "count": 50,
+          "accuracy": 0.96,
+          "mean_confidence": 0.8748422706127167,
+          "absolute_gap": 0.08515772938728328
+        },
+        {
+          "bin_index": 3,
+          "min_confidence": 0.9145672917366028,
+          "max_confidence": 0.9470729827880859,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9318482530117035,
+          "absolute_gap": 0.06815174698829651
+        },
+        {
+          "bin_index": 4,
+          "min_confidence": 0.9473114609718323,
+          "max_confidence": 0.9637332558631897,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9565101647377015,
+          "absolute_gap": 0.04348983526229855
+        },
+        {
+          "bin_index": 5,
+          "min_confidence": 0.9637749791145325,
+          "max_confidence": 0.9728569388389587,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9689217925071716,
+          "absolute_gap": 0.031078207492828414
+        },
+        {
+          "bin_index": 6,
+          "min_confidence": 0.973029375076294,
+          "max_confidence": 0.981570303440094,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9771935343742371,
+          "absolute_gap": 0.02280646562576294
+        },
+        {
+          "bin_index": 7,
+          "min_confidence": 0.9815813302993774,
+          "max_confidence": 0.9873078465461731,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9844479274749756,
+          "absolute_gap": 0.01555207252502444
+        },
+        {
+          "bin_index": 8,
+          "min_confidence": 0.9874715209007263,
+          "max_confidence": 0.9918286204338074,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.98943723320961,
+          "absolute_gap": 0.010562766790390032
+        },
+        {
+          "bin_index": 9,
+          "min_confidence": 0.9918347597122192,
+          "max_confidence": 0.9983262419700623,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9947363209724426,
+          "absolute_gap": 0.005263679027557422
+        }
+      ]
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": 0.19166921100675208,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "epsilon": 1e-15,
+      "natural_log": true
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": 0.07833625349672732,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "classwise_reduction": "sum",
+      "sample_reduction": "mean",
+      "range": [
+        0.0,
+        2.0
+      ]
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 9.417086827772437,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 8.576394997362513,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 15.171158685843691,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

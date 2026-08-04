@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "dataset": "banking77",
+  "profile": "canonical_llm_enriched_v1__n20_seed42",
+  "review_status": "unreviewed",
+  "generation": {
+    "method": "llm",
+    "provider": "openai",
+    "requested_model": "gpt-5-nano",
+    "resolved_model": "gpt-5-nano-2025-08-07",
+    "reasoning_effort": "minimal",
+    "prompt_version": "label_description_v1",
+    "prompt_sha256": "2daf3a6cc9de2359daaf754413389842ee99f167303ad80274cfadd44fb0096f",
+    "dataset_context": "Banking customer-support intent classification.",
+    "uses_train_examples": false,
+    "uses_validation_examples": false,
+    "uses_test_examples": false,
+    "request_id": "chatcmpl-E8vcRddFMT01RkCqwc5tOq4Yuhd6W",
+    "generated_at_utc": "2026-08-03T22:40:30.868282+00:00",
+    "derived_from_profile": "canonical_llm_enriched_v1",
+    "derived_from_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2",
+    "derivation": "exact_subset_only",
+    "class_subset_strategy": "support_filtered_then_nested_shuffled_prefix",
+    "class_count": 20,
+    "seed": 42
+  },
+  "classes": [
+    {
+      "canonical_name": "card_about_to_expire",
+      "description": "Notification that a card is about to expire."
+    },
+    {
+      "canonical_name": "failed_transfer",
+      "description": "Transfers that failed to process."
+    },
+    {
+      "canonical_name": "disposable_card_limits",
+      "description": "Limits on disposable or temporary virtual cards."
+    },
+    {
+      "canonical_name": "unable_to_verify_identity",
+      "description": "Difficulty or failure in completing identity verification."
+    },
+    {
+      "canonical_name": "card_delivery_estimate",
+      "description": "Estimated timelines for delivering a physical card."
+    },
+    {
+      "canonical_name": "beneficiary_not_allowed",
+      "description": "Beneficiaries that are not permitted for transfers."
+    },
+    {
+      "canonical_name": "cash_withdrawal_not_recognised",
+      "description": "Cash withdrawal not recognised or attributed to the account."
+    },
+    {
+      "canonical_name": "passcode_forgotten",
+      "description": "Assistance for recovering or resetting a forgotten passcode."
+    },
+    {
+      "canonical_name": "wrong_amount_of_cash_received",
+      "description": "Discrepancies between expected and received cash amounts."
+    },
+    {
+      "canonical_name": "transfer_into_account",
+      "description": "Transfers deposited into the user’s account."
+    },
+    {
+      "canonical_name": "card_not_working",
+      "description": "A card is not functioning as expected for transactions."
+    },
+    {
+      "canonical_name": "pending_card_payment",
+      "description": "Card payments that are pending approval or settlement."
+    },
+    {
+      "canonical_name": "direct_debit_payment_not_recognised",
+      "description": "Direct debit payments are not recognised or failing."
+    },
+    {
+      "canonical_name": "top_up_reverted",
+      "description": "A top-up was reversed or reverted after being processed."
+    },
+    {
+      "canonical_name": "transfer_not_received_by_recipient",
+      "description": "Transfers that have not been received by the intended recipient."
+    },
+    {
+      "canonical_name": "order_physical_card",
+      "description": "Placing an order for a physical card."
+    },
+    {
+      "canonical_name": "edit_personal_details",
+      "description": "Updating personal information stored on the account."
+    },
+    {
+      "canonical_name": "change_pin",
+      "description": "Changing the card PIN."
+    },
+    {
+      "canonical_name": "reverted_card_payment?",
+      "description": "Card payments that have been reversed or rolled back."
+    },
+    {
+      "canonical_name": "activate_my_card",
+      "description": "Activating a new or replacement card."
+    }
+  ]
+}

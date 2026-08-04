@@ -1,0 +1,119 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.96,
+    "available": true,
+    "metadata": {
+      "n_samples": 100
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.9594235588972431,
+    "available": true,
+    "metadata": {
+      "n_samples": 100,
+      "labels": [
+        "automatic_top_up",
+        "pending_transfer",
+        "terminate_account",
+        "topping_up_by_card",
+        "unable_to_verify_identity"
+      ],
+      "per_class_f1": {
+        "automatic_top_up": 0.95,
+        "pending_transfer": 0.9523809523809523,
+        "terminate_account": 1.0,
+        "topping_up_by_card": 0.8947368421052632,
+        "unable_to_verify_identity": 1.0
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 789.8987417000899,
+    "available": true,
+    "metadata": {
+      "n_samples": 100,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 718.9067264989717,
+    "available": true,
+    "metadata": {
+      "n_samples": 100,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 1655.7654940885554,
+    "available": true,
+    "metadata": {
+      "n_samples": 100,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 100,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

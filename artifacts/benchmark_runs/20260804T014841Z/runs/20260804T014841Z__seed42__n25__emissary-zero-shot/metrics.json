@@ -1,0 +1,350 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.784,
+    "available": true,
+    "metadata": {
+      "n_samples": 500
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.7727931005844269,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "labels": [
+        "activate_my_card",
+        "age_limit",
+        "beneficiary_not_allowed",
+        "card_about_to_expire",
+        "card_delivery_estimate",
+        "card_not_working",
+        "card_payment_not_recognised",
+        "cash_withdrawal_not_recognised",
+        "change_pin",
+        "direct_debit_payment_not_recognised",
+        "disposable_card_limits",
+        "edit_personal_details",
+        "failed_transfer",
+        "order_physical_card",
+        "passcode_forgotten",
+        "pending_card_payment",
+        "pending_transfer",
+        "reverted_card_payment?",
+        "supported_cards_and_currencies",
+        "top_up_reverted",
+        "transfer_into_account",
+        "transfer_not_received_by_recipient",
+        "unable_to_verify_identity",
+        "verify_source_of_funds",
+        "wrong_amount_of_cash_received"
+      ],
+      "per_class_f1": {
+        "activate_my_card": 1.0,
+        "age_limit": 0.918918918918919,
+        "beneficiary_not_allowed": 0.0,
+        "card_about_to_expire": 0.5185185185185185,
+        "card_delivery_estimate": 0.7111111111111111,
+        "card_not_working": 0.8163265306122449,
+        "card_payment_not_recognised": 0.6511627906976745,
+        "cash_withdrawal_not_recognised": 0.8837209302325582,
+        "change_pin": 1.0,
+        "direct_debit_payment_not_recognised": 0.5714285714285714,
+        "disposable_card_limits": 0.9473684210526315,
+        "edit_personal_details": 0.9743589743589743,
+        "failed_transfer": 0.6415094339622641,
+        "order_physical_card": 0.5185185185185185,
+        "passcode_forgotten": 0.9230769230769231,
+        "pending_card_payment": 0.9,
+        "pending_transfer": 0.7692307692307693,
+        "reverted_card_payment?": 0.7567567567567568,
+        "supported_cards_and_currencies": 0.7878787878787878,
+        "top_up_reverted": 0.975609756097561,
+        "transfer_into_account": 0.7567567567567568,
+        "transfer_not_received_by_recipient": 0.509090909090909,
+        "unable_to_verify_identity": 0.8695652173913043,
+        "verify_source_of_funds": 1.0,
+        "wrong_amount_of_cash_received": 0.918918918918919
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": 0.060956039071083046,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "n_bins": 10,
+      "binning": "fixed_width",
+      "bins": [
+        {
+          "bin_index": 0,
+          "lower": 0.0,
+          "upper": 0.1,
+          "count": 3,
+          "accuracy": 0.0,
+          "mean_confidence": 0.09500589470068614,
+          "absolute_gap": 0.09500589470068614
+        },
+        {
+          "bin_index": 1,
+          "lower": 0.1,
+          "upper": 0.2,
+          "count": 15,
+          "accuracy": 0.2,
+          "mean_confidence": 0.1643764724334081,
+          "absolute_gap": 0.0356235275665919
+        },
+        {
+          "bin_index": 2,
+          "lower": 0.2,
+          "upper": 0.3,
+          "count": 17,
+          "accuracy": 0.29411764705882354,
+          "mean_confidence": 0.25236784009372487,
+          "absolute_gap": 0.04174980696509867
+        },
+        {
+          "bin_index": 3,
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 26,
+          "accuracy": 0.46153846153846156,
+          "mean_confidence": 0.3539440150444324,
+          "absolute_gap": 0.10759444649402916
+        },
+        {
+          "bin_index": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 20,
+          "accuracy": 0.5,
+          "mean_confidence": 0.45849958509206773,
+          "absolute_gap": 0.04150041490793227
+        },
+        {
+          "bin_index": 5,
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 27,
+          "accuracy": 0.5185185185185185,
+          "mean_confidence": 0.5455090226950469,
+          "absolute_gap": 0.026990504176528374
+        },
+        {
+          "bin_index": 6,
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 28,
+          "accuracy": 0.7142857142857143,
+          "mean_confidence": 0.6530247756413051,
+          "absolute_gap": 0.06126093864440918
+        },
+        {
+          "bin_index": 7,
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 67,
+          "accuracy": 0.7313432835820896,
+          "mean_confidence": 0.7599665922905082,
+          "absolute_gap": 0.02862330870841867
+        },
+        {
+          "bin_index": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 233,
+          "accuracy": 0.9227467811158798,
+          "mean_confidence": 0.8539962505066344,
+          "absolute_gap": 0.06875053060924541
+        },
+        {
+          "bin_index": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 64,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9228007327765226,
+          "absolute_gap": 0.07719926722347736
+        }
+      ]
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": 0.06133850806951521,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "requested_bins": 10,
+      "effective_bins": 10,
+      "binning": "equal_frequency",
+      "bins": [
+        {
+          "bin_index": 0,
+          "min_confidence": 0.09073607623577118,
+          "max_confidence": 0.35758107900619507,
+          "count": 50,
+          "accuracy": 0.22,
+          "mean_confidence": 0.24057739317417146,
+          "absolute_gap": 0.020577393174171454
+        },
+        {
+          "bin_index": 1,
+          "min_confidence": 0.3716879189014435,
+          "max_confidence": 0.5583242774009705,
+          "count": 50,
+          "accuracy": 0.58,
+          "mean_confidence": 0.46989864587783814,
+          "absolute_gap": 0.11010135412216182
+        },
+        {
+          "bin_index": 2,
+          "min_confidence": 0.5601865649223328,
+          "max_confidence": 0.7376071214675903,
+          "count": 50,
+          "accuracy": 0.62,
+          "mean_confidence": 0.6599654114246368,
+          "absolute_gap": 0.03996541142463683
+        },
+        {
+          "bin_index": 3,
+          "min_confidence": 0.7380552887916565,
+          "max_confidence": 0.7968950271606445,
+          "count": 50,
+          "accuracy": 0.78,
+          "mean_confidence": 0.7685291850566864,
+          "absolute_gap": 0.01147081494331359
+        },
+        {
+          "bin_index": 4,
+          "min_confidence": 0.7970125675201416,
+          "max_confidence": 0.8283147215843201,
+          "count": 50,
+          "accuracy": 0.84,
+          "mean_confidence": 0.8168184232711792,
+          "absolute_gap": 0.02318157672882082
+        },
+        {
+          "bin_index": 5,
+          "min_confidence": 0.8290432691574097,
+          "max_confidence": 0.8493015170097351,
+          "count": 50,
+          "accuracy": 0.96,
+          "mean_confidence": 0.8387828373908996,
+          "absolute_gap": 0.12121716260910032
+        },
+        {
+          "bin_index": 6,
+          "min_confidence": 0.8496046662330627,
+          "max_confidence": 0.8685512542724609,
+          "count": 50,
+          "accuracy": 0.9,
+          "mean_confidence": 0.8576214015483856,
+          "absolute_gap": 0.0423785984516144
+        },
+        {
+          "bin_index": 7,
+          "min_confidence": 0.8688948750495911,
+          "max_confidence": 0.8822908401489258,
+          "count": 50,
+          "accuracy": 0.96,
+          "mean_confidence": 0.874937686920166,
+          "absolute_gap": 0.08506231307983392
+        },
+        {
+          "bin_index": 8,
+          "min_confidence": 0.8824328780174255,
+          "max_confidence": 0.9095035791397095,
+          "count": 50,
+          "accuracy": 0.98,
+          "mean_confidence": 0.8925915288925171,
+          "absolute_gap": 0.08740847110748284
+        },
+        {
+          "bin_index": 9,
+          "min_confidence": 0.9110658764839172,
+          "max_confidence": 0.9510303735733032,
+          "count": 50,
+          "accuracy": 1.0,
+          "mean_confidence": 0.9279780149459839,
+          "absolute_gap": 0.07202198505401614
+        }
+      ]
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": 0.9476780914832891,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "epsilon": 1e-15,
+      "natural_log": true
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": 0.32191309664950335,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "classwise_reduction": "sum",
+      "sample_reduction": "mean",
+      "range": [
+        0.0,
+        2.0
+      ]
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 194.22319204790256,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 201.7312280022452,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 271.5861495318313,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}
