@@ -235,3 +235,62 @@ def test_runner_persists_optional_classifier_experiment_metadata(tmp_path: Path)
     assert classifier_metadata["training_examples_used"] == 0
     assert classifier_metadata["validation_examples_used"] == 0
     assert classifier_metadata["reasoning_effort"] == "minimal"
+
+
+def test_runner_uses_versioned_class_definitions_when_configured(tmp_path: Path) -> None:
+    profile_path = tmp_path / "definitions.json"
+    profile_path.write_text(
+        json.dumps(
+            {
+                "schema_version": 1,
+                "dataset": "tiny_news",
+                "profile": "canonical_llm_enriched_v1",
+                "review_status": "approved",
+                "generation": {
+                    "method": "llm",
+                    "uses_train_examples": False,
+                    "uses_validation_examples": False,
+                    "uses_test_examples": False,
+                },
+                "classes": [
+                    {
+                        "canonical_name": "World",
+                        "description": "Enriched description for world affairs.",
+                    },
+                    {
+                        "canonical_name": "Sports",
+                        "description": "Enriched description for sports events.",
+                    },
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    dataset = FakeDataset(build_bundle())
+    classifier = FakeClassifier()
+    result = run_benchmark(
+        dataset,
+        classifier,
+        BenchmarkRunConfig(
+            output_root=tmp_path,
+            run_id="definitions-run",
+            evaluate=False,
+            class_definitions_path=profile_path,
+        ),
+    )
+
+    config_payload = json.loads(result.config_path.read_text(encoding="utf-8"))
+    assert config_payload["class_definitions"]["source"] == "versioned_profile"
+    assert config_payload["class_definitions"]["profile"] == "canonical_llm_enriched_v1"
+    assert len(config_payload["class_definitions"]["sha256"]) == 64
+    assert config_payload["dataset"]["classes"] == [
+        {
+            "name": "World",
+            "description": "Enriched description for world affairs.",
+        },
+        {
+            "name": "Sports",
+            "description": "Enriched description for sports events.",
+        },
+    ]

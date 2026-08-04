@@ -103,20 +103,11 @@ BANKING77_SPEC = HFDatasetSpec(
         "test": f"{_BANKING77_BASE_URL}/test.csv",
     },
     label_names=BANKING77_LABELS,
-    label_description_template=(
-        "Banking customer-support intent about {readable_label}."
-    ),
 )
 
 AG_NEWS_SPEC = HFDatasetSpec(
     name="ag_news",
     path="fancyzhx/ag_news",
-    label_descriptions={
-        "World": "News about international affairs, governments, conflicts, and world events.",
-        "Sports": "News about sports, athletes, teams, matches, and competitions.",
-        "Business": "News about companies, markets, finance, trade, and the economy.",
-        "Sci/Tech": "News about science, technology, computing, research, and engineering.",
-    },
 )
 
 DATASET_REGISTRY: dict[str, HFDatasetSpec] = {

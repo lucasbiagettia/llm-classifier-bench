@@ -1,0 +1,331 @@
+{
+  "schema_version": 1,
+  "dataset": "banking77",
+  "profile": "canonical_llm_enriched_v1",
+  "review_status": "unreviewed",
+  "generation": {
+    "method": "llm",
+    "provider": "openai",
+    "requested_model": "gpt-5-nano",
+    "resolved_model": "gpt-5-nano-2025-08-07",
+    "reasoning_effort": "minimal",
+    "prompt_version": "label_description_v1",
+    "prompt_sha256": "2daf3a6cc9de2359daaf754413389842ee99f167303ad80274cfadd44fb0096f",
+    "dataset_context": "Banking customer-support intent classification.",
+    "uses_train_examples": false,
+    "uses_validation_examples": false,
+    "uses_test_examples": false,
+    "request_id": "chatcmpl-E8vcRddFMT01RkCqwc5tOq4Yuhd6W",
+    "generated_at_utc": "2026-08-03T22:40:30.868282+00:00"
+  },
+  "classes": [
+    {
+      "canonical_name": "card_arrival",
+      "description": "The status or timing information regarding when a new physical card will arrive."
+    },
+    {
+      "canonical_name": "card_linking",
+      "description": "Issues or steps related to linking a card to an account or service."
+    },
+    {
+      "canonical_name": "exchange_rate",
+      "description": "Questions or problems about the basic exchange rate applied to currency conversions."
+    },
+    {
+      "canonical_name": "card_payment_wrong_exchange_rate",
+      "description": "Card payments charged with an exchange rate that differs from expectations."
+    },
+    {
+      "canonical_name": "extra_charge_on_statement",
+      "description": "Unusual or additional charges appearing on the account statement."
+    },
+    {
+      "canonical_name": "pending_cash_withdrawal",
+      "description": "Cash withdrawals that have not yet been completed or settled."
+    },
+    {
+      "canonical_name": "fiat_currency_support",
+      "description": "Support or availability of fiat currencies within the service."
+    },
+    {
+      "canonical_name": "card_delivery_estimate",
+      "description": "Estimated timelines for delivering a physical card."
+    },
+    {
+      "canonical_name": "automatic_top_up",
+      "description": "Automatic top-up functionality or issues enabling automatic top-ups."
+    },
+    {
+      "canonical_name": "card_not_working",
+      "description": "A card is not functioning as expected for transactions."
+    },
+    {
+      "canonical_name": "exchange_via_app",
+      "description": "Using the app to perform currency exchange transactions."
+    },
+    {
+      "canonical_name": "lost_or_stolen_card",
+      "description": "Report or handling steps for lost or stolen cards."
+    },
+    {
+      "canonical_name": "age_limit",
+      "description": "Age-related eligibility or restrictions for service use."
+    },
+    {
+      "canonical_name": "pin_blocked",
+      "description": "PIN is blocked or locked and requires action to regain access."
+    },
+    {
+      "canonical_name": "contactless_not_working",
+      "description": "Contactless payments are not functioning properly."
+    },
+    {
+      "canonical_name": "top_up_by_bank_transfer_charge",
+      "description": "Fees associated with topping up via bank transfer."
+    },
+    {
+      "canonical_name": "pending_top_up",
+      "description": "Top-ups that are awaiting completion or approval."
+    },
+    {
+      "canonical_name": "cancel_transfer",
+      "description": "Cancelling an initiated transfer."
+    },
+    {
+      "canonical_name": "top_up_limits",
+      "description": "Limits or caps on top-up amounts."
+    },
+    {
+      "canonical_name": "wrong_amount_of_cash_received",
+      "description": "Discrepancies between expected and received cash amounts."
+    },
+    {
+      "canonical_name": "card_payment_fee_charged",
+      "description": "Fees charged for card payments."
+    },
+    {
+      "canonical_name": "transfer_not_received_by_recipient",
+      "description": "Transfers that have not been received by the intended recipient."
+    },
+    {
+      "canonical_name": "supported_cards_and_currencies",
+      "description": "List or details of accepted cards and supported currencies."
+    },
+    {
+      "canonical_name": "getting_virtual_card",
+      "description": "Process or availability of obtaining a virtual card."
+    },
+    {
+      "canonical_name": "card_acceptance",
+      "description": "Where or how a card is accepted for payments."
+    },
+    {
+      "canonical_name": "top_up_reverted",
+      "description": "A top-up was reversed or reverted after being processed."
+    },
+    {
+      "canonical_name": "balance_not_updated_after_cheque_or_cash_deposit",
+      "description": "Account balance not reflecting a cheque or cash deposit."
+    },
+    {
+      "canonical_name": "card_payment_not_recognised",
+      "description": "A card payment is not recognised or not attributed correctly."
+    },
+    {
+      "canonical_name": "edit_personal_details",
+      "description": "Updating personal information stored on the account."
+    },
+    {
+      "canonical_name": "why_verify_identity",
+      "description": "Reason or purpose for identity verification being required."
+    },
+    {
+      "canonical_name": "unable_to_verify_identity",
+      "description": "Difficulty or failure in completing identity verification."
+    },
+    {
+      "canonical_name": "get_physical_card",
+      "description": "Request or process to obtain a physical card."
+    },
+    {
+      "canonical_name": "visa_or_mastercard",
+      "description": "Clarifications related to Visa or Mastercard branding or usage."
+    },
+    {
+      "canonical_name": "topping_up_by_card",
+      "description": "Topping up the account using a card."
+    },
+    {
+      "canonical_name": "disposable_card_limits",
+      "description": "Limits on disposable or temporary virtual cards."
+    },
+    {
+      "canonical_name": "compromised_card",
+      "description": "Security concerns for a card that may be compromised."
+    },
+    {
+      "canonical_name": "atm_support",
+      "description": "ATM availability or support for withdrawals."
+    },
+    {
+      "canonical_name": "direct_debit_payment_not_recognised",
+      "description": "Direct debit payments are not recognised or failing."
+    },
+    {
+      "canonical_name": "passcode_forgotten",
+      "description": "Assistance for recovering or resetting a forgotten passcode."
+    },
+    {
+      "canonical_name": "declined_cash_withdrawal",
+      "description": "Cash withdrawals being declined."
+    },
+    {
+      "canonical_name": "pending_card_payment",
+      "description": "Card payments that are pending approval or settlement."
+    },
+    {
+      "canonical_name": "lost_or_stolen_phone",
+      "description": "Handling steps for a lost or stolen mobile device linked to the account."
+    },
+    {
+      "canonical_name": "request_refund",
+      "description": "Requesting a refund for a transaction."
+    },
+    {
+      "canonical_name": "declined_transfer",
+      "description": "Transfers that have been declined or rejected."
+    },
+    {
+      "canonical_name": "Refund_not_showing_up",
+      "description": "Refunds that have not appeared in the account yet."
+    },
+    {
+      "canonical_name": "declined_card_payment",
+      "description": "Card payments that have been declined."
+    },
+    {
+      "canonical_name": "pending_transfer",
+      "description": "Transfers awaiting processing or approval."
+    },
+    {
+      "canonical_name": "terminate_account",
+      "description": "Steps or status related to closing or terminating the account."
+    },
+    {
+      "canonical_name": "card_swallowed",
+      "description": "Card captured by an ATM and not returned."
+    },
+    {
+      "canonical_name": "transaction_charged_twice",
+      "description": "Duplicate charges for a single transaction."
+    },
+    {
+      "canonical_name": "verify_source_of_funds",
+      "description": "Verification of the origin of funds for a transaction."
+    },
+    {
+      "canonical_name": "transfer_timing",
+      "description": "Timing details or expectations for transfers."
+    },
+    {
+      "canonical_name": "reverted_card_payment?",
+      "description": "Card payments that have been reversed or rolled back."
+    },
+    {
+      "canonical_name": "change_pin",
+      "description": "Changing the card PIN."
+    },
+    {
+      "canonical_name": "beneficiary_not_allowed",
+      "description": "Beneficiaries that are not permitted for transfers."
+    },
+    {
+      "canonical_name": "transfer_fee_charged",
+      "description": "Fees charged for transferring money."
+    },
+    {
+      "canonical_name": "receiving_money",
+      "description": "Receiving funds from another person or account."
+    },
+    {
+      "canonical_name": "failed_transfer",
+      "description": "Transfers that failed to process."
+    },
+    {
+      "canonical_name": "transfer_into_account",
+      "description": "Transfers deposited into the user’s account."
+    },
+    {
+      "canonical_name": "verify_top_up",
+      "description": "Verification steps for a top-up transaction."
+    },
+    {
+      "canonical_name": "getting_spare_card",
+      "description": "Arranging or obtaining a spare or replacement card."
+    },
+    {
+      "canonical_name": "top_up_by_cash_or_cheque",
+      "description": "Topping up using cash or cheque payments."
+    },
+    {
+      "canonical_name": "order_physical_card",
+      "description": "Placing an order for a physical card."
+    },
+    {
+      "canonical_name": "virtual_card_not_working",
+      "description": "Issues with using a virtual card for payments."
+    },
+    {
+      "canonical_name": "wrong_exchange_rate_for_cash_withdrawal",
+      "description": "Cash withdrawal charged with an incorrect exchange rate."
+    },
+    {
+      "canonical_name": "get_disposable_virtual_card",
+      "description": "Obtaining a disposable virtual card with limited use."
+    },
+    {
+      "canonical_name": "top_up_failed",
+      "description": "A top-up attempt failed to complete."
+    },
+    {
+      "canonical_name": "balance_not_updated_after_bank_transfer",
+      "description": "Balance not updated after a bank transfer."
+    },
+    {
+      "canonical_name": "cash_withdrawal_not_recognised",
+      "description": "Cash withdrawal not recognised or attributed to the account."
+    },
+    {
+      "canonical_name": "exchange_charge",
+      "description": "Charges related to currency exchange operations."
+    },
+    {
+      "canonical_name": "top_up_by_card_charge",
+      "description": "Fees charged for topping up by card."
+    },
+    {
+      "canonical_name": "activate_my_card",
+      "description": "Activating a new or replacement card."
+    },
+    {
+      "canonical_name": "cash_withdrawal_charge",
+      "description": "Fees applied to cash withdrawals."
+    },
+    {
+      "canonical_name": "card_about_to_expire",
+      "description": "Notification that a card is about to expire."
+    },
+    {
+      "canonical_name": "apple_pay_or_google_pay",
+      "description": "Use of Apple Pay or Google Pay for payments."
+    },
+    {
+      "canonical_name": "verify_my_identity",
+      "description": "Process or status of verifying user identity."
+    },
+    {
+      "canonical_name": "country_support",
+      "description": "Countries where the service is available or supported."
+    }
+  ]
+}

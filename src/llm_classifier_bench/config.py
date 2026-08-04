@@ -13,6 +13,12 @@ DEFAULT_OPENAI_MODEL = "gpt-5-nano"
 # latency-sensitive closed-set task, so keep reasoning at the minimum level.
 DEFAULT_OPENAI_REASONING_EFFORT = "minimal"
 
+# Independent from the benchmark OpenAI classifier. It may point to the same
+# cheap snapshot today, but changing the ontology generator must not change the
+# classifier configuration.
+DEFAULT_CLASS_DEFINITION_GENERATOR_MODEL = "gpt-5-nano"
+DEFAULT_CLASS_DEFINITION_GENERATOR_REASONING_EFFORT = "minimal"
+
 # Canonical Hugging Face checkpoints for the two supervised baselines.
 DEFAULT_BERT_MODEL = "google-bert/bert-base-uncased"
 DEFAULT_SENTENCE_TRANSFORMER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
@@ -61,6 +67,8 @@ class SentenceTransformerTrainingConfig:
 
 __all__ = [
     "BertTrainingConfig",
+    "DEFAULT_CLASS_DEFINITION_GENERATOR_MODEL",
+    "DEFAULT_CLASS_DEFINITION_GENERATOR_REASONING_EFFORT",
     "DEFAULT_BERT_MODEL",
     "DEFAULT_OPENAI_MODEL",
     "DEFAULT_OPENAI_REASONING_EFFORT",
