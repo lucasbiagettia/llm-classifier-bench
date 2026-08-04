@@ -1,0 +1,293 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.945,
+    "available": true,
+    "metadata": {
+      "n_samples": 200
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.9449793543324827,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "labels": [
+        "beneficiary_not_allowed",
+        "card_about_to_expire",
+        "card_delivery_estimate",
+        "cash_withdrawal_not_recognised",
+        "disposable_card_limits",
+        "failed_transfer",
+        "passcode_forgotten",
+        "transfer_into_account",
+        "unable_to_verify_identity",
+        "wrong_amount_of_cash_received"
+      ],
+      "per_class_f1": {
+        "beneficiary_not_allowed": 0.7428571428571429,
+        "card_about_to_expire": 1.0,
+        "card_delivery_estimate": 0.9743589743589743,
+        "cash_withdrawal_not_recognised": 0.975609756097561,
+        "disposable_card_limits": 1.0,
+        "failed_transfer": 0.782608695652174,
+        "passcode_forgotten": 1.0,
+        "transfer_into_account": 0.9743589743589743,
+        "unable_to_verify_identity": 1.0,
+        "wrong_amount_of_cash_received": 1.0
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": 0.1877976781129837,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "n_bins": 10,
+      "binning": "fixed_width",
+      "bins": [
+        {
+          "bin_index": 3,
+          "lower": 0.3,
+          "upper": 0.4,
+          "count": 3,
+          "accuracy": 0.3333333333333333,
+          "mean_confidence": 0.3379930754502614,
+          "absolute_gap": 0.004659742116928101
+        },
+        {
+          "bin_index": 4,
+          "lower": 0.4,
+          "upper": 0.5,
+          "count": 3,
+          "accuracy": 0.6666666666666666,
+          "mean_confidence": 0.44970080256462097,
+          "absolute_gap": 0.21696586410204566
+        },
+        {
+          "bin_index": 5,
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 14,
+          "accuracy": 0.7142857142857143,
+          "mean_confidence": 0.5504543781280518,
+          "absolute_gap": 0.16383133615766254
+        },
+        {
+          "bin_index": 6,
+          "lower": 0.6,
+          "upper": 0.7,
+          "count": 25,
+          "accuracy": 0.88,
+          "mean_confidence": 0.6661866140365601,
+          "absolute_gap": 0.2138133859634399
+        },
+        {
+          "bin_index": 7,
+          "lower": 0.7,
+          "upper": 0.8,
+          "count": 88,
+          "accuracy": 0.9886363636363636,
+          "mean_confidence": 0.7607873888178305,
+          "absolute_gap": 0.22784897481853317
+        },
+        {
+          "bin_index": 8,
+          "lower": 0.8,
+          "upper": 0.9,
+          "count": 63,
+          "accuracy": 1.0,
+          "mean_confidence": 0.859950567994799,
+          "absolute_gap": 0.14004943200520104
+        },
+        {
+          "bin_index": 9,
+          "lower": 0.9,
+          "upper": 1.0,
+          "count": 4,
+          "accuracy": 1.0,
+          "mean_confidence": 0.904534637928009,
+          "absolute_gap": 0.09546536207199097
+        }
+      ]
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": 0.18765788584947588,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "requested_bins": 10,
+      "effective_bins": 10,
+      "binning": "equal_frequency",
+      "bins": [
+        {
+          "bin_index": 0,
+          "min_confidence": 0.3153305649757385,
+          "max_confidence": 0.5940240621566772,
+          "count": 20,
+          "accuracy": 0.65,
+          "mean_confidence": 0.5034721463918685,
+          "absolute_gap": 0.14652785360813148
+        },
+        {
+          "bin_index": 1,
+          "min_confidence": 0.6008310317993164,
+          "max_confidence": 0.6859436631202698,
+          "count": 20,
+          "accuracy": 0.9,
+          "mean_confidence": 0.6588059276342392,
+          "absolute_gap": 0.24119407236576085
+        },
+        {
+          "bin_index": 2,
+          "min_confidence": 0.6923055052757263,
+          "max_confidence": 0.7363103032112122,
+          "count": 20,
+          "accuracy": 0.95,
+          "mean_confidence": 0.7137484520673751,
+          "absolute_gap": 0.23625154793262482
+        },
+        {
+          "bin_index": 3,
+          "min_confidence": 0.7366641163825989,
+          "max_confidence": 0.7575852274894714,
+          "count": 20,
+          "accuracy": 0.95,
+          "mean_confidence": 0.7495129406452179,
+          "absolute_gap": 0.20048705935478206
+        },
+        {
+          "bin_index": 4,
+          "min_confidence": 0.7581184506416321,
+          "max_confidence": 0.7749738097190857,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.7691009819507599,
+          "absolute_gap": 0.23089901804924007
+        },
+        {
+          "bin_index": 5,
+          "min_confidence": 0.7751356363296509,
+          "max_confidence": 0.7824996113777161,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.7783888101577758,
+          "absolute_gap": 0.22161118984222417
+        },
+        {
+          "bin_index": 6,
+          "min_confidence": 0.7834708094596863,
+          "max_confidence": 0.807396650314331,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.7925303965806961,
+          "absolute_gap": 0.20746960341930387
+        },
+        {
+          "bin_index": 7,
+          "min_confidence": 0.809539258480072,
+          "max_confidence": 0.8617458343505859,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.8340181022882461,
+          "absolute_gap": 0.16598189771175387
+        },
+        {
+          "bin_index": 8,
+          "min_confidence": 0.8627592325210571,
+          "max_confidence": 0.8853458762168884,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.8790012806653976,
+          "absolute_gap": 0.12099871933460238
+        },
+        {
+          "bin_index": 9,
+          "min_confidence": 0.8854683041572571,
+          "max_confidence": 0.9074453115463257,
+          "count": 20,
+          "accuracy": 1.0,
+          "mean_confidence": 0.8948421031236649,
+          "absolute_gap": 0.10515789687633514
+        }
+      ]
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": 0.35230148293100255,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "epsilon": 1e-15,
+      "natural_log": true
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": 0.12682133670076623,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "classwise_reduction": "sum",
+      "sample_reduction": "mean",
+      "range": [
+        0.0,
+        2.0
+      ]
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 36.42486016988187,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 35.610928000096465,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 51.01261011990565,
+    "available": true,
+    "metadata": {
+      "n_samples": 200,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 200,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 200,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

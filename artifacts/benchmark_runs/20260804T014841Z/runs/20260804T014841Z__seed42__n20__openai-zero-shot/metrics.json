@@ -1,0 +1,149 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.855,
+    "available": true,
+    "metadata": {
+      "n_samples": 400
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.84256306763568,
+    "available": true,
+    "metadata": {
+      "n_samples": 400,
+      "labels": [
+        "activate_my_card",
+        "beneficiary_not_allowed",
+        "card_about_to_expire",
+        "card_delivery_estimate",
+        "card_not_working",
+        "cash_withdrawal_not_recognised",
+        "change_pin",
+        "direct_debit_payment_not_recognised",
+        "disposable_card_limits",
+        "edit_personal_details",
+        "failed_transfer",
+        "order_physical_card",
+        "passcode_forgotten",
+        "pending_card_payment",
+        "reverted_card_payment?",
+        "top_up_reverted",
+        "transfer_into_account",
+        "transfer_not_received_by_recipient",
+        "unable_to_verify_identity",
+        "wrong_amount_of_cash_received"
+      ],
+      "per_class_f1": {
+        "activate_my_card": 1.0,
+        "beneficiary_not_allowed": 0.2608695652173913,
+        "card_about_to_expire": 0.8648648648648649,
+        "card_delivery_estimate": 0.9047619047619048,
+        "card_not_working": 0.9302325581395349,
+        "cash_withdrawal_not_recognised": 0.75,
+        "change_pin": 1.0,
+        "direct_debit_payment_not_recognised": 0.7096774193548387,
+        "disposable_card_limits": 1.0,
+        "edit_personal_details": 1.0,
+        "failed_transfer": 0.7555555555555555,
+        "order_physical_card": 0.8292682926829268,
+        "passcode_forgotten": 1.0,
+        "pending_card_payment": 0.8085106382978723,
+        "reverted_card_payment?": 0.7647058823529411,
+        "top_up_reverted": 0.9302325581395349,
+        "transfer_into_account": 0.8205128205128205,
+        "transfer_not_received_by_recipient": 0.7346938775510204,
+        "unable_to_verify_identity": 0.9302325581395349,
+        "wrong_amount_of_cash_received": 0.8571428571428571
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 830.4685219824387,
+    "available": true,
+    "metadata": {
+      "n_samples": 400,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 815.1433615003043,
+    "available": true,
+    "metadata": {
+      "n_samples": 400,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 1742.9186538415152,
+    "available": true,
+    "metadata": {
+      "n_samples": 400,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 400,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

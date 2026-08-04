@@ -1,0 +1,53 @@
+{
+  "campaign_id": "20260804T013216Z",
+  "created_at_utc": "2026-08-04T01:32:19.676815+00:00",
+  "dataset": "banking77",
+  "class_counts": [
+    5,
+    10,
+    20,
+    25
+  ],
+  "classifiers": [
+    "emissary",
+    "openai",
+    "sentence-transformer",
+    "bert"
+  ],
+  "seeds": [
+    42
+  ],
+  "train_per_class": 100,
+  "test_per_class": 20,
+  "validation_fraction": 0.2,
+  "class_subset_strategy": "nested_shuffled_prefix",
+  "sampling_strategy": "label_specific_deterministic_random_sample",
+  "source_definition_profile": {
+    "path": "class_definitions_data/banking77/canonical_llm_enriched_v1.json",
+    "profile": "canonical_llm_enriched_v1",
+    "sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2",
+    "review_status": "unreviewed"
+  },
+  "models": {
+    "openai": "gpt-5-nano",
+    "openai_reasoning_effort": "minimal",
+    "bert": "google-bert/bert-base-uncased",
+    "sentence_transformer": "sentence-transformers/all-MiniLM-L6-v2"
+  },
+  "bert_training": {
+    "epochs": 3,
+    "batch_size": 16,
+    "learning_rate": 2e-05,
+    "weight_decay": 0.01,
+    "max_length": 128
+  },
+  "sentence_transformer_training": {
+    "embedding_batch_size": 64,
+    "c_values": [
+      0.1,
+      1.0,
+      10.0
+    ],
+    "max_iter": 2000
+  }
+}

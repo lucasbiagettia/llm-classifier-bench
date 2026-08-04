@@ -1,0 +1,9 @@
+{
+  "run_id": "20260804T012519Z__seed42__n05__openai-zero-shot",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-08-04T01:27:01.063676+00:00",
+  "dataset": "banking77",
+  "classifier": "openai-zero-shot",
+  "example_count": 100
+}

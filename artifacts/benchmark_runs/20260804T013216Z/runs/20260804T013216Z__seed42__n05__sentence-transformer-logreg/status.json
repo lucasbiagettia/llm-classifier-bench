@@ -1,0 +1,9 @@
+{
+  "run_id": "20260804T013216Z__seed42__n05__sentence-transformer-logreg",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-08-04T01:34:11.679577+00:00",
+  "dataset": "banking77",
+  "classifier": "sentence-transformer-logreg",
+  "example_count": 100
+}

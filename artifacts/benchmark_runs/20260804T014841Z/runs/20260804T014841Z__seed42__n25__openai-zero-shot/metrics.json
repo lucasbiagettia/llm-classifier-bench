@@ -1,0 +1,159 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 0.852,
+    "available": true,
+    "metadata": {
+      "n_samples": 500
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 0.8440906616883974,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "labels": [
+        "activate_my_card",
+        "age_limit",
+        "beneficiary_not_allowed",
+        "card_about_to_expire",
+        "card_delivery_estimate",
+        "card_not_working",
+        "card_payment_not_recognised",
+        "cash_withdrawal_not_recognised",
+        "change_pin",
+        "direct_debit_payment_not_recognised",
+        "disposable_card_limits",
+        "edit_personal_details",
+        "failed_transfer",
+        "order_physical_card",
+        "passcode_forgotten",
+        "pending_card_payment",
+        "pending_transfer",
+        "reverted_card_payment?",
+        "supported_cards_and_currencies",
+        "top_up_reverted",
+        "transfer_into_account",
+        "transfer_not_received_by_recipient",
+        "unable_to_verify_identity",
+        "verify_source_of_funds",
+        "wrong_amount_of_cash_received"
+      ],
+      "per_class_f1": {
+        "activate_my_card": 0.975609756097561,
+        "age_limit": 0.9743589743589743,
+        "beneficiary_not_allowed": 0.2608695652173913,
+        "card_about_to_expire": 0.8235294117647058,
+        "card_delivery_estimate": 0.8947368421052632,
+        "card_not_working": 0.8636363636363636,
+        "card_payment_not_recognised": 0.7391304347826086,
+        "cash_withdrawal_not_recognised": 0.8181818181818182,
+        "change_pin": 1.0,
+        "direct_debit_payment_not_recognised": 0.6206896551724138,
+        "disposable_card_limits": 1.0,
+        "edit_personal_details": 0.975609756097561,
+        "failed_transfer": 0.7619047619047619,
+        "order_physical_card": 0.8085106382978723,
+        "passcode_forgotten": 1.0,
+        "pending_card_payment": 0.9230769230769231,
+        "pending_transfer": 0.7755102040816326,
+        "reverted_card_payment?": 0.8333333333333334,
+        "supported_cards_and_currencies": 0.926829268292683,
+        "top_up_reverted": 0.9090909090909091,
+        "transfer_into_account": 0.8333333333333334,
+        "transfer_not_received_by_recipient": 0.4897959183673469,
+        "unable_to_verify_identity": 1.0,
+        "verify_source_of_funds": 0.975609756097561,
+        "wrong_amount_of_cash_received": 0.918918918918919
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "n_bins": 10,
+      "reason": "confidence or probabilities are missing"
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "full probability distributions are missing"
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 813.3007057800714,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 770.7656359998509,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 1639.0261413992262,
+    "available": true,
+    "metadata": {
+      "n_samples": 500,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 500,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}
