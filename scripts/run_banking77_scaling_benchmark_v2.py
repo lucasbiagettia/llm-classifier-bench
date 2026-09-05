@@ -1,4 +1,4 @@
-"""Run the main Banking77 multiclass scaling pilot across all four classifiers.
+"""Run the main Banking77 multiclass scaling pilot across the selected classifiers.
 
 Default experiment:
     class counts:        5, 10, 20, 25
@@ -58,6 +58,7 @@ from llm_classifier_bench.classifiers import (
     EmissaryClient,
     OpenAIClassifier,
     SentenceTransformerLogisticClassifier,
+    TfidfLogisticClassifier,
 )
 from llm_classifier_bench.config import (
     BertTrainingConfig,
@@ -66,6 +67,7 @@ from llm_classifier_bench.config import (
     DEFAULT_OPENAI_REASONING_EFFORT,
     DEFAULT_SENTENCE_TRANSFORMER_MODEL,
     SentenceTransformerTrainingConfig,
+    TfidfTrainingConfig,
 )
 from llm_classifier_bench.core import ClassDefinition, LabeledExample
 from llm_classifier_bench.datasets import DatasetBundle, get_dataset
@@ -463,7 +465,13 @@ def build_classifier(
     st_embedding_batch_size: int,
     st_c_values: tuple[float, ...],
     st_max_iter: int,
+    tfidf_training: TfidfTrainingConfig | None = None,
 ) -> Any:
+    if name == "tfidf":
+        return TfidfLogisticClassifier(
+            training=tfidf_training or TfidfTrainingConfig(seed=condition.seed),
+        )
+
     if name == "emissary":
         classifier = EmissaryClassifier.create(
             client=EmissaryClient(),
@@ -551,6 +559,7 @@ def summary_row(
         "supervision_regime": getattr(classifier, "supervision_regime", None),
         "training_examples_used": getattr(classifier, "training_examples_used", None),
         "validation_examples_used": getattr(classifier, "validation_examples_used", None),
+        "selected_c": getattr(classifier, "selected_c", None),
         "test_examples": len(condition.bundle.test),
         "status": "failed" if error is not None else "completed",
         "run_id": getattr(result, "run_id", None),
@@ -630,7 +639,7 @@ def write_json(path: Path, payload: Any) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Banking77 multiclass scaling campaign with all four classifiers."
+        description="Banking77 multiclass scaling campaign with the selected classifiers."
     )
     parser.add_argument(
         "--class-counts",
@@ -642,7 +651,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classifiers",
         nargs="+",
-        choices=list(DEFAULT_CLASSIFIERS),
+        choices=[*DEFAULT_CLASSIFIERS, "tfidf"],
         default=list(DEFAULT_CLASSIFIERS),
         help="Classifier families to run.",
     )
@@ -744,7 +753,26 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--st-max-iter", type=int, default=2000)
 
+    # Sparse lexical baseline. Other classifier defaults remain unchanged.
+    parser.add_argument("--tfidf-c-values", type=float, nargs="+", default=[0.1, 1.0, 10.0])
+    parser.add_argument("--tfidf-fallback-c", type=float, default=1.0)
+    parser.add_argument("--tfidf-ngram-range", type=int, nargs=2, default=[1, 2])
+    parser.add_argument("--tfidf-lowercase", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--tfidf-min-df", type=int, default=1)
+    parser.add_argument("--tfidf-max-features", type=int, default=None)
+    parser.add_argument("--tfidf-sublinear-tf", action="store_true")
+    parser.add_argument("--tfidf-max-iter", type=int, default=2000)
+
     return parser.parse_args()
+
+
+def tfidf_training_config(args: argparse.Namespace, seed: int) -> TfidfTrainingConfig:
+    return TfidfTrainingConfig(
+        ngram_range=tuple(args.tfidf_ngram_range), lowercase=args.tfidf_lowercase,
+        min_df=args.tfidf_min_df, max_features=args.tfidf_max_features,
+        sublinear_tf=args.tfidf_sublinear_tf, c_values=tuple(args.tfidf_c_values),
+        fallback_c=args.tfidf_fallback_c, max_iter=args.tfidf_max_iter, seed=seed,
+    )
 
 
 def main() -> None:
@@ -845,6 +873,9 @@ def main() -> None:
             "weight_decay": args.bert_weight_decay,
             "max_length": args.bert_max_length,
         },
+        "tfidf_training_by_seed": {
+            str(seed): asdict(tfidf_training_config(args, seed)) for seed in args.seeds
+        } if "tfidf" in args.classifiers else {},
         "sentence_transformer_training": {
             "embedding_batch_size": args.st_embedding_batch_size,
             "c_values": list(args.st_c_values),
@@ -950,6 +981,8 @@ def main() -> None:
                         st_embedding_batch_size=args.st_embedding_batch_size,
                         st_c_values=tuple(args.st_c_values),
                         st_max_iter=args.st_max_iter,
+                        tfidf_training=(tfidf_training_config(args, seed)
+                                        if classifier_key == "tfidf" else None),
                     )
 
                     run_id = (

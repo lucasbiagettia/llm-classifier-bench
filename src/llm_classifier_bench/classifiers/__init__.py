@@ -18,6 +18,7 @@ from .emissary import (
 )
 from .openai import OpenAIClassifier
 from .sentence_transformer import SentenceTransformerLogisticClassifier
+from .tfidf import TfidfLogisticClassifier
 
 __all__ = [
     "ClassificationInput",
@@ -33,5 +34,6 @@ __all__ = [
     "Experiment",
     "OpenAIClassifier",
     "SentenceTransformerLogisticClassifier",
+    "TfidfLogisticClassifier",
     "parse_classification_response",
 ]

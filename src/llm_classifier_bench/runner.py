@@ -153,6 +153,13 @@ def run_benchmark(
         )
         classifier.fit(fit_train, validation_examples=validation)
 
+        # Optional generic hook: retain the pre-fit config and persist learned
+        # settings separately, before inference can fail or mutate the model.
+        fitted_metadata = getattr(classifier, "fitted_metadata", None)
+        if callable(fitted_metadata):
+            stage = "writing_fitted_metadata"
+            _write_json(run_dir / "fit_metadata.json", fitted_metadata())
+
         stage = "predicting"
         _write_status(
             status_path,
