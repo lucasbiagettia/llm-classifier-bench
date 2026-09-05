@@ -2,12 +2,13 @@
 
 Reproducible benchmark infrastructure for comparing closed-set text-classification approaches across predictive quality, probabilistic calibration, latency, and cost.
 
-The current implementation supports four classifier families:
+The current implementation supports five classifier families:
 
 - **Emissary zero-shot** — purpose-built discriminative classification API.
 - **OpenAI zero-shot** — generative closed-set classification with structured output.
 - **BERT fine-tuned** — supervised Hugging Face sequence classification.
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
+- **TF-IDF + Logistic Regression** — supervised sparse lexical baseline.
 
 ## Experimental lifecycle
 
@@ -66,6 +67,7 @@ Emissary             zero-shot
 OpenAI               zero-shot
 BERT                  supervised fine-tuning
 SentenceTransformer   supervised embeddings + Logistic Regression
+TF-IDF                supervised lexical features + Logistic Regression
 ```
 
 Results should therefore report the supervision regime and number of labeled training examples. Do not interpret a supervised model winning as evidence that the underlying technique is universally superior to a zero-shot method.
@@ -121,6 +123,104 @@ It:
 
 This is intentionally different from BERT fine-tuning: it measures the strength of frozen semantic features plus a shallow supervised classifier.
 
+### TF-IDF + Logistic Regression
+
+`TfidfLogisticClassifier` uses sparse word unigrams/bigrams, lowercase text, no
+stop-word list, smoothed IDF, and L2 normalization. `TfidfTrainingConfig` controls
+ngram range, lowercase, minimum document frequency, maximum vocabulary size,
+sublinear TF, C candidates, fallback C, maximum iterations, and seed.
+
+Vocabulary, IDF, and all candidate weights are fitted exclusively on fit-train.
+Validation accuracy selects C from `(0.1, 1.0, 10.0)`; ties retain the **first
+candidate in configured order**. Without validation, only fixed `fallback_c=1.0`
+is fitted. There is no train-plus-validation refit, training-accuracy selection,
+or classifier-side sampling. Every prepared class must appear in fit-train.
+Unknown tokens can yield a zero vector and still receive ordinary probabilities.
+Latency includes per-example text transformation and probability inference.
+
+Both maintained campaign entry points, `run_banking77_scaling_benchmark.py` and
+`run_banking77_scaling_benchmark_v2.py`, support `--classifiers tfidf`; existing
+default classifier lists are unchanged. They use the same condition sampling and
+runner split as other classifiers, and include TF-IDF in summary CSV/JSON quality,
+calibration, and latency results. The historical `_copy.py` script is not maintained.
+TF-IDF-only selection creates no API clients, generates no definitions, and loads
+no transformer models. The campaigns reuse the checked-in definition profile.
+
+Run a small CPU-only local fixture without credentials or downloads:
+
+```bash
+PYTHONPATH=src python scripts/probe_tfidf_classifier.py
+```
+
+Run a small TF-IDF-only Banking77 campaign (the CSV loader may require network access):
+
+```bash
+PYTHONPATH=src python scripts/run_banking77_scaling_benchmark_v2.py \
+  --classifiers tfidf --class-counts 5 --seeds 42 \
+  --train-per-class 12 --test-per-class 2 \
+  --min-train-per-class 12 --min-test-per-class 2 --strict-support \
+  --validation-fraction 0.25 --output-root artifacts/tfidf_validation_v2
+```
+
+For the original campaign entry point, use the same command with its filename and
+omit the three v2 support options (`--min-train-per-class`, `--min-test-per-class`,
+`--strict-support`). Both expose `--tfidf-c-values`, `--tfidf-fallback-c`,
+`--tfidf-ngram-range`, `--[no-]tfidf-lowercase`, `--tfidf-min-df`,
+`--tfidf-max-features`, `--tfidf-sublinear-tf`, and `--tfidf-max-iter`.
+For cache-only validation, see [TFIDF_VALIDATION.md](TFIDF_VALIDATION.md) for the
+existing CSV loader limitation and the executed cached-Arrow command.
+Smoke results verify execution and are not publishable benchmark findings.
+
+#### Saved settings and reproduction
+
+`config.json` preserves training settings, exact fit/validation/test sample IDs,
+class definitions, split seed, and dataset identity. The generic optional
+`fitted_metadata()` hook writes `fit_metadata.json` immediately after fitting,
+without changing the pre-fit configuration. For TF-IDF this records actual
+supervision counts, vectorizer settings/vocabulary size, C candidates and scores,
+selected/fallback C, selection rule, solver, seed, and scikit-learn/NumPy/SciPy
+versions. `campaign.json` also records the TF-IDF settings per seed and shared
+sampling budgets. Predictions and probability metrics use the existing artifacts.
+
+To reproduce a Banking77 run, retain the same source dataset and definition
+profile, use the recorded library versions, and rerun the campaign with its saved
+budgets, seeds, and TF-IDF options into a **new** output directory. Check sample IDs
+against the original run; source data changes can invalidate seed-only reproduction.
+Alternatively, the following focused snippet reconstructs the fitted classifier
+from a run's saved settings and sample selection and checks its probabilities
+(latency is expected to differ):
+
+```python
+import json
+from pathlib import Path
+from llm_classifier_bench.classifiers import TfidfLogisticClassifier
+from llm_classifier_bench.config import TfidfTrainingConfig
+from llm_classifier_bench.core import ClassDefinition
+from llm_classifier_bench.datasets import get_dataset
+
+run = Path("artifacts/tfidf_validation_v2/<campaign>/runs/<run>")
+config = json.loads((run / "config.json").read_text())
+fit = json.loads((run / "fit_metadata.json").read_text())
+settings = config["classifier"]["training"]
+for key in ("ngram_range", "c_values"):
+    settings[key] = tuple(settings[key])
+bundle = get_dataset("banking77").load()
+by_id = {e.sample_id: e for e in bundle.train + bundle.test}
+data = config["dataset"]
+classifier = TfidfLogisticClassifier(training=TfidfTrainingConfig(**settings))
+classifier.prepare([ClassDefinition(**c) for c in data["classes"]])
+classifier.fit([by_id[i] for i in data["fit_train_sample_ids"]],
+               validation_examples=[by_id[i] for i in data["validation_sample_ids"]])
+predictions = classifier.predict([by_id[i].as_input() for i in data["test_sample_ids"]])
+saved = [json.loads(line) for line in (run / "predictions.jsonl").read_text().splitlines()]
+assert classifier.selected_c == fit["selected_c"]
+assert [p.probabilities for p in predictions] == [p["probabilities"] for p in saved]
+```
+
+For the local smoke run use `fixture_bundle()` from
+`scripts/probe_tfidf_classifier.py` in place of `get_dataset("banking77").load()`.
+Both campaign replay paths are covered by offline tests with real scikit-learn.
+
 ## Runner
 
 `src/llm_classifier_bench/runner.py` is classifier-agnostic.
@@ -133,6 +233,7 @@ load dataset
 -> persist config/sample IDs
 -> prepare classifier
 -> fit classifier
+-> persist optional fit_metadata.json
 -> predict untouched test
 -> validate Prediction contract
 -> write predictions.jsonl

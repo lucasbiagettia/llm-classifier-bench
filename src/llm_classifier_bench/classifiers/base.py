@@ -39,6 +39,9 @@ class Classifier(Protocol):
 
     ``prepare(classes) -> fit(train, validation) -> predict(test)``
 
+    Implementations may optionally expose ``fitted_metadata()`` returning a
+    JSON-compatible mapping; the runner saves it as ``fit_metadata.json`` after fit.
+
     ``prepare`` communicates the closed label space without leaking labeled
     examples. ``fit`` may be a no-op for zero-shot classifiers.
     """
