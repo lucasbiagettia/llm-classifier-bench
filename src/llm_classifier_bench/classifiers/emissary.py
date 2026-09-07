@@ -846,8 +846,8 @@ class EmissaryClassifier:
                 content=dataset_payload,
             )
             self._dataset_upload_ms = (perf_counter() - upload_started) * 1_000
-            self._dataset_id = self._require_id(response, resource="dataset")
             self._dataset_response = response
+            self._dataset_id = self._require_id(response, resource="dataset")
             self._persist_progress()
         self._dataset_response = self._wait_for_dataset(project_id, self._dataset_id)
 
@@ -864,8 +864,8 @@ class EmissaryClassifier:
             self._training_submission_ms = (
                 perf_counter() - submission_started
             ) * 1_000
-            self._training_job_id = self._require_id(response, resource="training job")
             self._training_response = response
+            self._training_job_id = self._require_id(response, resource="training job")
             self._persist_progress()
 
         training_started = perf_counter()
@@ -913,10 +913,10 @@ class EmissaryClassifier:
             self._deployment_submission_ms = (
                 perf_counter() - submission_started
             ) * 1_000
+            self._deployment_response = response
             self._deployment_id = self._require_id(response, resource="deployment")
             name = response.get("name")
             self._deployment_name = name if isinstance(name, str) and name else None
-            self._deployment_response = response
             self._persist_progress()
 
         try:
@@ -934,6 +934,11 @@ class EmissaryClassifier:
 
     @staticmethod
     def _require_id(response: Mapping[str, Any], *, resource: str) -> str:
+        provider_error = response.get("error")
+        if isinstance(provider_error, str) and provider_error.strip():
+            raise EmissaryAPIError(
+                f"Emissary rejected {resource} creation: {provider_error}"
+            )
         resource_id = response.get("id")
         if not isinstance(resource_id, str) or not resource_id.strip():
             raise EmissaryResponseError(f"{resource} response is missing a valid id")

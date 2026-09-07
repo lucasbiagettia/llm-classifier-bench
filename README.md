@@ -395,5 +395,5 @@ acknowledgement and a bound on newly created training jobs.
 
 See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
 [verified API contract and limitations](docs/emissary_contract.md), and
-[offline validation evidence](docs/emissary_validation.md). The total-shot examples
-are implementation examples, not confirmation of the intended 5/100-shot meaning.
+[offline and live validation evidence](docs/emissary_validation.md). The 5/100
+smoke configuration uses total shots, as confirmed for the authorized live run.

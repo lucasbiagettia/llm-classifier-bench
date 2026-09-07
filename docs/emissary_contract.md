@@ -43,9 +43,13 @@ datasets, jobs or deployments. `/v1/models` returned 39 models. The inspected
 classification support; the former exposes defaults including three epochs,
 learning rate 0.0002, train batch size 2 and evaluation batch size 1.
 
-Those observations validate entitlement to read these resources, not permission
-or pricing for training. The code revalidates the selected project and model at
-run time before the first mutation.
+Those observations validate entitlement to read these resources. During the
+authorized live smoke, both selected JSONL datasets uploaded and profiled as
+classification, but training creation returned a successful HTTP response with
+`Please setup your payment method first at the platform`. A subsequent list call
+confirmed that no training job or deployment existed. The adapter preserves and
+reports these provider error bodies. Training remains blocked until the account
+has a payment method.
 
 ## Scientific and operational limits
 
@@ -59,7 +63,7 @@ this limitation.
 The public API and inspected model detail expose no training price or enforceable
 USD cap. Cost remains unavailable rather than zero. Live campaign execution needs
 an explicit unpriced-training acknowledgement and a maximum count of newly
-created jobs.
+created jobs, and the account must have a payment method configured.
 
 Submission timeouts are ambiguous and are never retried automatically. Polling
 has bounded deadlines and explicit terminal failures. Remote IDs and sanitized

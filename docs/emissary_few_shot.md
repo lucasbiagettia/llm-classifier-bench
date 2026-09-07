@@ -8,9 +8,9 @@ report that confound with any result.
 
 `EmissaryTrainingConfig` supports arbitrary feasible nonnegative budgets. A
 nonzero budget requires an explicit `shot_unit` (`total` or `per_class`) and the
-explicit mechanism `project_fine_tuning`, project ID and base model. The commands
-below use **total** only as an implementation example; Tanmay's intended meaning
-of 5/100 remains unconfirmed.
+explicit mechanism `project_fine_tuning`, project ID and base model. The 5/100
+smoke configuration uses **total** shots, as confirmed for the authorized live
+run on 2026-09-07.
 
 The selector sorts class names and per-class sample IDs before seeded shuffles.
 It uses seed string `<seed>:classes` for class order and
@@ -76,6 +76,11 @@ For the example above, removing `--dry-run` and adding
 `--emissary-allow-unpriced-training --emissary-max-training-jobs 2` permits at
 most two new jobs. This bound controls job count, not provider spend. Do not run
 it without explicit authorization for the unpriced training calls.
+
+The 2026-09-07 live smoke uploaded and profiled the 5- and 100-shot datasets, but
+the account rejected training creation because it has no payment method. The
+adapter reports this response explicitly. Reuse the recorded dataset IDs and
+SHA-256 values when continuing after payment setup; do not repeat the uploads.
 
 The training hyperparameters and polling limits are configurable through the
 `--emissary-num-train-epochs`, `--emissary-learning-rate`, batch-size, timeout,

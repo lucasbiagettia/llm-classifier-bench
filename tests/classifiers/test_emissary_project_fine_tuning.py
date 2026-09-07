@@ -469,6 +469,31 @@ def test_ambiguous_training_submission_is_never_retried():
     assert metadata["training_job_id"] is None
 
 
+def test_http_success_error_payload_is_reported_and_preserved():
+    bundle = fixture_bundle(2, 3)
+    client, session = http_client(
+        gets=[project_detail(), base_model(), dataset_detail()],
+        posts=[
+            {"id": "ds-fixture", "is_uploaded": True},
+            {"error": "Please setup your payment method first at the platform"},
+        ],
+    )
+    classifier = EmissaryClassifier(
+        client=client,
+        training=fine_config(),
+        experiment_name="provider-rejection",
+    )
+    classifier.prepare(bundle.classes)
+    with pytest.raises(EmissaryAPIError, match="payment method"):
+        classifier.fit(bundle.train)
+    assert session.post.call_count == 2
+    metadata = classifier.fitted_metadata()
+    assert metadata["training_job_id"] is None
+    assert metadata["training_response"] == {
+        "error": "Please setup your payment method first at the platform"
+    }
+
+
 def test_continuation_hash_must_match_current_selection_before_job_lookup():
     bundle = fixture_bundle(2, 3)
     client, session = http_client(gets=[project_detail(), base_model()])

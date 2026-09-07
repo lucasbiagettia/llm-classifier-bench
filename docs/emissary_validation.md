@@ -5,8 +5,8 @@ environment; no dependency upgrades.
 
 ## Automated tests
 
-- `PYTHONPATH=src pytest -m "not integration" -q`: **117 passed, 3 deselected**.
-- Focused Emissary and campaign suite: **58 passed**.
+- `PYTHONPATH=src pytest -m "not integration" -q`: **118 passed, 3 deselected**.
+- Focused Emissary and campaign suite: **59 passed**.
 - `python -m compileall -q src scripts tests`: passed.
 - `git diff --check`: passed.
 
@@ -71,16 +71,31 @@ HF_HUB_OFFLINE=1 HF_DATASETS_OFFLINE=1 PYTHONPATH=src:scripts \
   --dry-run --output-root /tmp/emissary_project_sft_validation
 ```
 
-## Live boundary
+## Live smoke
 
 Authenticated read-only requests verified access to the Projects/model contract:
 one project was visible, with no existing datasets, training jobs or deployments;
 the selected Llama base model advertised classification support. No credentials
 were logged.
 
-No paid dataset upload, training, deployment or inference was executed. The
-provider exposes no price estimate or enforceable spending cap, and the user has
-not authorized unpriced training. Live acceptance therefore remains open. The
-smallest next action is explicit authorization for two unpriced training jobs and
-confirmation that 5/100 means total shots; the guarded command is documented in
-[the few-shot guide](emissary_few_shot.md).
+After explicit authorization for two unpriced jobs and total-shot semantics, the
+same 0/5/100 campaign was executed live:
+
+- routing zero-shot completed two held-out predictions with accuracy and macro-F1
+  1.0; this tiny sample is an execution check, not scientific evidence;
+- the 5- and 100-shot JSONL datasets uploaded and profiled as classification;
+- Emissary rejected each training submission with
+  `Please setup your payment method first at the platform` in a JSON error body;
+- a read-back confirmed zero training jobs and zero deployments, so no job was
+  duplicated and no deployment remained active;
+- provider usage/charge data was absent, so observed cost remains unavailable.
+
+The live evidence directory is outside the repository at
+`/tmp/emissary_project_sft_live/20260907T165914443762Z/`. The adapter now detects
+and preserves successful-HTTP error bodies, and an offline regression test covers
+the exact response observed.
+
+Live fine-tuning acceptance remains open because the account has no payment method.
+The two uploaded datasets and their content hashes are preserved in the evidence
+for safe continuation. The smallest next action is configuring the payment method
+in Emissary; the existing datasets can then be used without uploading them again.
