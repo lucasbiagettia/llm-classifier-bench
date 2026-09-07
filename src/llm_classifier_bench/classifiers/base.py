@@ -42,6 +42,10 @@ class Classifier(Protocol):
     Implementations may optionally expose ``fitted_metadata()`` returning a
     JSON-compatible mapping; the runner saves it as ``fit_metadata.json`` after fit.
 
+    An optional ``plan_fit(classes, train, validation_examples=...)`` hook must
+    perform no remote operations; the runner saves its result before prepare.
+    Dry-run execution requires that hook and stops before the lifecycle begins.
+
     ``prepare`` communicates the closed label space without leaking labeled
     examples. ``fit`` may be a no-op for zero-shot classifiers.
     """

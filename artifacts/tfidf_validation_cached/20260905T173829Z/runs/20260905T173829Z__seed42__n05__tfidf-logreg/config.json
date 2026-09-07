@@ -1,0 +1,221 @@
+{
+  "run_id": "20260905T173829Z__seed42__n05__tfidf-logreg",
+  "created_at_utc": "2026-09-05T17:38:29.703805+00:00",
+  "dataset": {
+    "name": "banking77",
+    "metadata": {
+      "source": "huggingface",
+      "path": "csv",
+      "config_name": null,
+      "revision": null,
+      "data_files": {
+        "train": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/train.csv",
+        "test": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/master/banking_data/test.csv"
+      },
+      "train_split": "train",
+      "test_split": "test",
+      "text_column": "text",
+      "label_column": "category",
+      "benchmark_campaign": true,
+      "source_dataset": "banking77",
+      "class_count": 5,
+      "train_per_class_sampled": 12,
+      "test_per_class": 2,
+      "class_subset_seed": 42,
+      "class_subset_strategy": "support_filtered_then_nested_shuffled_prefix",
+      "selected_class_names": [
+        "topping_up_by_card",
+        "terminate_account",
+        "automatic_top_up",
+        "unable_to_verify_identity",
+        "pending_transfer"
+      ],
+      "source_definition_profile": "canonical_llm_enriched_v1",
+      "source_definition_profile_path": "class_definitions_data/banking77/canonical_llm_enriched_v1.json",
+      "source_definition_profile_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2",
+      "definition_review_status": "unreviewed"
+    },
+    "classes": [
+      {
+        "name": "topping_up_by_card",
+        "description": "Topping up the account using a card."
+      },
+      {
+        "name": "terminate_account",
+        "description": "Steps or status related to closing or terminating the account."
+      },
+      {
+        "name": "automatic_top_up",
+        "description": "Automatic top-up functionality or issues enabling automatic top-ups."
+      },
+      {
+        "name": "unable_to_verify_identity",
+        "description": "Difficulty or failure in completing identity verification."
+      },
+      {
+        "name": "pending_transfer",
+        "description": "Transfers awaiting processing or approval."
+      }
+    ],
+    "source_train_size": 60,
+    "fit_train_sample_ids": [
+      "banking77:train:4242",
+      "banking77:train:4244",
+      "banking77:train:4250",
+      "banking77:train:4252",
+      "banking77:train:4262",
+      "banking77:train:4284",
+      "banking77:train:4286",
+      "banking77:train:4327",
+      "banking77:train:4332",
+      "banking77:train:6146",
+      "banking77:train:6158",
+      "banking77:train:6159",
+      "banking77:train:6171",
+      "banking77:train:6191",
+      "banking77:train:6201",
+      "banking77:train:6210",
+      "banking77:train:6219",
+      "banking77:train:6244",
+      "banking77:train:1123",
+      "banking77:train:1130",
+      "banking77:train:1138",
+      "banking77:train:1139",
+      "banking77:train:1166",
+      "banking77:train:1183",
+      "banking77:train:1219",
+      "banking77:train:1222",
+      "banking77:train:1237",
+      "banking77:train:3930",
+      "banking77:train:3931",
+      "banking77:train:3943",
+      "banking77:train:3954",
+      "banking77:train:3958",
+      "banking77:train:3977",
+      "banking77:train:3978",
+      "banking77:train:3982",
+      "banking77:train:3987",
+      "banking77:train:5996",
+      "banking77:train:6014",
+      "banking77:train:6026",
+      "banking77:train:6029",
+      "banking77:train:6041",
+      "banking77:train:6084",
+      "banking77:train:6101",
+      "banking77:train:6115",
+      "banking77:train:6124"
+    ],
+    "validation_sample_ids": [
+      "banking77:train:4298",
+      "banking77:train:4308",
+      "banking77:train:4336",
+      "banking77:train:6200",
+      "banking77:train:6213",
+      "banking77:train:6226",
+      "banking77:train:1137",
+      "banking77:train:1152",
+      "banking77:train:1171",
+      "banking77:train:3904",
+      "banking77:train:3939",
+      "banking77:train:3990",
+      "banking77:train:6016",
+      "banking77:train:6039",
+      "banking77:train:6074"
+    ],
+    "test_sample_ids": [
+      "banking77:test:1347",
+      "banking77:test:1355",
+      "banking77:test:1881",
+      "banking77:test:1919",
+      "banking77:test:350",
+      "banking77:test:357",
+      "banking77:test:1205",
+      "banking77:test:1209",
+      "banking77:test:1862",
+      "banking77:test:1868"
+    ],
+    "fit_train_size": 45,
+    "validation_size": 15,
+    "test_size": 10
+  },
+  "class_definitions": {
+    "source": "versioned_profile",
+    "path": "artifacts/tfidf_validation_cached/20260905T173829Z/definitions/canonical_llm_enriched_v1__n5_seed42.json",
+    "sha256": "79f2ee48cee7be10ae2b45ca25e6b82f40b25bce94918d82acc4aafa86c10915",
+    "schema_version": 1,
+    "dataset": "banking77",
+    "profile": "canonical_llm_enriched_v1__n5_seed42",
+    "review_status": "unreviewed",
+    "generation": {
+      "method": "llm",
+      "provider": "openai",
+      "requested_model": "gpt-5-nano",
+      "resolved_model": "gpt-5-nano-2025-08-07",
+      "reasoning_effort": "minimal",
+      "prompt_version": "label_description_v1",
+      "prompt_sha256": "2daf3a6cc9de2359daaf754413389842ee99f167303ad80274cfadd44fb0096f",
+      "dataset_context": "Banking customer-support intent classification.",
+      "uses_train_examples": false,
+      "uses_validation_examples": false,
+      "uses_test_examples": false,
+      "request_id": "chatcmpl-E8vcRddFMT01RkCqwc5tOq4Yuhd6W",
+      "generated_at_utc": "2026-08-03T22:40:30.868282+00:00",
+      "derived_from_profile": "canonical_llm_enriched_v1",
+      "derived_from_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2",
+      "derivation": "exact_subset_only",
+      "class_subset_strategy": "support_filtered_then_nested_shuffled_prefix",
+      "class_count": 5,
+      "seed": 42
+    }
+  },
+  "split": {
+    "validation_fraction": 0.25,
+    "seed": 42,
+    "strategy": "deterministic_stratified_by_label"
+  },
+  "classifier": {
+    "name": "tfidf-logreg",
+    "model": "tfidf-logistic-regression",
+    "training": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "lowercase": true,
+      "min_df": 1,
+      "max_features": null,
+      "sublinear_tf": false,
+      "c_values": [
+        0.1,
+        1.0,
+        10.0
+      ],
+      "fallback_c": 1.0,
+      "max_iter": 2000,
+      "seed": 42
+    },
+    "supervision_regime": "supervised",
+    "training_examples_used": 0,
+    "validation_examples_used": 0
+  },
+  "run_metadata": {
+    "campaign_id": "20260905T173829Z",
+    "benchmark_campaign": true,
+    "seed": 42,
+    "class_count": 5,
+    "class_subset_strategy": "support_filtered_then_nested_shuffled_prefix",
+    "selected_class_names": [
+      "topping_up_by_card",
+      "terminate_account",
+      "automatic_top_up",
+      "unable_to_verify_identity",
+      "pending_transfer"
+    ],
+    "requested_train_per_class": 12,
+    "effective_train_per_class": 12,
+    "requested_test_per_class": 2,
+    "effective_test_per_class": 2,
+    "source_definition_profile": "canonical_llm_enriched_v1",
+    "source_definition_profile_sha256": "6be474e66645862ffbff383695263b3f9b523bcd216668eebb030d3f0d0bdfc2"
+  }
+}

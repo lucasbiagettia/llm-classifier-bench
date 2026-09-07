@@ -1,0 +1,30 @@
+[
+  {
+    "campaign_id": "20260905T173829Z",
+    "seed": 42,
+    "class_count": 5,
+    "classifier_key": "tfidf",
+    "classifier": "tfidf-logreg",
+    "supervision_regime": "supervised",
+    "training_examples_used": 45,
+    "validation_examples_used": 15,
+    "selected_c": 10.0,
+    "test_examples": 10,
+    "status": "completed",
+    "run_id": "20260905T173829Z__seed42__n05__tfidf-logreg",
+    "run_dir": "artifacts/tfidf_validation_cached/20260905T173829Z/runs/20260905T173829Z__seed42__n05__tfidf-logreg",
+    "error_type": null,
+    "error_message": null,
+    "accuracy": 0.8,
+    "macro_f1": 0.8,
+    "top_label_ece": 0.19473205502967067,
+    "adaptive_ece": 0.3820513286774356,
+    "multiclass_log_loss": 0.6046171730828174,
+    "multiclass_brier_score": 0.2944382204561724,
+    "mean_latency_ms": 1.108279400068568,
+    "latency_p50_ms": 0.8047919998261932,
+    "latency_p99_ms": 3.4077006999450536,
+    "total_cost_usd": null,
+    "cost_per_1000_usd": null
+  }
+]

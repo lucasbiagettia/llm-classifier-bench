@@ -16,6 +16,7 @@ from llm_classifier_bench.class_definitions.loader import load_class_definition_
 from llm_classifier_bench.config import DEFAULT_SPLIT_SEED, DEFAULT_VALIDATION_FRACTION
 from llm_classifier_bench.core import LabeledExample
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
+from llm_classifier_bench.datasets.selection import validate_partition_disjointness
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
 
 
@@ -34,6 +35,7 @@ class BenchmarkRunConfig:
     split_seed: int = DEFAULT_SPLIT_SEED
     metadata: Mapping[str, Any] = field(default_factory=dict)
     class_definitions_path: Path | None = None
+    dry_run: bool = False
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.validation_fraction < 1.0:
@@ -130,6 +132,23 @@ def run_benchmark(
             validation=validation,
             class_definitions_metadata=class_definitions_metadata,
         )
+
+        stage = "validating_partitions"
+        validate_partition_disjointness(fit_train, validation, bundle.test)
+        planner = getattr(classifier, "plan_fit", None)
+        if callable(planner):
+            stage = "planning_preparation"
+            plan = planner(bundle.classes, fit_train, validation_examples=validation)
+            _write_json(run_dir / "preparation_plan.json", plan)
+        elif resolved_config.dry_run:
+            raise ValueError("Dry-run requires a classifier with plan_fit support")
+        if resolved_config.dry_run:
+            _write_status(status_path, status="dry_run", stage="planned", run_id=run_id,
+                          dataset=bundle.name, classifier=classifier.name,
+                          example_count=0)
+            return BenchmarkRunResult(
+                run_id, run_dir, config_path, predictions_path, status_path, None, 0,
+            )
 
         stage = "preparing_classifier"
         _write_status(
@@ -391,6 +410,7 @@ def _write_run_config(
     payload = {
         "run_id": run_id,
         "created_at_utc": _utc_now(),
+        "dry_run": config.dry_run,
         "dataset": {
             "name": dataset.name,
             "metadata": dict(dataset.metadata),

@@ -376,3 +376,17 @@ The infrastructure is sufficient to begin pilot measurements after the regressio
 5. supervision-regime reporting and training-budget policy.
 
 Do not use the existing small smoke runs as scientific evidence.
+
+## Emissary labeled-example budgets
+
+Both maintained Banking77 campaign scripts accept `--emissary-shots 0 5 100`,
+`--emissary-shot-unit total|per_class`, `--emissary-selection-seed`, and
+`--emissary-selection-policy balanced_round_robin_v1`. Nonzero budgets currently
+support **dry-run selection only**: the public API does not document training the
+existing routing experiment with examples. Live nonzero requests fail before
+remote mutations. Zero-shot remains the default.
+
+See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
+[verified API contract and blockers](docs/emissary_contract.md), and
+[offline validation evidence](docs/emissary_validation.md). The total-shot examples
+are implementation examples, not confirmation of the intended 5/100-shot meaning.

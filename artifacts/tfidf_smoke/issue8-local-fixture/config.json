@@ -1,0 +1,79 @@
+{
+  "run_id": "issue8-local-fixture",
+  "created_at_utc": "2026-09-05T17:35:44.991587+00:00",
+  "dataset": {
+    "name": "tfidf_local_smoke",
+    "metadata": {
+      "source": "scripts/probe_tfidf_classifier.py:fixture_bundle",
+      "fixture_version": 1
+    },
+    "classes": [
+      {
+        "name": "World",
+        "description": "World news"
+      },
+      {
+        "name": "Sports",
+        "description": "Sports news"
+      }
+    ],
+    "source_train_size": 8,
+    "fit_train_sample_ids": [
+      "train-World-0",
+      "train-World-1",
+      "train-World-2",
+      "train-Sports-0",
+      "train-Sports-1",
+      "train-Sports-3"
+    ],
+    "validation_sample_ids": [
+      "train-World-3",
+      "train-Sports-2"
+    ],
+    "test_sample_ids": [
+      "test-0",
+      "test-1",
+      "test-2"
+    ],
+    "fit_train_size": 6,
+    "validation_size": 2,
+    "test_size": 3
+  },
+  "class_definitions": {
+    "source": "dataset_bundle",
+    "profile": null
+  },
+  "split": {
+    "validation_fraction": 0.25,
+    "seed": 42,
+    "strategy": "deterministic_stratified_by_label"
+  },
+  "classifier": {
+    "name": "tfidf-logreg",
+    "model": "tfidf-logistic-regression",
+    "training": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "lowercase": true,
+      "min_df": 1,
+      "max_features": null,
+      "sublinear_tf": false,
+      "c_values": [
+        0.1,
+        1.0,
+        10.0
+      ],
+      "fallback_c": 1.0,
+      "max_iter": 2000,
+      "seed": 42
+    },
+    "supervision_regime": "supervised",
+    "training_examples_used": 0,
+    "validation_examples_used": 0
+  },
+  "run_metadata": {
+    "smoke": true
+  }
+}

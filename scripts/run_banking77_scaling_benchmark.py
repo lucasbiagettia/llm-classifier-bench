@@ -42,6 +42,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 
+from _emissary_campaign import (
+    add_emissary_arguments, classifier_conditions, emissary_manifest,
+    emissary_name, validate_emissary_arguments,
+)
+
 from llm_classifier_bench.class_definitions import (
     ClassDefinitionProfile,
     load_class_definition_profile,
@@ -56,6 +61,7 @@ from llm_classifier_bench.classifiers import (
 )
 from llm_classifier_bench.config import (
     BertTrainingConfig,
+    EmissaryTrainingConfig,
     DEFAULT_BERT_MODEL,
     DEFAULT_OPENAI_MODEL,
     DEFAULT_OPENAI_REASONING_EFFORT,
@@ -109,7 +115,7 @@ class Condition:
 
 
 def utc_campaign_id() -> str:
-    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    return datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
 
 
 def choose_master_label_order(
@@ -310,6 +316,7 @@ def build_classifier(
     st_c_values: tuple[float, ...],
     st_max_iter: int,
     tfidf_training: TfidfTrainingConfig | None = None,
+    emissary_training: EmissaryTrainingConfig | None = None,
 ) -> Any:
     if name == "tfidf":
         return TfidfLogisticClassifier(
@@ -317,21 +324,15 @@ def build_classifier(
         )
 
     if name == "emissary":
-        classifier = EmissaryClassifier.create(
-            client=EmissaryClient(),
+        training = emissary_training or EmissaryTrainingConfig()
+        return EmissaryClassifier(
+            training=training,
             experiment_name=(
                 f"banking77-n{condition.class_count}-seed{condition.seed}-"
-                f"{campaign_id}"
+                f"{campaign_id}-{emissary_name(training)}"
             ),
-            classes=condition.bundle.classes,
-            mode="routing",
-            classifier_name="emissary-zero-shot",
+            classifier_name=emissary_name(training),
         )
-        # Generic runner metadata; fit() itself remains a no-op.
-        classifier.supervision_regime = "zero_shot"
-        classifier.training_examples_used = 0
-        classifier.validation_examples_used = 0
-        return classifier
 
     if name == "openai":
         return OpenAIClassifier(
@@ -573,6 +574,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tfidf-sublinear-tf", action="store_true")
     parser.add_argument("--tfidf-max-iter", type=int, default=2000)
 
+    parser.add_argument("--dry-run", action="store_true", help="Plan Emissary selections without remote calls.")
+    add_emissary_arguments(parser)
     return parser.parse_args()
 
 
@@ -587,6 +590,7 @@ def tfidf_training_config(args: argparse.Namespace, seed: int) -> TfidfTrainingC
 
 def main() -> None:
     args = parse_args()
+    validate_emissary_arguments(args)
 
     class_counts = tuple(sorted(set(args.class_counts)))
     if not class_counts:
@@ -625,6 +629,8 @@ def main() -> None:
 
     manifest = {
         "campaign_id": campaign_id,
+        "dry_run": args.dry_run,
+        "emissary_conditions": emissary_manifest(args),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset": "banking77",
         "class_counts": list(class_counts),
@@ -706,7 +712,7 @@ def main() -> None:
             for label in condition.selected_names:
                 print(f"  - {label}")
 
-            for classifier_key in args.classifiers:
+            for classifier_key, emissary_training in classifier_conditions(args):
                 print("\n" + "-" * 80)
                 print(
                     f"RUN seed={seed} classes={class_count} "
@@ -721,6 +727,7 @@ def main() -> None:
                 try:
                     classifier = build_classifier(
                         classifier_key,
+                        emissary_training=emissary_training,
                         condition=condition,
                         campaign_id=campaign_id,
                         openai_model=args.openai_model,
@@ -748,6 +755,7 @@ def main() -> None:
                         classifier,
                         BenchmarkRunConfig(
                             output_root=runs_root,
+                            dry_run=args.dry_run,
                             run_id=run_id,
                             validation_fraction=args.validation_fraction,
                             split_seed=seed,
@@ -767,7 +775,16 @@ def main() -> None:
                         ),
                     )
 
-                    print(f"completed: {result.run_dir}")
+                    if args.dry_run:
+                        plan = json.loads((result.run_dir / "preparation_plan.json").read_text())
+                        selection = plan["selection"]
+                        print(f"dry_run: {result.run_dir} requested={selection['requested_total']} "
+                              f"actual={selection['actual_total']} "
+                              f"coverage={selection['covered_class_count']}/{selection['class_count']}")
+                        print(f"planned_remote_operations={plan['planned_remote_operations']}")
+                        print(f"live_supported={plan['live_supported']} blocker={plan['blocker']}")
+                    else:
+                        print(f"completed: {result.run_dir}")
 
                 except Exception as exc:
                     error = exc
@@ -790,6 +807,8 @@ def main() -> None:
                     result=result,
                     error=error,
                 )
+                if args.dry_run and error is None:
+                    row["status"] = "dry_run"
                 rows.append(row)
 
                 # Persist after EVERY run so an interrupted campaign still has a
@@ -806,13 +825,15 @@ def main() -> None:
                     )
 
     completed = sum(row["status"] == "completed" for row in rows)
-    failed = len(rows) - completed
+    failed = sum(row["status"] == "failed" for row in rows)
+    planned = sum(row["status"] == "dry_run" for row in rows)
 
     print("\n" + "=" * 80)
     print("CAMPAIGN COMPLETE")
     print("=" * 80)
     print(f"completed_runs={completed}")
     print(f"failed_runs={failed}")
+    print(f"planned_runs={planned}")
     print(f"summary_csv={campaign_root / 'summary.csv'}")
     print(f"summary_json={campaign_root / 'summary.json'}")
     print(f"campaign_config={campaign_root / 'campaign.json'}")

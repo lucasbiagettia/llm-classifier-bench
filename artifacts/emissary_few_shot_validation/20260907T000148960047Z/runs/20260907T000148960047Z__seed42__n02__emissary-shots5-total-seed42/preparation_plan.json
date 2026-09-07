@@ -1,0 +1,66 @@
+{
+  "selection": {
+    "shots": 5,
+    "shot_unit": "total",
+    "selection_seed": 42,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 5,
+    "actual_total": 5,
+    "per_class_counts": {
+      "beneficiary_not_allowed": 3,
+      "wrong_amount_of_cash_received": 2
+    },
+    "covered_class_count": 2,
+    "class_count": 2,
+    "class_coverage": 1.0,
+    "class_order": [
+      "beneficiary_not_allowed",
+      "wrong_amount_of_cash_received"
+    ],
+    "selected_examples": [
+      {
+        "sample_id": "banking77:train:7129",
+        "label": "beneficiary_not_allowed",
+        "text": "My transfer failed to a beneficiary",
+        "order": 0,
+        "content_sha256": "d7e47009c4194cf044f42405400cfbbb77829a028bd9111cddfe27235dc4859d"
+      },
+      {
+        "sample_id": "banking77:train:2399",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I did not receive the right amount of cash I requested",
+        "order": 1,
+        "content_sha256": "4a52e92eaf934649e0571b2c88137a8643de74fd7a7d413fff08bfe2c8d43062"
+      },
+      {
+        "sample_id": "banking77:train:7073",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't I transfer money to a beneficiery?",
+        "order": 2,
+        "content_sha256": "a72b894658ff3ff0f64e8c2bcfa3ca7f27f0b73aa107a1f88bafb93790dc40bc"
+      },
+      {
+        "sample_id": "banking77:train:2392",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Hello, I didn't receive the right amount on my ATM transaction,  the app shows the correct amount how can we fix this",
+        "order": 3,
+        "content_sha256": "c98294a788a10173a55a75493cd7659840c0a7c2bddbd2e0e756e209fbab9675"
+      },
+      {
+        "sample_id": "banking77:train:7126",
+        "label": "beneficiary_not_allowed",
+        "text": "My transfer to another account was not allowed. Why is that?",
+        "order": 4,
+        "content_sha256": "99b7e2298f9e8e69b5e564f31fd009e9dec3e8b8e690a05e50a48ee0f01f8780"
+      }
+    ]
+  },
+  "live_supported": false,
+  "blocker": "Public routing-experiment labeled-example/retraining contract unavailable",
+  "planned_remote_operations": [],
+  "cost": {
+    "available": false,
+    "value_usd": null,
+    "reason": "No verified account-specific pricing or charge estimate"
+  }
+}

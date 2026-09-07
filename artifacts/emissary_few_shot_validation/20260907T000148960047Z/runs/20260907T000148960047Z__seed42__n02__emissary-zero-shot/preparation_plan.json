@@ -1,0 +1,33 @@
+{
+  "selection": {
+    "shots": 0,
+    "shot_unit": "total",
+    "selection_seed": 42,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 0,
+    "actual_total": 0,
+    "per_class_counts": {
+      "beneficiary_not_allowed": 0,
+      "wrong_amount_of_cash_received": 0
+    },
+    "covered_class_count": 0,
+    "class_count": 2,
+    "class_coverage": 0.0,
+    "class_order": [
+      "beneficiary_not_allowed",
+      "wrong_amount_of_cash_received"
+    ],
+    "selected_examples": []
+  },
+  "live_supported": true,
+  "blocker": null,
+  "planned_remote_operations": [
+    "POST /v1/experiments (routing)",
+    "POST /v1/classification per held-out test example (probs)"
+  ],
+  "cost": {
+    "available": false,
+    "value_usd": null,
+    "reason": "No verified account-specific pricing or charge estimate"
+  }
+}

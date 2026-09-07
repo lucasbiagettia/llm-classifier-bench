@@ -1,0 +1,25 @@
+{
+  "status": "blocked_not_executed",
+  "dataset": "banking77",
+  "class_counts": [2],
+  "seeds": [42],
+  "train_per_class": 70,
+  "validation_fraction": 0.2,
+  "test_per_class": 1,
+  "definitions": "class_definitions_data/banking77/canonical_llm_enriched_v1.json",
+  "shots": [0, 5, 100],
+  "shot_unit": "total",
+  "shot_unit_status": "implementation_example_not_confirmed_by_Tanmay",
+  "selection_seed": 42,
+  "selection_policy": "balanced_round_robin_v1",
+  "max_inference_requests": 6,
+  "proposed_max_total_cost_usd": 1.0,
+  "spending_cap_enforceable": false,
+  "estimated_cost_usd": null,
+  "blockers": [
+    "Public routing-experiment example submission and retraining contract unavailable",
+    "Same-base-model comparability and account training entitlement unconfirmed",
+    "Pricing and bounded resource lifecycle unavailable",
+    "Intended experimental shot unit unconfirmed"
+  ]
+}

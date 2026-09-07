@@ -1,0 +1,53 @@
+[
+  {
+    "campaign_id": "20260907T000148960047Z",
+    "seed": 42,
+    "class_count": 2,
+    "classifier_key": "emissary",
+    "classifier": "emissary-zero-shot",
+    "supervision_regime": "zero_shot",
+    "training_examples_used": 0,
+    "validation_examples_used": 0,
+    "selected_c": null,
+    "test_examples": 2,
+    "status": "dry_run",
+    "run_id": "20260907T000148960047Z__seed42__n02__emissary-zero-shot",
+    "run_dir": "artifacts/emissary_few_shot_validation/20260907T000148960047Z/runs/20260907T000148960047Z__seed42__n02__emissary-zero-shot",
+    "error_type": null,
+    "error_message": null
+  },
+  {
+    "campaign_id": "20260907T000148960047Z",
+    "seed": 42,
+    "class_count": 2,
+    "classifier_key": "emissary",
+    "classifier": "emissary-shots5-total-seed42",
+    "supervision_regime": "labeled_examples_unsupported",
+    "training_examples_used": 0,
+    "validation_examples_used": 0,
+    "selected_c": null,
+    "test_examples": 2,
+    "status": "dry_run",
+    "run_id": "20260907T000148960047Z__seed42__n02__emissary-shots5-total-seed42",
+    "run_dir": "artifacts/emissary_few_shot_validation/20260907T000148960047Z/runs/20260907T000148960047Z__seed42__n02__emissary-shots5-total-seed42",
+    "error_type": null,
+    "error_message": null
+  },
+  {
+    "campaign_id": "20260907T000148960047Z",
+    "seed": 42,
+    "class_count": 2,
+    "classifier_key": "emissary",
+    "classifier": "emissary-shots100-total-seed42",
+    "supervision_regime": "labeled_examples_unsupported",
+    "training_examples_used": 0,
+    "validation_examples_used": 0,
+    "selected_c": null,
+    "test_examples": 2,
+    "status": "dry_run",
+    "run_id": "20260907T000148960047Z__seed42__n02__emissary-shots100-total-seed42",
+    "run_dir": "artifacts/emissary_few_shot_validation/20260907T000148960047Z/runs/20260907T000148960047Z__seed42__n02__emissary-shots100-total-seed42",
+    "error_type": null,
+    "error_message": null
+  }
+]
