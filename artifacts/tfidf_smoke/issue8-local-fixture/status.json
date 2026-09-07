@@ -1,0 +1,9 @@
+{
+  "run_id": "issue8-local-fixture",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-09-05T17:35:46.097976+00:00",
+  "dataset": "tfidf_local_smoke",
+  "classifier": "tfidf-logreg",
+  "example_count": 3
+}

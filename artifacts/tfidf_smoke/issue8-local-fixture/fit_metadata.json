@@ -1,0 +1,54 @@
+{
+  "supervision_regime": "supervised",
+  "training_examples_used": 6,
+  "validation_examples_used": 2,
+  "vectorizer": {
+    "analyzer": "word",
+    "ngram_range": [
+      1,
+      2
+    ],
+    "lowercase": true,
+    "stop_words": null,
+    "min_df": 1,
+    "max_df": 1.0,
+    "max_features": null,
+    "sublinear_tf": false,
+    "norm": "l2",
+    "use_idf": true,
+    "smooth_idf": true,
+    "token_pattern": "(?u)\\b\\w\\w+\\b",
+    "strip_accents": null
+  },
+  "vocabulary_size": 23,
+  "c_candidates": [
+    0.1,
+    1.0,
+    10.0
+  ],
+  "fallback_c": 1.0,
+  "selected_c": 0.1,
+  "selection_metric": "validation_accuracy",
+  "tie_breaking": "first_candidate_in_configured_order",
+  "candidate_scores": [
+    {
+      "c": 0.1,
+      "validation_accuracy": 1.0
+    },
+    {
+      "c": 1.0,
+      "validation_accuracy": 1.0
+    },
+    {
+      "c": 10.0,
+      "validation_accuracy": 1.0
+    }
+  ],
+  "seed": 42,
+  "solver": "lbfgs",
+  "library_versions": {
+    "scikit-learn": "1.9.0",
+    "numpy": "2.5.1",
+    "scipy": "1.18.0"
+  }
+}

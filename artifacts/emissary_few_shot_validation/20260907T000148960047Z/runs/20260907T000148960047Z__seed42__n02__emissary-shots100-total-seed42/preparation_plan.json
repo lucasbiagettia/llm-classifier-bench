@@ -1,0 +1,731 @@
+{
+  "selection": {
+    "shots": 100,
+    "shot_unit": "total",
+    "selection_seed": 42,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 100,
+    "actual_total": 100,
+    "per_class_counts": {
+      "beneficiary_not_allowed": 50,
+      "wrong_amount_of_cash_received": 50
+    },
+    "covered_class_count": 2,
+    "class_count": 2,
+    "class_coverage": 1.0,
+    "class_order": [
+      "beneficiary_not_allowed",
+      "wrong_amount_of_cash_received"
+    ],
+    "selected_examples": [
+      {
+        "sample_id": "banking77:train:7129",
+        "label": "beneficiary_not_allowed",
+        "text": "My transfer failed to a beneficiary",
+        "order": 0,
+        "content_sha256": "d7e47009c4194cf044f42405400cfbbb77829a028bd9111cddfe27235dc4859d"
+      },
+      {
+        "sample_id": "banking77:train:2399",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I did not receive the right amount of cash I requested",
+        "order": 1,
+        "content_sha256": "4a52e92eaf934649e0571b2c88137a8643de74fd7a7d413fff08bfe2c8d43062"
+      },
+      {
+        "sample_id": "banking77:train:7073",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't I transfer money to a beneficiery?",
+        "order": 2,
+        "content_sha256": "a72b894658ff3ff0f64e8c2bcfa3ca7f27f0b73aa107a1f88bafb93790dc40bc"
+      },
+      {
+        "sample_id": "banking77:train:2392",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Hello, I didn't receive the right amount on my ATM transaction,  the app shows the correct amount how can we fix this",
+        "order": 3,
+        "content_sha256": "c98294a788a10173a55a75493cd7659840c0a7c2bddbd2e0e756e209fbab9675"
+      },
+      {
+        "sample_id": "banking77:train:7126",
+        "label": "beneficiary_not_allowed",
+        "text": "My transfer to another account was not allowed. Why is that?",
+        "order": 4,
+        "content_sha256": "99b7e2298f9e8e69b5e564f31fd009e9dec3e8b8e690a05e50a48ee0f01f8780"
+      },
+      {
+        "sample_id": "banking77:train:2412",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The correct amount of cash was not received.",
+        "order": 5,
+        "content_sha256": "ff0816ca7ec587a112a09e949bc96bdccbf6be50664ac4701ee9ae9397c44666"
+      },
+      {
+        "sample_id": "banking77:train:7014",
+        "label": "beneficiary_not_allowed",
+        "text": "I tried transferring to an account but it won't let me.",
+        "order": 6,
+        "content_sha256": "bdd55071d2f58990c870d15582f4e0b790907d79164e1636d11eb6c69f2c1dba"
+      },
+      {
+        "sample_id": "banking77:train:2369",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I only got $20 of the $100 that I attempted to withdraw.",
+        "order": 7,
+        "content_sha256": "3a20274b3de12a20290eda597d10ea3def232d9e298287cae2c4a98452406363"
+      },
+      {
+        "sample_id": "banking77:train:7128",
+        "label": "beneficiary_not_allowed",
+        "text": "I couldn't transfer to an account.",
+        "order": 8,
+        "content_sha256": "d03d1707b34d398b0164892459937f69985061a595c5e28a998b8e2842a085aa"
+      },
+      {
+        "sample_id": "banking77:train:2421",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why didn't I receive all the cash I requested?",
+        "order": 9,
+        "content_sha256": "6fabcd68677684d6cb445321744298608f4880acda1f0760e6408ddf8f9284d6"
+      },
+      {
+        "sample_id": "banking77:train:7050",
+        "label": "beneficiary_not_allowed",
+        "text": "I am getting an error stating my transfer is not possible while transferring money. Let me know the issue as its the first time i am getting error, earlier it used to work.",
+        "order": 10,
+        "content_sha256": "c11dadf801b65efae529485e42ca07adb4eb1d914db7d79330f03fa202075e25"
+      },
+      {
+        "sample_id": "banking77:train:2435",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I haven't received my cash yet.",
+        "order": 11,
+        "content_sha256": "2b1ad0d3f82c4282f126494126578c5bfca0d07791fb9edce6513f5c687230e1"
+      },
+      {
+        "sample_id": "banking77:train:7139",
+        "label": "beneficiary_not_allowed",
+        "text": "Hi,  Is there any problem with app? As i am facing some issues with the exchange of crypto currency. I am extremely interested in buying.",
+        "order": 12,
+        "content_sha256": "dc31d6f31e9a3e2fede8222f1f4807a4719a6a84b857e7a0fe0545ffbb2acd37"
+      },
+      {
+        "sample_id": "banking77:train:2507",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The amount of money I pushed at the atm machine did not come out of the machine.",
+        "order": 13,
+        "content_sha256": "91b8f4d7f24b7fdf5497219331cf43d73ae8141df5279d69340f5c0eeeecce51"
+      },
+      {
+        "sample_id": "banking77:train:7138",
+        "label": "beneficiary_not_allowed",
+        "text": "While transferring money, its getting error out as my transfer is not possible. Please help me in this as earlier i was able to do it successfully.",
+        "order": 14,
+        "content_sha256": "aa26e3c858669ff41d93ccd2cf8df7a9af67a193109e04fc7fd2279189a2d014"
+      },
+      {
+        "sample_id": "banking77:train:2366",
+        "label": "wrong_amount_of_cash_received",
+        "text": "my cash balance less than what I thought",
+        "order": 15,
+        "content_sha256": "4b7ddf95ca8bd344f76b2cea4b598ba4222cb089cbb4a077511a8a153d80bf14"
+      },
+      {
+        "sample_id": "banking77:train:7116",
+        "label": "beneficiary_not_allowed",
+        "text": "The app won't let me transfer money to a beneficiary",
+        "order": 16,
+        "content_sha256": "84879953abb39f0c6bb1179ecd82d6cad2ff336b6b4bead66a27fe6634318fbf"
+      },
+      {
+        "sample_id": "banking77:train:2440",
+        "label": "wrong_amount_of_cash_received",
+        "text": "My cash withdrawal was short.",
+        "order": 17,
+        "content_sha256": "305225ca94b748257b7abacc6b89b668f289685f7a259ce48e806876893e3e41"
+      },
+      {
+        "sample_id": "banking77:train:7147",
+        "label": "beneficiary_not_allowed",
+        "text": "Could you please explain why I received a message that my transfer is not possible? I've never had any problems making a transfer in the past.",
+        "order": 18,
+        "content_sha256": "f06cfcf2c1226c0cce9866fdbf3c4468c54705dad19e7f0dbf87c089e840195c"
+      },
+      {
+        "sample_id": "banking77:train:2354",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The ATM didn't give me the full requested amount",
+        "order": 19,
+        "content_sha256": "a12a56d7d60ef2b7142b90ecb17c413a783b18d0c88637a2f768364a3f6c57f7"
+      },
+      {
+        "sample_id": "banking77:train:7024",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't my beneficiary access my account?",
+        "order": 20,
+        "content_sha256": "abc58433fbb59aaa07840abb1f5ecb6d05ade31068a9735179639df646e69dbf"
+      },
+      {
+        "sample_id": "banking77:train:2457",
+        "label": "wrong_amount_of_cash_received",
+        "text": "What happened! I asked for 30 pounds at your ATM and only go 10. The machine lied about it too. It said I received the full 30 pounds. Someone better help me asap on this.",
+        "order": 21,
+        "content_sha256": "3e162feebf5687701a781c0a2f0d6cb03db98c0af0340ee7f45bc9b265557b5a"
+      },
+      {
+        "sample_id": "banking77:train:7115",
+        "label": "beneficiary_not_allowed",
+        "text": "I tried transferring money to a beneficiary, however, I was unsuccessful.",
+        "order": 22,
+        "content_sha256": "b615242ef173ac012e3a0849330372d3a655b8900fe8438c36bec4eb199281fe"
+      },
+      {
+        "sample_id": "banking77:train:2496",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I got the incorrect amount of money given to me from my account",
+        "order": 23,
+        "content_sha256": "cb309186b53e857718c17e984a87902c3e50c1442114b747dee6b059d9fb4732"
+      },
+      {
+        "sample_id": "banking77:train:7012",
+        "label": "beneficiary_not_allowed",
+        "text": "What is the reason for my beneficiary to be disallowed?",
+        "order": 24,
+        "content_sha256": "dc07f81ad055a034db804c7ee4a4dec301847717b4feb3cf952fdac6228ca8c6"
+      },
+      {
+        "sample_id": "banking77:train:2411",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The ATM is showing it gave me the money I requested but I didn't get that amount.",
+        "order": 25,
+        "content_sha256": "72b0f40fcb20929190bf75c6a7bafd2277cf92c904e07b7dd40a9cbb70565e07"
+      },
+      {
+        "sample_id": "banking77:train:7086",
+        "label": "beneficiary_not_allowed",
+        "text": "Why is my transfer not working? I tried multiple times to transfer money, and all that happens is an error message pops up.",
+        "order": 26,
+        "content_sha256": "4916355d27e07e5f09c98a7d31439de4d00597e77f9172c403afd0dfb5de38a3"
+      },
+      {
+        "sample_id": "banking77:train:2375",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why didn't I receive the right amount of cash at the ATM?",
+        "order": 27,
+        "content_sha256": "19b6dbb7f15529eebdd9cf9abdf897b7ba28f0428106c35dacc567a7dd2c3a59"
+      },
+      {
+        "sample_id": "banking77:train:7146",
+        "label": "beneficiary_not_allowed",
+        "text": "It shows that the transfer on my account wasn't allowed.",
+        "order": 28,
+        "content_sha256": "b3eeff3dfb4f1ca4f73e39889de92e286eb52b83aa991221b714b9f3a625970f"
+      },
+      {
+        "sample_id": "banking77:train:2494",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I only got some of the cash I requested from the ATM",
+        "order": 29,
+        "content_sha256": "748f788ffdcbfcd92e4c34d68656c1c50f8da3764e97fc58d96c01654472ac33"
+      },
+      {
+        "sample_id": "banking77:train:7102",
+        "label": "beneficiary_not_allowed",
+        "text": "The transfer to my beneficiary has not gone through",
+        "order": 30,
+        "content_sha256": "46946697a4abe1bb4d4e4829645c39ee0af3e8d80ed5cc71e195289169776c7e"
+      },
+      {
+        "sample_id": "banking77:train:2431",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I asked for $40 and I only received $20, what happened?",
+        "order": 31,
+        "content_sha256": "244735f2766aff8792254998f96679835e4126786a2629dc273007f16f5d44d6"
+      },
+      {
+        "sample_id": "banking77:train:7105",
+        "label": "beneficiary_not_allowed",
+        "text": "I have made several unsuccessful attempts to make a transfer.  I'm getting frustrated at getting error messages and it not going through.",
+        "order": 32,
+        "content_sha256": "825de49e67e51abbca2e9a4e48a3cae89a2340169617e90befd64f0438a0ed0b"
+      },
+      {
+        "sample_id": "banking77:train:2462",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I withdrew $100 but only received $20",
+        "order": 33,
+        "content_sha256": "c7a95cb10e88685a2686d37d264695929cf0c8c1a93d3ff5d34a61e94cb948a2"
+      },
+      {
+        "sample_id": "banking77:train:7067",
+        "label": "beneficiary_not_allowed",
+        "text": "i tried to transfer cryptocurrency into my account but was denied",
+        "order": 34,
+        "content_sha256": "fa5bd0598ce00faf7db41105316371ccaeaf230c11d05f8d8d1dcf460d38fa5e"
+      },
+      {
+        "sample_id": "banking77:train:2475",
+        "label": "wrong_amount_of_cash_received",
+        "text": "There was a limited amount of money available at the time of my transaction.",
+        "order": 35,
+        "content_sha256": "c4b0a261271dcb2cb750fe80d3f852d7b5e11f636a28847740e5871804d67093"
+      },
+      {
+        "sample_id": "banking77:train:7160",
+        "label": "beneficiary_not_allowed",
+        "text": "Why would my beneficiary not be allowed?",
+        "order": 36,
+        "content_sha256": "7b900cca54fcf5a1f9ac6273c859562ebf2a7f2517b9f4164278b4367c2fa9e9"
+      },
+      {
+        "sample_id": "banking77:train:2340",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Hi, I used an ATM today to take money out of my account, but the amount it gave me is not the amount I requested. What should I do?",
+        "order": 37,
+        "content_sha256": "3fadffaeef6f86c77c3f5ad6e06cbae0dd39aaf4edec9fe6e55293a4e40a33ec"
+      },
+      {
+        "sample_id": "banking77:train:7081",
+        "label": "beneficiary_not_allowed",
+        "text": "I am trying  to  transfer and  it has been  stopped why is  that",
+        "order": 38,
+        "content_sha256": "a830a134128341b10298da16f3d1441e6b20503ad6441e1aa4291c70141ecd26"
+      },
+      {
+        "sample_id": "banking77:train:2437",
+        "label": "wrong_amount_of_cash_received",
+        "text": "If the ATM only gave me 10 pounds instead of the 30 I requested, what do I do?",
+        "order": 39,
+        "content_sha256": "2e682b8408bdc1bcb384902265f18d4c0cbaf9f1ae64a10c1af0c13562acb7ae"
+      },
+      {
+        "sample_id": "banking77:train:7023",
+        "label": "beneficiary_not_allowed",
+        "text": "Why am I not allowed to add a certain beneficiary?",
+        "order": 40,
+        "content_sha256": "632ec2fd573ebe94d4d49e2a81daa1c951194b716e459ce9a986f3ae9cf04103"
+      },
+      {
+        "sample_id": "banking77:train:2409",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I did not get enough cash",
+        "order": 41,
+        "content_sha256": "d0c6edee164f7324832b7f942271d242fc9a97766a4e64c5a2d74e26c0151093"
+      },
+      {
+        "sample_id": "banking77:train:7009",
+        "label": "beneficiary_not_allowed",
+        "text": "A transfer to my account was denied.",
+        "order": 42,
+        "content_sha256": "cb59ebd678682f4562587ea15ac787cf3769abbb9ae65db5020f226f8d82e708"
+      },
+      {
+        "sample_id": "banking77:train:2423",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Yikes!  I didn't get the amount of money that I requested.  What do I do now?",
+        "order": 43,
+        "content_sha256": "b752930e9904f4473199f6650875f99702624d7f34c193005173d4e28168dcbe"
+      },
+      {
+        "sample_id": "banking77:train:7065",
+        "label": "beneficiary_not_allowed",
+        "text": "For what reason can I not transfer money to a beneficiary?",
+        "order": 44,
+        "content_sha256": "251e53f713772fab727dabf83a3f6a5b52591514e70a7ba955dbc54aa9566ad7"
+      },
+      {
+        "sample_id": "banking77:train:2444",
+        "label": "wrong_amount_of_cash_received",
+        "text": "What happens if the ATM gives me the wrong amount of money?",
+        "order": 45,
+        "content_sha256": "3263a091040df6046e14913eb9202fb5f1557dc86f0996b8ff9e92f5909111b7"
+      },
+      {
+        "sample_id": "banking77:train:7070",
+        "label": "beneficiary_not_allowed",
+        "text": "I really was trying to complete this exhange. I was trying to purchase some crypto but the app won't allow me to do it. Can you tell me what's going on here?",
+        "order": 46,
+        "content_sha256": "cab8d5bba263933491cbd3c7d94981da3aa21a5f82a7d89a5c3658977160b320"
+      },
+      {
+        "sample_id": "banking77:train:2410",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I tried to withdraw some money from an ATM this morning but wasn't able to get the amount of cash I needed. The amount in the app says what I was trying to withdraw was deducted, but I don't have any money. What do I do about this?",
+        "order": 47,
+        "content_sha256": "742ead46ed5c4c773fda92d30bfb8a8bce9d8dc00a8600aac2b1cbbc0bbc4b0b"
+      },
+      {
+        "sample_id": "banking77:train:7040",
+        "label": "beneficiary_not_allowed",
+        "text": "My attempted transfer keeps kicking back with an error message.  Could you please help me to resolve this?",
+        "order": 48,
+        "content_sha256": "9211394c8e4bc69fbed49969fa12eb24e08f7882267f869a29b3677f8ad4d63d"
+      },
+      {
+        "sample_id": "banking77:train:2363",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I got $20 when I should've gotten $100",
+        "order": 49,
+        "content_sha256": "56da1f8b2c88087839579dfe6b5a2839f64c8f241472024eae8a2c3a04bce953"
+      },
+      {
+        "sample_id": "banking77:train:7097",
+        "label": "beneficiary_not_allowed",
+        "text": "Why is this beneficiary being rejected?",
+        "order": 50,
+        "content_sha256": "db986ff5b3e9f30b22ae48f4a3ab91c91b51aec44502793c224d5759174e0126"
+      },
+      {
+        "sample_id": "banking77:train:2455",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The ATM didn't give me what I asked for but my balance says it did",
+        "order": 51,
+        "content_sha256": "62eb77bd93961173fa3b9dca9d748e7770c2d1c850d628a3e76ffe6fb42e236f"
+      },
+      {
+        "sample_id": "banking77:train:7099",
+        "label": "beneficiary_not_allowed",
+        "text": "why did my account decline a incoming transfer",
+        "order": 52,
+        "content_sha256": "1d7e4f942de6c0e3a4a808e5c39d2d68eca577e2bbefc599225037b7ee586e01"
+      },
+      {
+        "sample_id": "banking77:train:2487",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Hi, Today i have withdrawn cash from ATM but i got wrong amount and in the app it is showing much more amount than that.",
+        "order": 53,
+        "content_sha256": "4e351044be11757a881619534e073eff009a40e31bd12dc31583ab07c4de5e67"
+      },
+      {
+        "sample_id": "banking77:train:7025",
+        "label": "beneficiary_not_allowed",
+        "text": "I'm trying to purchase crypto via the app. I haven't been able to get it to go through. Am I doing something wrong?",
+        "order": 54,
+        "content_sha256": "559e4d8f40962a3f83557c20daebc1d13a4296267064b817b5ba583b67b5b55a"
+      },
+      {
+        "sample_id": "banking77:train:2342",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I didn't get the correct amount of money from the ATM machine",
+        "order": 55,
+        "content_sha256": "ddd3e9b139f5a9c2a6298867562776a0e3986e37d74d0d7f4b90a6bac373d9ec"
+      },
+      {
+        "sample_id": "banking77:train:7043",
+        "label": "beneficiary_not_allowed",
+        "text": "Why is my beneficiary being denies?",
+        "order": 56,
+        "content_sha256": "e5b2fc4d2e3075c637e1ccb8cecbe289111b558f03e030cc37dd4e2f04242197"
+      },
+      {
+        "sample_id": "banking77:train:2387",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why did I get less from the ATM?",
+        "order": 57,
+        "content_sha256": "e02afed2f8676cdc77f6994ebb3b6646a8acbec73d1f2d52c83526fec8ea9e01"
+      },
+      {
+        "sample_id": "banking77:train:7018",
+        "label": "beneficiary_not_allowed",
+        "text": "For some reason I am unable to preform a transfer to a beneficiary.",
+        "order": 58,
+        "content_sha256": "063f14f1119a7959fe751ad3b4cc2a944f3a963bbbd0c9725683bd7c51618686"
+      },
+      {
+        "sample_id": "banking77:train:2450",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I withdrew money from an ATM today, and now my account is showing a different amount than what I withdrew. I checked the amount the ATM gave me, and it looks like it gave me the wrong amount of money. What is the best thin for me to do to get this fixed?",
+        "order": 59,
+        "content_sha256": "3ab5f6cc7ee330d04f4e548e04bcca942fd21f46f10fb27ab3df816e16057370"
+      },
+      {
+        "sample_id": "banking77:train:7136",
+        "label": "beneficiary_not_allowed",
+        "text": "Why  am I being told this  transfer will not  go thru",
+        "order": 60,
+        "content_sha256": "eb00b96f6e3e32bd585f56f29bf8bdfb50f1ec3e4c90ce61697955b801713a26"
+      },
+      {
+        "sample_id": "banking77:train:2433",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The ATM didn't give me enough money! I asked for more than it gave. What do I do?",
+        "order": 61,
+        "content_sha256": "169798dfd067748c8535df00b67613b862542f6caa7c114bc45571cf388528c4"
+      },
+      {
+        "sample_id": "banking77:train:7113",
+        "label": "beneficiary_not_allowed",
+        "text": "Why is a transfer to a beneficiary not possible?",
+        "order": 62,
+        "content_sha256": "3e2186a08f60f540c09262c1f0474e0de2943e685e916177e20a32d629112f10"
+      },
+      {
+        "sample_id": "banking77:train:2480",
+        "label": "wrong_amount_of_cash_received",
+        "text": "ATM only gave me $20 instead of $100",
+        "order": 63,
+        "content_sha256": "823e1c023c189fa11492ca5d1fff21b8382262248e593d9d6498a86a91c1845b"
+      },
+      {
+        "sample_id": "banking77:train:7061",
+        "label": "beneficiary_not_allowed",
+        "text": "are transfers to a beneficiary possible",
+        "order": 64,
+        "content_sha256": "669240faeb7efdff4597c87deaf611b504a2351c3ec4988d4cc18bc53c8e030f"
+      },
+      {
+        "sample_id": "banking77:train:2390",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I could only take the amount of money that was available to me which was less then I expected.",
+        "order": 65,
+        "content_sha256": "76413afdaae6091ada1acbb1f40c3af34fbce3104a170406f28fd3019edeb5eb"
+      },
+      {
+        "sample_id": "banking77:train:7110",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't I add any beneficiary I choose?",
+        "order": 66,
+        "content_sha256": "638fd90b34eca92e5081d2bb30da9f011e8cee3289651811a4d2ec2687336bbb"
+      },
+      {
+        "sample_id": "banking77:train:2459",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I took out money, and didn't get all of it.",
+        "order": 67,
+        "content_sha256": "de50e0fadaed7ac2583226a09c2be0c2cf2b7f30ee4eb9e27c32cae7d8e060b7"
+      },
+      {
+        "sample_id": "banking77:train:7022",
+        "label": "beneficiary_not_allowed",
+        "text": "I got a message that I cannot name X as a beneficiary.",
+        "order": 68,
+        "content_sha256": "2e2ba780fea03225810d07b4e18159daf703ba170e844ecf1ae5003da5ee3216"
+      },
+      {
+        "sample_id": "banking77:train:2396",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Help, your app is showing a larger WD than I actually did earlier at an ATM.",
+        "order": 69,
+        "content_sha256": "cbbe612bc2e02567db6497803f6fee713c7abfeeb43e5bb217a28cd4059d5275"
+      },
+      {
+        "sample_id": "banking77:train:7154",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't I buy cryptocurrency on the app?",
+        "order": 70,
+        "content_sha256": "48709814777db647b1481ac39157bcc4273f37e1547ac8361bdc8d6dc3d544b6"
+      },
+      {
+        "sample_id": "banking77:train:2483",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I tried pulling out money at the ATM and it gave me an incorrect amount back.",
+        "order": 71,
+        "content_sha256": "50a96d88c36dea5c6f364edfe92e0fb0a1df9afebc22cf2c767e62101501d24f"
+      },
+      {
+        "sample_id": "banking77:train:7083",
+        "label": "beneficiary_not_allowed",
+        "text": "I am trying to complete a transfer but I keep getting an error message.",
+        "order": 72,
+        "content_sha256": "a311a3e3e65c1b7969b8acef651f908caa0dc8e9c8121a8fa3ff5f112c4dbcd2"
+      },
+      {
+        "sample_id": "banking77:train:2484",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why did I only get $20 when I asked for $100?",
+        "order": 73,
+        "content_sha256": "6d8e8b0464a0d16ca4c77730dc8e37fc675aac151b0f2c3a592e2f46866d9a63"
+      },
+      {
+        "sample_id": "banking77:train:7007",
+        "label": "beneficiary_not_allowed",
+        "text": "Is there something wrong with the transferring functions? I keep trying to transfer funds and only get an error message.",
+        "order": 74,
+        "content_sha256": "93a299fb3eb125ef07f054ca647a290209430c8098b0a781c227efede2a0fc50"
+      },
+      {
+        "sample_id": "banking77:train:2425",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I selected to withdrawal 30 pounds but only received 10. I'm still standing in front of the ATM. The app shows i took out 30 pounds also. How do i fix this?",
+        "order": 75,
+        "content_sha256": "e5642c85598c19935666081ba43234fb86255ec06cb26aee1692a02db9b4e719"
+      },
+      {
+        "sample_id": "banking77:train:7090",
+        "label": "beneficiary_not_allowed",
+        "text": "The transfer to my account was not allowed.",
+        "order": 76,
+        "content_sha256": "b734714eab2eaa74e0e44ac2b70d2036d8827dc5c36b5d88ec984c282981368a"
+      },
+      {
+        "sample_id": "banking77:train:2419",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The app is showing that I received alot more money than I actually received from the ATM. This occurred earlier today.",
+        "order": 77,
+        "content_sha256": "1362e9ae2176c144c964424c3a80418d55cd78cc2efe1297d974e22f7d809924"
+      },
+      {
+        "sample_id": "banking77:train:7055",
+        "label": "beneficiary_not_allowed",
+        "text": "Explain why I can't do a transfer to an account.",
+        "order": 78,
+        "content_sha256": "8206240b97f19b3e24cd5d69f514455be71f0eb7e3f23b65a6f337cb21afde5a"
+      },
+      {
+        "sample_id": "banking77:train:2376",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I received the wrong amount of cash back",
+        "order": 79,
+        "content_sha256": "20b0f18977460d14cdb9d91cc221a99abecc6334eea56b64d5508b2b8f62349f"
+      },
+      {
+        "sample_id": "banking77:train:7029",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can I not do a  transfer",
+        "order": 80,
+        "content_sha256": "56305a7e12177ef540f8d7685e8634309e7f27460e63424fc05a7da4a99d5e55"
+      },
+      {
+        "sample_id": "banking77:train:2384",
+        "label": "wrong_amount_of_cash_received",
+        "text": "ATM is broken. It did not give me the full amount (30 pounds.)  I'm standing here with only 10 pounds and it's telling me it gave me 30 pounds. I need assistance now!",
+        "order": 81,
+        "content_sha256": "5e9973d7bee9da93c58c132af0f6729ced0f9ad859ca061ede3097f45088d3a0"
+      },
+      {
+        "sample_id": "banking77:train:7111",
+        "label": "beneficiary_not_allowed",
+        "text": "Why am I unable to transfer money when I was able to before?",
+        "order": 82,
+        "content_sha256": "4eaab1f37a449426ab8f74db25cb42739c7928fddf24cae87025e21fddb147a1"
+      },
+      {
+        "sample_id": "banking77:train:2490",
+        "label": "wrong_amount_of_cash_received",
+        "text": "How can I request cash back? The ATM just gave me a different amount than what I've been actually charged though...",
+        "order": 83,
+        "content_sha256": "efd15b5be6a69b6e9b5b3c4a73ed2e05b50730910cd869cecf149dccb3d94b60"
+      },
+      {
+        "sample_id": "banking77:train:7079",
+        "label": "beneficiary_not_allowed",
+        "text": "My funds are not transferring to my bank. Why is this not working?",
+        "order": 84,
+        "content_sha256": "59d7ac320166206b0d6c1c9f9965388552fd39040f0900d33315dc7f95bb3f32"
+      },
+      {
+        "sample_id": "banking77:train:2474",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I got less cash at the ATM than I asked for. Why?",
+        "order": 85,
+        "content_sha256": "760c4e5fbbf74edc72ecfb8188d5f12f83a2f3f9b88b8b2e794afbfbcaa61049"
+      },
+      {
+        "sample_id": "banking77:train:7008",
+        "label": "beneficiary_not_allowed",
+        "text": "What are the reasons a beneficiary would be denied?",
+        "order": 86,
+        "content_sha256": "d234ba11fea3fcfbcdc551aa235fc3f02a4c3fb90540d34af81963d62f3c5a4f"
+      },
+      {
+        "sample_id": "banking77:train:2371",
+        "label": "wrong_amount_of_cash_received",
+        "text": "I tried taking out 30 pounds from the ATM just now and it only gave me 10. Why would it do that? I need the 30 pounds now!",
+        "order": 87,
+        "content_sha256": "4830359d10cfa22cb1355a8fe4b1d8cf6b1c53bc19e560a9a0a25ce5032af3e8"
+      },
+      {
+        "sample_id": "banking77:train:7056",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't my beneficiary get access?",
+        "order": 88,
+        "content_sha256": "cbb21377ee58e23c3db02d3f859cbeab392445e643e57668df47ad3d20d028ae"
+      },
+      {
+        "sample_id": "banking77:train:2478",
+        "label": "wrong_amount_of_cash_received",
+        "text": "The ATM is messed up. It gave me less than I wanted.",
+        "order": 89,
+        "content_sha256": "ad3c79868791a249fd40b10eb61952c26735bb1277512db72d203ccd4cb2058a"
+      },
+      {
+        "sample_id": "banking77:train:7017",
+        "label": "beneficiary_not_allowed",
+        "text": "Why is my beneficiary not allowed?",
+        "order": 90,
+        "content_sha256": "a434b3ab440eb974d0848c86f2eecdec3aa3afca3ffddd23155a93bfab413e8b"
+      },
+      {
+        "sample_id": "banking77:train:2416",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why did I not get all the money that I asked for? I asked for all the cash in my my account, but I only got about half. Why is that??",
+        "order": 91,
+        "content_sha256": "65a5e6d50ce30967221ab1fae466a0a447a3e6b54598b420dc7b52d744e2608f"
+      },
+      {
+        "sample_id": "banking77:train:7047",
+        "label": "beneficiary_not_allowed",
+        "text": "Why can't a beneficiary receive a money transfer from me?",
+        "order": 92,
+        "content_sha256": "c6bbbf68e5ddca2657133e65df8da97f51e316fbeeee5ba4f88804a36710e350"
+      },
+      {
+        "sample_id": "banking77:train:2443",
+        "label": "wrong_amount_of_cash_received",
+        "text": "When I went to $100, all the machine would give me was $20.",
+        "order": 93,
+        "content_sha256": "e487f0afda2dbf052dabb815c54d6eca4d484f56a5f3cd3e471afe1a8c03f6ed"
+      },
+      {
+        "sample_id": "banking77:train:7151",
+        "label": "beneficiary_not_allowed",
+        "text": "Why isn't my beneficiary allowed?",
+        "order": 94,
+        "content_sha256": "a85b661935ce7600d8baf250b34f91a542bab431ecd04196979a81ca732b2887"
+      },
+      {
+        "sample_id": "banking77:train:2476",
+        "label": "wrong_amount_of_cash_received",
+        "text": "My cash withdrawal was not entirely complete",
+        "order": 95,
+        "content_sha256": "a0f83ec9469cee27ab391f1043048c6935de64c362f2e5cd6a810ab10ad34391"
+      },
+      {
+        "sample_id": "banking77:train:7149",
+        "label": "beneficiary_not_allowed",
+        "text": "Why would I receive an error that my transfer isn't possible when I've done it before?",
+        "order": 96,
+        "content_sha256": "0b9a92c9f18370e58272c39dfdded6a40f03b80b65a1bc404bd403488c9e14c3"
+      },
+      {
+        "sample_id": "banking77:train:2380",
+        "label": "wrong_amount_of_cash_received",
+        "text": "What do I need to do to request cash back? The ATM actually just gave me the wrong amount. The app I actually chose the right amount.",
+        "order": 97,
+        "content_sha256": "c951e8f0948a810cf824e2c65141b8babe10fbd8867363c668a5e992475d7f5e"
+      },
+      {
+        "sample_id": "banking77:train:7127",
+        "label": "beneficiary_not_allowed",
+        "text": "Why couldn't I transfer to a beneficiairy?",
+        "order": 98,
+        "content_sha256": "68c1c0f80f3e07d0f659ec7d72ac872c528d6b4ec17e2a8360d35971a6bacfcf"
+      },
+      {
+        "sample_id": "banking77:train:2361",
+        "label": "wrong_amount_of_cash_received",
+        "text": "Why did I not get the amount of money I requested?",
+        "order": 99,
+        "content_sha256": "7e2289b719db5b7ddd787e9a9ffce42118828444361216b251c225d60287d186"
+      }
+    ]
+  },
+  "live_supported": false,
+  "blocker": "Public routing-experiment labeled-example/retraining contract unavailable",
+  "planned_remote_operations": [],
+  "cost": {
+    "available": false,
+    "value_usd": null,
+    "reason": "No verified account-specific pricing or charge estimate"
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "accuracy": {
+    "name": "accuracy",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 3
+    }
+  },
+  "macro_f1": {
+    "name": "macro_f1",
+    "value": 1.0,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "labels": [
+        "Sports",
+        "World"
+      ],
+      "per_class_f1": {
+        "Sports": 1.0,
+        "World": 1.0
+      }
+    }
+  },
+  "top_label_ece": {
+    "name": "top_label_ece",
+    "value": 0.48841651888302506,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "n_bins": 10,
+      "binning": "fixed_width",
+      "bins": [
+        {
+          "bin_index": 5,
+          "lower": 0.5,
+          "upper": 0.6,
+          "count": 3,
+          "accuracy": 1.0,
+          "mean_confidence": 0.5115834811169749,
+          "absolute_gap": 0.48841651888302506
+        }
+      ]
+    }
+  },
+  "adaptive_ece": {
+    "name": "adaptive_ece",
+    "value": 0.48841651888302506,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "requested_bins": 10,
+      "effective_bins": 3,
+      "binning": "equal_frequency",
+      "bins": [
+        {
+          "bin_index": 0,
+          "min_confidence": 0.5007822705426128,
+          "max_confidence": 0.5007822705426128,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.5007822705426128,
+          "absolute_gap": 0.4992177294573872
+        },
+        {
+          "bin_index": 1,
+          "min_confidence": 0.5163881998598372,
+          "max_confidence": 0.5163881998598372,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.5163881998598372,
+          "absolute_gap": 0.4836118001401628
+        },
+        {
+          "bin_index": 2,
+          "min_confidence": 0.5175799729484746,
+          "max_confidence": 0.5175799729484746,
+          "count": 1,
+          "accuracy": 1.0,
+          "mean_confidence": 0.5175799729484746,
+          "absolute_gap": 0.4824200270515254
+        }
+      ]
+    }
+  },
+  "multiclass_log_loss": {
+    "name": "multiclass_log_loss",
+    "value": 0.6703571872744813,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "epsilon": 1e-15,
+      "natural_log": true
+    }
+  },
+  "multiclass_brier_score": {
+    "name": "multiclass_brier_score",
+    "value": 0.47721853142652826,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "classwise_reduction": "sum",
+      "sample_reduction": "mean",
+      "range": [
+        0.0,
+        2.0
+      ]
+    }
+  },
+  "mean_latency_ms": {
+    "name": "mean_latency_ms",
+    "value": 0.8171669999986383,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "unit": "milliseconds"
+    }
+  },
+  "latency_p50_ms": {
+    "name": "latency_p50_ms",
+    "value": 0.7536630000686273,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "unit": "milliseconds",
+      "quantile": 0.5,
+      "interpolation": "linear"
+    }
+  },
+  "latency_p99_ms": {
+    "name": "latency_p99_ms",
+    "value": 0.9677685001770442,
+    "available": true,
+    "metadata": {
+      "n_samples": 3,
+      "unit": "milliseconds",
+      "quantile": 0.99,
+      "interpolation": "linear"
+    }
+  },
+  "total_cost_usd": {
+    "name": "total_cost_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 3,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  },
+  "cost_per_1000_usd": {
+    "name": "cost_per_1000_usd",
+    "value": null,
+    "available": false,
+    "metadata": {
+      "n_samples": 3,
+      "reason": "cost_usd is missing for one or more records"
+    }
+  }
+}

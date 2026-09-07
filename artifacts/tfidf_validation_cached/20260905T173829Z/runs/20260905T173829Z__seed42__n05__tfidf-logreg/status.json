@@ -1,0 +1,9 @@
+{
+  "run_id": "20260905T173829Z__seed42__n05__tfidf-logreg",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-09-05T17:38:30.698866+00:00",
+  "dataset": "banking77",
+  "classifier": "tfidf-logreg",
+  "example_count": 10
+}
