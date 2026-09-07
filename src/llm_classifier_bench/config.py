@@ -29,6 +29,36 @@ DEFAULT_SPLIT_SEED = 42
 
 
 @dataclass(frozen=True, slots=True)
+class EmissaryTrainingConfig:
+    """Labeled-example budget; nonzero experiment training is not yet supported."""
+
+    shots: int = 0
+    shot_unit: str | None = None
+    selection_seed: int = 42
+    selection_policy: str = "balanced_round_robin_v1"
+
+    def __post_init__(self) -> None:
+        if type(self.shots) is not int or self.shots < 0:
+            raise ValueError("shots must be a nonnegative integer")
+        if self.shot_unit not in (None, "total", "per_class"):
+            raise ValueError("shot_unit must be total or per_class")
+        if self.shots and self.shot_unit is None:
+            raise ValueError("Nonzero shots require an explicit shot_unit")
+        if type(self.selection_seed) is not int:
+            raise ValueError("selection_seed must be an integer")
+        if self.selection_policy != "balanced_round_robin_v1":
+            raise ValueError("Unsupported selection_policy; use balanced_round_robin_v1")
+
+    def require_live_support(self) -> None:
+        if self.shots:
+            raise NotImplementedError(
+                "Nonzero Emissary shots are unsupported: the public API has no "
+                "labeled-example/retraining contract for routing experiments. "
+                "Use --dry-run to validate selection; see docs/emissary_contract.md."
+            )
+
+
+@dataclass(frozen=True, slots=True)
 class BertTrainingConfig:
     epochs: int = 3
     batch_size: int = 16
@@ -107,6 +137,7 @@ class TfidfTrainingConfig:
 
 
 __all__ = [
+    "EmissaryTrainingConfig",
     "BertTrainingConfig",
     "DEFAULT_CLASS_DEFINITION_GENERATOR_MODEL",
     "DEFAULT_CLASS_DEFINITION_GENERATOR_REASONING_EFFORT",

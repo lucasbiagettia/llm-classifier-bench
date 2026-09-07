@@ -11,6 +11,9 @@ from typing import Any, Mapping, Sequence, Self
 import requests
 from dotenv import load_dotenv
 
+from llm_classifier_bench.config import EmissaryTrainingConfig
+from llm_classifier_bench.datasets.selection import select_labeled_examples
+
 from .base import (
     ClassificationInput,
     ClassDefinition,
@@ -36,6 +39,7 @@ class Experiment:
 
     experiment_id: str
     latest_version: str
+    raw_response: Mapping[str, Any] | None = None
 
     @property
     def model_id(self) -> str:
@@ -144,7 +148,8 @@ class EmissaryClient:
         latest_version = response.get("latest_version")
         if not isinstance(experiment_id, str) or not experiment_id:
             raise EmissaryResponseError("Experiment response is missing a valid 'id'")
-        if not isinstance(latest_version, str) or not latest_version:
+        if (not isinstance(latest_version, str) or not latest_version.strip()
+                or latest_version.lower() == "latest" or "/" in latest_version):
             raise EmissaryResponseError(
                 "Experiment response is missing a valid 'latest_version'"
             )
@@ -152,6 +157,7 @@ class EmissaryClient:
         return Experiment(
             experiment_id=experiment_id,
             latest_version=latest_version,
+            raw_response=response,
         )
 
     def classify(
@@ -254,13 +260,18 @@ class EmissaryClassifier:
     def __init__(
         self,
         *,
-        client: EmissaryClient,
+        client: EmissaryClient | None = None,
+        training: EmissaryTrainingConfig | None = None,
         model_id: str | None = None,
         experiment_name: str | None = None,
         classifier_name: str = "emissary-zero-shot",
     ) -> None:
         if model_id is not None and not model_id.strip():
             raise ValueError("model_id cannot be empty")
+        if model_id is not None:
+            parts = model_id.split("/")
+            if len(parts) != 2 or any(not part.strip() for part in parts) or parts[1].lower() == "latest":
+                raise ValueError("model_id must pin an explicit experiment ID/version, not latest")
         if experiment_name is not None and not experiment_name.strip():
             raise ValueError("experiment_name cannot be empty")
         if model_id is None and experiment_name is None:
@@ -268,6 +279,17 @@ class EmissaryClassifier:
         if not classifier_name.strip():
             raise ValueError("classifier_name cannot be empty")
 
+        self.training = training or EmissaryTrainingConfig()
+        if self.training.shots and model_id is not None:
+            raise ValueError("Nonzero shots cannot reuse an existing reference model")
+        self.supervision_regime = "zero_shot" if not self.training.shots else "labeled_examples_unsupported"
+        self.training_examples_used = 0
+        self.validation_examples_used = 0
+        self._reference_model_id = model_id
+        self._experiment: Experiment | None = None
+        self._creation_ms: float | None = None
+        self._preparation_ms: float | None = None
+        self._selection: dict[str, Any] | None = None
         self.client = client
         self.model_id = model_id
         self.experiment_name = experiment_name
@@ -284,39 +306,101 @@ class EmissaryClassifier:
         mode: str = "routing",
         classifier_name: str = "emissary-zero-shot",
     ) -> Self:
+        classifier = cls(
+            client=client, experiment_name=experiment_name, classifier_name=classifier_name,
+        )
+        started = perf_counter()
         experiment = client.create_experiment(
-            name=experiment_name,
-            classes=classes,
-            mode=mode,
+            name=experiment_name, classes=classes, mode=mode,
         )
-        return cls(
-            client=client,
-            model_id=experiment.model_id,
-            experiment_name=experiment_name,
-            classifier_name=classifier_name,
-        )
+        classifier.model_id = experiment.model_id
+        classifier._reference_model_id = experiment.model_id
+        classifier._classes = tuple(classes)
+        classifier._experiment = experiment
+        classifier._creation_ms = (perf_counter() - started) * 1000
+        classifier._preparation_ms = classifier._creation_ms
+        return classifier
 
     @property
     def name(self) -> str:
         return self._name
 
+    def plan_fit(
+        self, classes: Sequence[ClassDefinition], examples: Sequence[LabeledExample],
+        *, validation_examples: Sequence[LabeledExample] = (),
+    ) -> dict[str, Any]:
+        """Resolve the exact fit selection without constructing an HTTP client."""
+        _, selection = select_labeled_examples(
+            examples, classes, self.training, validation_examples=validation_examples,
+        )
+        return {
+            "selection": selection,
+            "live_supported": self.training.shots == 0,
+            "blocker": None if not self.training.shots else (
+                "Public routing-experiment labeled-example/retraining contract unavailable"
+            ),
+            "planned_remote_operations": [] if self.training.shots else [
+                *([] if self._reference_model_id else ["POST /v1/experiments (routing)"]),
+                "POST /v1/classification per held-out test example (probs)",
+            ],
+            "cost": {"available": False, "value_usd": None,
+                     "reason": "No verified account-specific pricing or charge estimate"},
+        }
+
+    def fitted_metadata(self) -> dict[str, Any]:
+        identity = self.model_id.rsplit("/", 1) if self.model_id else []
+        return {
+            "status": "ready" if self.model_id else "not_prepared",
+            "selection": self._selection,
+            "model_id": self.model_id,
+            "experiment_id": identity[0] if len(identity) == 2 else None,
+            "model_version": identity[1] if len(identity) == 2 else None,
+            "job_id": None,
+            "experiment_creation_ms": self._creation_ms,
+            "example_submission_ms": None,
+            "preparation_wall_ms": self._preparation_ms,
+            "provider_training_ms": None,
+            "training_timing_reason": "Zero-shot condition does not submit training",
+            "creation_response": dict(self._experiment.raw_response or {}) if self._experiment else None,
+            "cost": {"available": False, "value_usd": None,
+                     "reason": "No verified pricing; raw provider evidence retained when returned"},
+        }
+
     def prepare(self, classes: Sequence[ClassDefinition]) -> None:
         """Configure classes and create an experiment when one was not pre-created."""
 
+        preparation_started = perf_counter()
+        self._selection = None
+        self.model_id = None
+        self._classes = ()
+        if self._reference_model_id is None:
+            self._experiment = None
+            self._creation_ms = None
+            self._preparation_ms = None
+        self.training.require_live_support()
         frozen = tuple(classes)
         if len(frozen) < 2:
             raise ValueError("At least two classes are required")
+        if len({item.name for item in frozen}) != len(frozen):
+            raise ValueError("Class names must be unique")
         self._classes = frozen
+        self.model_id = self._reference_model_id
 
         if self.model_id is None:
             if self.experiment_name is None:  # defensive; constructor prevents this
                 raise RuntimeError("No experiment_name is available")
+            if self.client is None:
+                self.client = EmissaryClient()
+            started = perf_counter()
             experiment = self.client.create_experiment(
                 name=self.experiment_name,
                 classes=frozen,
                 mode="routing",
             )
             self.model_id = experiment.model_id
+            self._experiment = experiment
+            self._creation_ms = (perf_counter() - started) * 1000
+        self._preparation_ms = (perf_counter() - preparation_started) * 1000
 
     def fit(
         self,
@@ -324,13 +408,25 @@ class EmissaryClassifier:
         *,
         validation_examples: Sequence[LabeledExample] = (),
     ) -> None:
-        """Zero-shot Emissary requires no local fitting."""
-        return None
+        """Record selection evidence; never simulate unsupported training."""
+        started = perf_counter()
+        self._selection = None
+        self.training.require_live_support()
+        if self._classes:
+            _, self._selection = select_labeled_examples(
+                examples, self._classes, self.training,
+                validation_examples=validation_examples,
+            )
+        if self._preparation_ms is not None:
+            self._preparation_ms += (perf_counter() - started) * 1000
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
+        self.training.require_live_support()
         if self.model_id is None:
             raise RuntimeError("Call prepare(classes) before predict()")
 
+        if self.client is None:
+            self.client = EmissaryClient()
         predictions: list[Prediction] = []
 
         for example in examples:
@@ -342,12 +438,13 @@ class EmissaryClassifier:
             )
             latency_ms = (perf_counter() - started_at) * 1_000
 
-            predictions.append(
-                parse_classification_response(
-                    response,
-                    sample_id=example.sample_id,
-                    latency_ms=latency_ms,
-                )
+            prediction = parse_classification_response(
+                response, sample_id=example.sample_id, latency_ms=latency_ms,
             )
+            if self._classes and set(prediction.probabilities or {}) != {item.name for item in self._classes}:
+                raise EmissaryResponseError("Probabilities must contain exactly the configured class set")
+            if prediction.model is not None and prediction.model != self.model_id:
+                raise EmissaryResponseError("Response model differs from the pinned model version")
+            predictions.append(prediction)
 
         return predictions
