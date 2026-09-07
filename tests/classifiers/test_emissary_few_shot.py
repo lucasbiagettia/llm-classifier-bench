@@ -105,7 +105,7 @@ def test_every_nonzero_budget_is_explicitly_unsupported(budget):
     client = Mock()
     classifier = EmissaryClassifier(client=client, experiment_name="blocked", training=Config(budget, "total"))
     for operation in [lambda: classifier.prepare(fixture_bundle().classes), lambda: classifier.fit([]), lambda: classifier.predict([])]:
-        with pytest.raises(NotImplementedError, match="public API"):
+        with pytest.raises(NotImplementedError, match="project_fine_tuning"):
             operation()
     assert not client.mock_calls
     with pytest.raises(ValueError, match="reference model"):

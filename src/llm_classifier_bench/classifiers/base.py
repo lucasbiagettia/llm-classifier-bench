@@ -45,6 +45,8 @@ class Classifier(Protocol):
     An optional ``plan_fit(classes, train, validation_examples=...)`` hook must
     perform no remote operations; the runner saves its result before prepare.
     Dry-run execution requires that hook and stops before the lifecycle begins.
+    A remote classifier may expose ``set_fit_metadata_sink(callable)`` so the
+    runner can durably save continuation identifiers between fit milestones.
 
     ``prepare`` communicates the closed label space without leaking labeled
     examples. ``fit`` may be a no-op for zero-shot classifiers.

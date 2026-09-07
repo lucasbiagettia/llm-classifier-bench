@@ -4,7 +4,8 @@ Reproducible benchmark infrastructure for comparing closed-set text-classificati
 
 The current implementation supports five classifier families:
 
-- **Emissary zero-shot** — purpose-built discriminative classification API.
+- **Emissary zero-shot and Projects fine-tuning** — routing experiments plus an
+  explicit supervised classification mechanism.
 - **OpenAI zero-shot** — generative closed-set classification with structured output.
 - **BERT fine-tuned** — supervised Hugging Face sequence classification.
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
@@ -63,7 +64,8 @@ The OpenAI snapshot is intentionally pinned for reproducibility. Change the conf
 The classifiers are not all methodologically equivalent:
 
 ```text
-Emissary             zero-shot
+Emissary routing     zero-shot
+Emissary Projects    supervised fine-tuning
 OpenAI               zero-shot
 BERT                  supervised fine-tuning
 SentenceTransformer   supervised embeddings + Logistic Regression
@@ -381,12 +383,17 @@ Do not use the existing small smoke runs as scientific evidence.
 
 Both maintained Banking77 campaign scripts accept `--emissary-shots 0 5 100`,
 `--emissary-shot-unit total|per_class`, `--emissary-selection-seed`, and
-`--emissary-selection-policy balanced_round_robin_v1`. Nonzero budgets currently
-support **dry-run selection only**: the public API does not document training the
-existing routing experiment with examples. Live nonzero requests fail before
-remote mutations. Zero-shot remains the default.
+`--emissary-selection-policy balanced_round_robin_v1`. Zero-shot remains the
+default routing-experiment path. Nonzero budgets can use the documented Projects
+classification fine-tuning flow with `--emissary-mechanism project_fine_tuning`,
+an existing project ID and an explicit base model.
+
+Projects fine-tuning trains a separately selected base model; it does not retrain
+the routing experiment. Report that mechanism/model confound when comparing it
+with zero-shot. Live training additionally requires an explicit unknown-cost
+acknowledgement and a bound on newly created training jobs.
 
 See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
-[verified API contract and blockers](docs/emissary_contract.md), and
+[verified API contract and limitations](docs/emissary_contract.md), and
 [offline validation evidence](docs/emissary_validation.md). The total-shot examples
 are implementation examples, not confirmation of the intended 5/100-shot meaning.

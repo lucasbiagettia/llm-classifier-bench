@@ -1,5 +1,5 @@
 {
-  "status": "blocked_not_executed",
+  "status": "ready_requires_explicit_unpriced_training_authorization",
   "dataset": "banking77",
   "class_counts": [2],
   "seeds": [42],
@@ -12,14 +12,19 @@
   "shot_unit_status": "implementation_example_not_confirmed_by_Tanmay",
   "selection_seed": 42,
   "selection_policy": "balanced_round_robin_v1",
+  "nonzero_mechanism": "project_fine_tuning",
+  "base_model": "Llama-3.2-1B-Instruct",
+  "new_training_jobs": 2,
   "max_inference_requests": 6,
-  "proposed_max_total_cost_usd": 1.0,
-  "spending_cap_enforceable": false,
   "estimated_cost_usd": null,
-  "blockers": [
-    "Public routing-experiment example submission and retraining contract unavailable",
-    "Same-base-model comparability and account training entitlement unconfirmed",
-    "Pricing and bounded resource lifecycle unavailable",
-    "Intended experimental shot unit unconfirmed"
+  "spending_cap_enforceable": false,
+  "required_live_flags": [
+    "--emissary-allow-unpriced-training",
+    "--emissary-max-training-jobs 2"
+  ],
+  "unresolved": [
+    "Provider training and serving price is unavailable",
+    "Intended experimental shot unit is unconfirmed",
+    "Project SFT is not the routing-experiment mechanism"
   ]
 }
