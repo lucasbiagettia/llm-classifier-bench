@@ -1,45 +1,50 @@
-# Configurable Emissary labeled-example planning
+# Configurable Emissary labeled-example support
 
-**Nonzero live support is blocked by the public API contract.** See the
-[contract investigation](emissary_contract.md). Zero-shot remains available;
-nonzero conditions can be configured, selected, audited, and dry-run offline.
-No examples are inserted into class descriptions or inference prompts.
+Nonzero Emissary conditions use the documented **Projects classification
+fine-tuning** flow. They do not add examples to, or retrain, a routing experiment.
+The zero-shot condition continues to use an Emissary routing experiment.
+Consequently, a 0-versus-5/100 comparison also changes mechanism and base model;
+report that confound with any result.
 
-`EmissaryTrainingConfig(shots=5, shot_unit="total", selection_seed=42,
-selection_policy="balanced_round_robin_v1")` configures a condition.
-`shots` is any nonnegative integer. Nonzero budgets require an explicit `total`
-or `per_class` unit, including in dry runs. The examples below use **total** as an
-implementation example; Tanmay's intended meaning of 5/100 is not confirmed.
+`EmissaryTrainingConfig` supports arbitrary feasible nonnegative budgets. A
+nonzero budget requires an explicit `shot_unit` (`total` or `per_class`) and the
+explicit mechanism `project_fine_tuning`, project ID and base model. The 5/100
+smoke configuration uses **total** shots, as confirmed for the authorized live
+run on 2026-09-07.
 
-The policy sorts class names and per-class sample IDs before seeded shuffles.
-It shuffles classes using seed string `<seed>:classes`, and each class using
-`<seed>:examples:<label>` with Python's `random.Random`. Round-robin ordering
-assigns N // K items per class and gives the first N % K shuffled classes one
-extra. Per-class N is the same prefix of length N*K. With fixed data, labels and
-seed, smaller budgets are prefixes of larger ones, independently of input order.
-A class with insufficient support fails its assigned quota; there is no budget
-redistribution. Five total examples over twenty classes cover five classes.
-This is locally valid planning, not a claim that the provider permits it.
+The selector sorts class names and per-class sample IDs before seeded shuffles.
+It uses seed string `<seed>:classes` for class order and
+`<seed>:examples:<label>` per class. Total budgets use balanced round-robin;
+per-class budgets select that many examples from every class. With fixed inputs,
+smaller budgets are prefixes of larger budgets. Insufficient support fails rather
+than redistributing examples.
 
-Only the runner's fit-training partition is eligible. Validation and test are
-never selected. Repeated IDs and exact UTF-8 text across partitions are rejected
-before remote operations. Text duplicates within a partition remain separate
-source examples; this is not fuzzy/semantic deduplication. Existing campaign
-label eligibility and frozen definition profiles are preserved. In v2,
-`--strict-support` prevents its existing source-sampling backoff; that backoff
-never changes the separately specified Emissary shot budget.
+Only the runner's fit-training partition is eligible. Validation and test data
+are never uploaded. Repeated IDs and exact UTF-8 text across partitions are
+rejected before remote operations.
 
-## Commands
+## Provider flow
 
-Activate the existing environment and run the regression suite:
+For every nonzero condition the adapter:
 
-```bash
-source venv/bin/activate
-PYTHONPATH=src pytest -m "not integration"
-PYTHONPATH=src pytest tests/classifiers/test_emissary_few_shot.py tests/test_emissary_campaign.py
-```
+1. validates the configured project and that the base model supports classification;
+2. serializes selected examples to the documented classification JSONL schema;
+3. uploads and polls the dataset until upload and profiling finish;
+4. creates and polls a classification training job to a terminal status;
+5. selects an explicit available checkpoint;
+6. creates and polls a deployment, then validates its job, checkpoint, base model,
+   task type and exact label set;
+7. calls `/v1/classification` with that deployment for held-out examples.
 
-Dry-run a tiny Banking77 comparison with reusable local class definitions:
+Submission endpoints are not retried because a timeout can leave an accepted
+resource whose ID was not returned. `fit_metadata.json` is updated after every
+known dataset, job and deployment ID so an interrupted run can be resumed. A
+continuation requires the original dataset ID and JSONL SHA-256; job and
+deployment continuations additionally require their parent IDs.
+
+## Dry run
+
+This plans 0/5/100 total examples with Banking77 and makes no provider request:
 
 ```bash
 PYTHONPATH=src python scripts/run_banking77_scaling_benchmark_v2.py \
@@ -47,60 +52,49 @@ PYTHONPATH=src python scripts/run_banking77_scaling_benchmark_v2.py \
   --train-per-class 70 --test-per-class 1 \
   --min-train-per-class 70 --min-test-per-class 1 --strict-support \
   --validation-fraction .2 --emissary-shots 0 5 100 \
-  --emissary-shot-unit total --emissary-selection-seed 42 \
+  --emissary-shot-unit total \
+  --emissary-mechanism project_fine_tuning \
+  --emissary-project-id ms-dry-run-placeholder \
+  --emissary-base-model Llama-3.2-1B-Instruct \
   --definitions class_definitions_data/banking77/canonical_llm_enriched_v1.json \
   --dry-run --output-root artifacts/emissary_few_shot
 ```
 
-The original `scripts/run_banking77_scaling_benchmark.py` accepts the same options
-except v2's `--min-*-per-class` and `--strict-support`; omit those three options.
-Both support `--emissary-shot-unit per_class` and arbitrary feasible budgets.
-No credentials or definition generation are needed for dry runs. Dataset loading
-can need network access/cache; the offline suite uses local fixtures. The exact
-cached real-data command is in [validation evidence](emissary_validation.md).
+The original Banking77 campaign accepts the same Emissary options. It omits the
+v2-only minimum-support and `--strict-support` flags.
 
-`--emissary-shots 0` preserves the default zero-shot condition. Omitting
-`--dry-run` executes that existing live path and requires credentials. A mixed
-live invocation containing any nonzero budget is rejected before loading data or
-creating clients, including its zero-shot condition. Dry runs skip other
-classifier families and print/save only Emissary preparation plans (v2 retains
-its existing label-only dry run when Emissary is absent).
+## Live run safeguards
 
-## Artifacts and operational evidence
+A live nonzero campaign requires two additional acknowledgements:
 
-Microsecond campaign IDs plus condition names keep runs distinct; existing output
-folders are never overwritten. All budgets share the condition's test IDs and
-exact definition profile. Each run saves:
+- `--emissary-allow-unpriced-training`, because the documented API and live model
+  detail provide no price estimate;
+- `--emissary-max-training-jobs N`, which must cover the number of new jobs the
+  invocation would submit.
 
-- `config.json`: pre-run settings, classes, fit/validation/test IDs and source
-  profile hash. `classifier.training` contains the shot configuration.
-- `preparation_plan.json`: requested/actual totals, all per-class counts, coverage,
-  seed, policy, shuffled class order, and selected IDs/labels/text/order/content
-  SHA-256. Includes supported operations, explicit live blocker, and unknown cost.
-- `status.json`: `dry_run`/`planned`, or normal run completion/failure. Dry runs
-  create no predictions, metrics or fit metadata; runner result `example_count=0`.
-- `fit_metadata.json` after successful preparation/fit: pinned experiment/model
-  version, actual zero-shot selection, experiment creation and preparation timing,
-  null upload/training/job fields with reasons, raw creation response and unavailable
-  cost. This is saved before inference, including when inference later fails.
-- Live zero-shot predictions retain per-request latency and full provider responses
-  (including usage/charge evidence if returned). Existing cost metrics remain
-  unavailable when `cost_usd` is absent; unknown cost is never set to zero.
+For the example above, removing `--dry-run` and adding
+`--emissary-allow-unpriced-training --emissary-max-training-jobs 2` permits at
+most two new jobs. This bound controls job count, not provider spend. Do not run
+it without explicit authorization for the unpriced training calls.
 
-`plan_fit` is an optional generic runner hook receiving classes, fit examples and
-validation examples, without test data. It must perform no remote operations.
-Dry-run mode requires this hook. The lifecycle remains prepare → fit → predict.
+The 2026-09-07 live smoke uploaded and profiled the 5- and 100-shot datasets, but
+the account rejected training creation because it has no payment method. The
+adapter reports this response explicitly. Reuse the recorded dataset IDs and
+SHA-256 values when continuing after payment setup; do not repeat the uploads.
 
-## Bounded live smoke: prepared, blocked
+The training hyperparameters and polling limits are configurable through the
+`--emissary-num-train-epochs`, `--emissary-learning-rate`, batch-size, timeout,
+poll-interval and inactive-timeout options. Defaults match the inspected
+`Llama-3.2-1B-Instruct` parameter template where applicable.
 
-[emissary_smoke_plan.json](emissary_smoke_plan.json) records the tiny 0/5/100-total
-comparison, six maximum inference requests and a proposed USD 1 ceiling. It is a
-reviewable plan, not an implemented provider spending control or confirmation of
-Tanmay's unit. Do not turn it into a full benchmark.
+## Evidence
 
-The exact candidate live command is the dry-run command above with `--dry-run`
-removed. **It currently exits before remote operations** because nonzero shots
-are unsupported. It must remain blocked until the provider contract and pricing
-permit enforcing the planned cap, and the intended shot unit is confirmed.
-There is no honest executable nonzero live smoke command yet. The existing live
-integration test would only exercise zero-shot and would not resolve acceptance.
+Every dry run writes `preparation_plan.json` with selected IDs/text/order,
+per-class counts, JSONL byte size and SHA-256, planned operations, mechanism,
+comparability statement and unavailable cost. A live run writes
+`fit_metadata.json` before inference and after every remote milestone, including
+sanitized provider responses and status histories. Signed download URLs are
+redacted.
+
+See the [provider contract](emissary_contract.md), [test evidence](emissary_validation.md)
+and [small live plan](emissary_smoke_plan.json).

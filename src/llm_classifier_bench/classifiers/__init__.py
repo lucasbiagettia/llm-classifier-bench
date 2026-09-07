@@ -12,9 +12,12 @@ from .emissary import (
     EmissaryAPIError,
     EmissaryClassifier,
     EmissaryClient,
+    EmissaryPreparationError,
+    EmissaryPreparationTimeout,
     EmissaryResponseError,
     Experiment,
     parse_classification_response,
+    serialize_classification_dataset,
 )
 from .openai import OpenAIClassifier
 from .sentence_transformer import SentenceTransformerLogisticClassifier
@@ -30,10 +33,13 @@ __all__ = [
     "EmissaryAPIError",
     "EmissaryClassifier",
     "EmissaryClient",
+    "EmissaryPreparationError",
+    "EmissaryPreparationTimeout",
     "EmissaryResponseError",
     "Experiment",
     "OpenAIClassifier",
     "SentenceTransformerLogisticClassifier",
     "TfidfLogisticClassifier",
     "parse_classification_response",
+    "serialize_classification_dataset",
 ]

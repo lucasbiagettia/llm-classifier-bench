@@ -85,6 +85,9 @@ def run_benchmark(
     predictions_path = run_dir / "predictions.jsonl"
     metrics_path = run_dir / "metrics.json"
     status_path = run_dir / "status.json"
+    fit_metadata_path = run_dir / "fit_metadata.json"
+    persist_fit_metadata = False
+    fitted_metadata: Any = None
 
     stage = "loading_dataset"
     _write_status(
@@ -150,6 +153,12 @@ def run_benchmark(
                 run_id, run_dir, config_path, predictions_path, status_path, None, 0,
             )
 
+        fitted_metadata = getattr(classifier, "fitted_metadata", None)
+        metadata_sink = getattr(classifier, "set_fit_metadata_sink", None)
+        if callable(metadata_sink):
+            metadata_sink(lambda payload: _write_json(fit_metadata_path, payload))
+        persist_fit_metadata = callable(fitted_metadata)
+
         stage = "preparing_classifier"
         _write_status(
             status_path,
@@ -174,10 +183,9 @@ def run_benchmark(
 
         # Optional generic hook: retain the pre-fit config and persist learned
         # settings separately, before inference can fail or mutate the model.
-        fitted_metadata = getattr(classifier, "fitted_metadata", None)
         if callable(fitted_metadata):
             stage = "writing_fitted_metadata"
-            _write_json(run_dir / "fit_metadata.json", fitted_metadata())
+            _write_json(fit_metadata_path, fitted_metadata())
 
         stage = "predicting"
         _write_status(
@@ -244,6 +252,12 @@ def run_benchmark(
         )
 
     except Exception as exc:
+        if persist_fit_metadata:
+            try:
+                _write_json(fit_metadata_path, fitted_metadata())
+            except Exception:
+                # Preserve the original provider/runner failure as the primary error.
+                pass
         _write_status(
             status_path,
             status="failed",
