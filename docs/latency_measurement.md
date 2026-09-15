@@ -148,3 +148,22 @@ and regenerate identical reports from saved observations. Additional tests cover
 P99 call-count gating, corrupt observations, explicit SDK retry settings and both
 maintained campaign CLIs. The local smoke reports and supporting observations
 are recorded under `artifacts/latency_validation/`.
+
+### Executed evidence
+
+Both final local runs used committed code `4c78419` with a clean working tree,
+200 fixture inputs, five warmup examples, one CPU thread requested through
+OMP/OpenBLAS, and no network calls. Each generated Markdown and JSON report was
+regenerated from saved observations and matched exactly.
+
+| Run | Evaluation calls | P50 call ms | P95 call ms | Successful examples/s, observed window | P99 |
+| --- | ---: | ---: | ---: | ---: | --- |
+| [Single example](../artifacts/latency_validation/issue11-single/operational_report.md) | 200 | 0.933287 | 2.746468 | 705.996464 | unavailable |
+| [Four examples per call](../artifacts/latency_validation/issue11-batch4/operational_report.md) | 50 | 3.673689 | 7.902935 | 887.794333 | unavailable |
+
+Both completed all 200 examples without failures. The batch-4 median above is
+the latency of a four-example call, not an individual example. These values
+validate instrumentation on repeated short texts; they are not representative
+performance claims or evidence that the four-example setting is generally faster.
+Full configurations, predictions, fit metadata, raw timings and hardware/runtime
+metadata accompany each report.
