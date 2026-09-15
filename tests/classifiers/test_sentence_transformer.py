@@ -60,7 +60,35 @@ def test_sentence_transformer_uses_validation_to_select_logistic_c(monkeypatch) 
 
     assert isinstance(classifier, Classifier)
     assert classifier.selected_c == 1.0
-    assert prediction.predicted_label == "World" or prediction.predicted_label == "Sports"
+    # Configured order is World/Sports; sklearn's columns are Sports/World.
+    assert prediction.predicted_label == "World"
+    assert prediction.confidence == 0.75
     assert prediction.probabilities is not None
-    assert set(prediction.probabilities) == {"World", "Sports"}
+    assert prediction.probabilities == {"Sports": 0.25, "World": 0.75}
     assert sum(prediction.probabilities.values()) == 1.0
+    metadata = classifier.fitted_metadata()
+    assert metadata["selected_c"] == 1.0
+    assert metadata["probability_label_order"] == ["Sports", "World"]
+    assert metadata["candidate_scores"] == [
+        {"c": 0.1, "validation_accuracy": 0.5},
+        {"c": 1.0, "validation_accuracy": 0.9},
+        {"c": 10.0, "validation_accuracy": 0.5},
+    ]
+
+
+def test_validation_accuracy_ties_keep_first_configured_c(monkeypatch) -> None:
+    monkeypatch.setattr(FakeLogisticRegression, "score", lambda self, x, y: 0.97)
+    monkeypatch.setattr(
+        "llm_classifier_bench.classifiers.sentence_transformer._load_logistic_regression",
+        lambda: FakeLogisticRegression,
+    )
+    classifier = SentenceTransformerLogisticClassifier(
+        encoder=FakeEncoder(),
+        training=SentenceTransformerTrainingConfig(c_values=(0.1, 1.0, 10.0)),
+    )
+    classifier.prepare((ClassDefinition("A", "A"), ClassDefinition("B", "B")))
+    examples = (LabeledExample("1", "one", "A"), LabeledExample("2", "two", "B"))
+    classifier.fit(examples, validation_examples=(LabeledExample("3", "three", "A"),))
+    assert classifier.selected_c == 0.1
+    assert classifier.fitted_metadata()["tie_breaking"] == "first_candidate_in_configured_order"
+    assert [item["validation_accuracy"] for item in classifier.fitted_metadata()["candidate_scores"]] == [0.97] * 3

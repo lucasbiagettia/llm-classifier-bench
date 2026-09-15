@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from importlib.metadata import version
 from time import perf_counter
 from typing import Any, Sequence
 
@@ -42,6 +43,7 @@ class SentenceTransformerLogisticClassifier:
         self._classes: tuple[ClassDefinition, ...] = ()
         self._class_names: tuple[str, ...] = ()
         self.selected_c: float | None = None
+        self._fit_metadata: dict[str, Any] = {}
 
     @property
     def name(self) -> str:
@@ -100,6 +102,7 @@ class SentenceTransformerLogisticClassifier:
         best_classifier: Any | None = None
         best_score = float("-inf")
         best_c: float | None = None
+        candidate_scores = []
 
         for c_value in self.training.c_values:
             candidate = LogisticRegression(
@@ -114,6 +117,11 @@ class SentenceTransformerLogisticClassifier:
             else:
                 score = float(candidate.score(validation_embeddings, validation_labels))
 
+            candidate_scores.append({
+                "c": c_value,
+                "validation_accuracy": score if validation else None,
+            })
+
             if score > best_score:
                 best_score = score
                 best_classifier = candidate
@@ -124,6 +132,20 @@ class SentenceTransformerLogisticClassifier:
 
         self._classifier = best_classifier
         self.selected_c = best_c
+        self._fit_metadata = {
+            "selected_c": best_c,
+            "candidate_scores": candidate_scores,
+            "selection_metric": "validation_accuracy" if validation else "first_candidate_no_validation",
+            "tie_breaking": "first_candidate_in_configured_order",
+            "training_examples_used": len(train),
+            "validation_examples_used": len(validation),
+            "probability_label_order": [str(label) for label in best_classifier.classes_],
+            "library_versions": {name: version(name) for name in ("scikit-learn", "numpy", "scipy")},
+        }
+
+    def fitted_metadata(self) -> dict[str, Any]:
+        """Persist candidate scores through the runner's existing metadata hook."""
+        return dict(self._fit_metadata)
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         if self._encoder is None or self._classifier is None:

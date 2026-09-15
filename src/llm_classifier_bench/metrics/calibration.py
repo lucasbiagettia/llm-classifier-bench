@@ -20,6 +20,11 @@ def _top_confidence(record: EvaluationRecord) -> float | None:
 def _confidence_rows(
     records: Sequence[EvaluationRecord],
 ) -> tuple[tuple[float, bool], ...] | None:
+    # Saved JSONL bypasses the runner's prediction validation. Apply the same
+    # consistency checks before trusting explicit confidence or deriving it.
+    present = tuple(record for record in records if record.probabilities is not None)
+    if present:
+        _validate_probability_distributions(present, sum_tolerance=1e-5)
     rows: list[tuple[float, bool]] = []
     for record in records:
         confidence = _top_confidence(record)
@@ -71,6 +76,24 @@ def _validate_probability_distributions(
             raise ValueError(
                 f"Gold label {record.gold_label!r} is missing from probabilities "
                 f"for sample {record.sample_id!r}"
+            )
+        if record.predicted_label not in probabilities:
+            raise ValueError(
+                f"Predicted label {record.predicted_label!r} is missing from probabilities "
+                f"for sample {record.sample_id!r}"
+            )
+        predicted_probability = probabilities[record.predicted_label]
+        if predicted_probability != max(probabilities.values()):
+            raise ValueError(
+                f"Prediction for sample {record.sample_id!r} is not the argmax "
+                "of its probability distribution"
+            )
+        if record.confidence is not None and not math.isclose(
+            record.confidence, predicted_probability, rel_tol=1e-6, abs_tol=1e-6
+        ):
+            raise ValueError(
+                f"Confidence for sample {record.sample_id!r} does not match "
+                "the probability of the predicted label"
             )
 
     return labels
