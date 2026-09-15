@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from dataclasses import replace
 
 import pytest
 
@@ -100,3 +101,39 @@ def test_invalid_probability_sum_is_rejected() -> None:
 
     with pytest.raises(ValueError, match="sum to"):
         multiclass_log_loss_score(records)
+
+
+@pytest.mark.parametrize("metric", [top_label_ece_score, adaptive_ece_score,
+                                  multiclass_log_loss_score, multiclass_brier_score])
+@pytest.mark.parametrize("changes, message", [
+    ({"confidence": 0.2}, "does not match"),
+    ({"predicted_label": "B", "confidence": None}, "argmax"),
+    ({"predicted_label": "C", "confidence": None}, "Predicted label"),
+    ({"probabilities": {"A": 0.8, "B": 0.3}}, "sum to"),
+    ({"probabilities": {"A": float("nan"), "B": 0.2}}, "Invalid probability"),
+])
+def test_probability_metrics_reject_inconsistent_inputs(metric, changes, message) -> None:
+    record = probability_record("1", gold="A", probabilities={"A": 0.8, "B": 0.2})
+    with pytest.raises(ValueError, match=message):
+        metric((replace(record, **changes),))
+
+
+def test_probability_map_order_does_not_change_metrics() -> None:
+    records = (
+        probability_record("1", gold="B", probabilities={"B": 0.8, "A": 0.2}),
+        probability_record("2", gold="A", probabilities={"A": 0.7, "B": 0.3}),
+    )
+    without_confidence = tuple(replace(r, confidence=None) for r in records)
+    assert top_label_ece_score(without_confidence)[0] == pytest.approx(0.25)
+    assert adaptive_ece_score(without_confidence)[0] == pytest.approx(0.25)
+    assert multiclass_log_loss_score(records) == pytest.approx(-(math.log(0.8) + math.log(0.7)) / 2)
+    assert multiclass_brier_score(records) == pytest.approx(0.13)
+
+
+def test_ece_boundary_confidences_and_tied_argmax() -> None:
+    records = (confidence_record("0", confidence=0.0, correct=False),
+               confidence_record("1", confidence=1.0, correct=True))
+    assert top_label_ece_score(records)[0] == 0.0
+    assert adaptive_ece_score(records)[0] == 0.0
+    tied = probability_record("tie", gold="B", probabilities={"A": 0.5, "B": 0.5})
+    assert top_label_ece_score((replace(tied, predicted_label="B"),))[0] == 0.5

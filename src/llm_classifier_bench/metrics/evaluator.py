@@ -71,6 +71,8 @@ def from_classification_records(records: Iterable[Any]) -> tuple[EvaluationRecor
 
 def evaluation_record_from_mapping(payload: Mapping[str, Any]) -> EvaluationRecord:
     probabilities = payload.get("probabilities")
+    if probabilities is not None and not isinstance(probabilities, Mapping):
+        raise ValueError("probabilities must be a label-to-probability mapping")
     return EvaluationRecord(
         sample_id=str(payload["sample_id"]),
         gold_label=str(payload["gold_label"]),

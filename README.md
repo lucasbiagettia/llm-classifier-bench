@@ -123,6 +123,11 @@ It:
 3. selects `C` using validation accuracy;
 4. predicts probabilities on the final held-out test set.
 
+Accuracy ties retain the first configured C. The runner saves candidate scores,
+selected C, and probability label order in `fit_metadata.json`.
+See the [calibration audit](docs/calibration_audit_v2.md) for the verified
+five-class underconfidence result and its regularization explanation.
+
 This is intentionally different from BERT fine-tuning: it measures the strength of frozen semantic features plus a shallow supervised classifier.
 
 ### TF-IDF + Logistic Regression

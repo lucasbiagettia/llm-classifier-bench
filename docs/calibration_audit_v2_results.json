@@ -1,0 +1,1177 @@
+{
+  "campaign": "artifacts/benchmark_runs/20260804T014841Z",
+  "n_bins": 10,
+  "runs": [
+    {
+      "run_id": "20260804T014841Z__seed42__n05__bert-finetuned",
+      "source_sha256": {
+        "config.json": "2e6ea07d57d5676e4228a703a7ecc4223c045791d0e2c7805e8bf88934e3f825",
+        "predictions.jsonl": "e1d990be420cd64a133486261522a9232a97ec1ee834fce734d4b9e4e287c94b",
+        "metrics.json": "69b09e56bcddfa9c1fb7b785cc9f8ac93c7094efaafcdb0b7879928b7e842cb8"
+      },
+      "partition_sizes": {
+        "fit": 400,
+        "validation": 100,
+        "test": 100
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate"
+      ],
+      "original": {
+        "top_label_ece": 0.17119983166456226,
+        "adaptive_ece": 0.1615976622700691,
+        "multiclass_log_loss": 0.20995589759300473,
+        "multiclass_brier_score": 0.053811987278926436
+      },
+      "recalculated": {
+        "top_label_ece": 0.17119983166456226,
+        "adaptive_ece": 0.1615976622700691,
+        "multiclass_log_loss": 0.20995589759300473,
+        "multiclass_brier_score": 0.053811987278926436
+      },
+      "accuracy": 0.99,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.17119983166456224,
+        "adaptive_ece": 0.1615976622700691,
+        "multiclass_log_loss": 0.20995589759300476,
+        "multiclass_brier_score": 0.053811987278926436
+      },
+      "mean_confidence": 0.8284023377299309,
+      "max_normalization_error": 1.471489667892456e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n05__emissary-zero-shot",
+      "source_sha256": {
+        "config.json": "a1370d0108389e039042fb6d217ef211a95e2031c1a3732a3356ef4a6314496b",
+        "predictions.jsonl": "02f17d88b59e0d546a1f1f8a32c48f5511bee3ba66ec8b1ed4dbe9aaa229bbb2",
+        "metrics.json": "96e6280c42212ad37050dc431ee6ab6e3171ff8f37dae6d440f3c2edb176c1d0"
+      },
+      "partition_sizes": {
+        "fit": 400,
+        "validation": 100,
+        "test": 100
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate"
+      ],
+      "original": {
+        "top_label_ece": 0.035544347167015135,
+        "adaptive_ece": 0.04633179008960723,
+        "multiclass_log_loss": 0.2615434363200073,
+        "multiclass_brier_score": 0.10877858404565634
+      },
+      "recalculated": {
+        "top_label_ece": 0.035544347167015135,
+        "adaptive_ece": 0.04633179008960723,
+        "multiclass_log_loss": 0.2615434363200073,
+        "multiclass_brier_score": 0.10877858404565634
+      },
+      "accuracy": 0.94,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.03554434716701507,
+        "adaptive_ece": 0.046331790089607236,
+        "multiclass_log_loss": 0.26154343632000737,
+        "multiclass_brier_score": 0.10877858404565637
+      },
+      "mean_confidence": 0.9100065022706986,
+      "max_normalization_error": 1.2665987014770508e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n05__openai-zero-shot",
+      "source_sha256": {
+        "config.json": "12d4e92f2b8c23b19d0e73bf7f46083e1d8b89002d94bbac2e22c9bc94dfec6c",
+        "predictions.jsonl": "eacc9309a846f515bd5c0c64a93545c576c2a624ef1454c200826b756adffa8f",
+        "metrics.json": "af982cbaaeee852ab027208967ecc3828f4a2fba4e4384aa5a52f9aaa62866e9"
+      },
+      "partition_sizes": {
+        "fit": 400,
+        "validation": 100,
+        "test": 100
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate"
+      ],
+      "original": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "recalculated": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "accuracy": 0.94,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "missing_distributions_unavailable": true,
+        "missing_confidence_unavailable": true
+      }
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n05__sentence-transformer-logreg",
+      "source_sha256": {
+        "config.json": "f1cf351d20da4ed976121a7f04fd92ca426d54dbb5547a81217f78b8a9f819b3",
+        "predictions.jsonl": "0cee73cf862873468c7560247eb528e4359ab42f6b49a198ea6b65caf812d30c",
+        "metrics.json": "0c32743b53a3693048ff7c5aa63e85e64869c80a8ebeb4e6bbd125ae3ae24897"
+      },
+      "partition_sizes": {
+        "fit": 400,
+        "validation": 100,
+        "test": 100
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate"
+      ],
+      "original": {
+        "top_label_ece": 0.41949757993221276,
+        "adaptive_ece": 0.4194975799322128,
+        "multiclass_log_loss": 0.6218217181278252,
+        "multiclass_brier_score": 0.27413633423511075
+      },
+      "recalculated": {
+        "top_label_ece": 0.41949757993221276,
+        "adaptive_ece": 0.4194975799322128,
+        "multiclass_log_loss": 0.6218217181278252,
+        "multiclass_brier_score": 0.27413633423511075
+      },
+      "accuracy": 0.97,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.4194975799322128,
+        "adaptive_ece": 0.41949757993221287,
+        "multiclass_log_loss": 0.6218217181278252,
+        "multiclass_brier_score": 0.27413633423511075
+      },
+      "mean_confidence": 0.5505024200677872,
+      "max_normalization_error": 9.685754776000977e-08,
+      "selected_c_values": [
+        0.1
+      ]
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n10__bert-finetuned",
+      "source_sha256": {
+        "config.json": "ef8ae9c156ba3f072a1ba2c31aaed9ba42128a547916fad53d6d97df9f5c52ae",
+        "predictions.jsonl": "a467578c056275897e56ad8f4c9a528c60efe780d3115a97d1e45d069c03f9c9",
+        "metrics.json": "8862b4abea886971173680d781f5f1c83b20815ab8bc339ec9328cf72f19461f"
+      },
+      "partition_sizes": {
+        "fit": 800,
+        "validation": 200,
+        "test": 200
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account"
+      ],
+      "original": {
+        "top_label_ece": 0.1877976781129837,
+        "adaptive_ece": 0.18765788584947588,
+        "multiclass_log_loss": 0.35230148293100255,
+        "multiclass_brier_score": 0.12682133670076623
+      },
+      "recalculated": {
+        "top_label_ece": 0.1877976781129837,
+        "adaptive_ece": 0.18765788584947588,
+        "multiclass_log_loss": 0.35230148293100255,
+        "multiclass_brier_score": 0.12682133670076623
+      },
+      "accuracy": 0.945,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.18779767811298367,
+        "adaptive_ece": 0.18765788584947585,
+        "multiclass_log_loss": 0.35230148293100255,
+        "multiclass_brier_score": 0.1268213367007663
+      },
+      "mean_confidence": 0.7573421141505241,
+      "max_normalization_error": 1.6624107956886292e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n10__emissary-zero-shot",
+      "source_sha256": {
+        "config.json": "57fc40ecdffd4278ffdfb4272fbe6e9679cf16df7ca566725e4eb707c368818e",
+        "predictions.jsonl": "873f6a88be4f467b3e84134904776550853dd2ba50c8907518ea9f96cce0fca1",
+        "metrics.json": "12c16db8685efc27be7f364b0c4ff631a1b5c841ef3b636055b40be5a7b8ad8c"
+      },
+      "partition_sizes": {
+        "fit": 800,
+        "validation": 200,
+        "test": 200
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account"
+      ],
+      "original": {
+        "top_label_ece": 0.06748090974986556,
+        "adaptive_ece": 0.10134116463363171,
+        "multiclass_log_loss": 0.6780503547743415,
+        "multiclass_brier_score": 0.2827960469812632
+      },
+      "recalculated": {
+        "top_label_ece": 0.06748090974986556,
+        "adaptive_ece": 0.10134116463363171,
+        "multiclass_log_loss": 0.6780503547743415,
+        "multiclass_brier_score": 0.2827960469812632
+      },
+      "accuracy": 0.84,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.06748090974986552,
+        "adaptive_ece": 0.1013411646336317,
+        "multiclass_log_loss": 0.6780503547743413,
+        "multiclass_brier_score": 0.2827960469812631
+      },
+      "mean_confidence": 0.8534604496508836,
+      "max_normalization_error": 2.2922176867723465e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n10__openai-zero-shot",
+      "source_sha256": {
+        "config.json": "1a51230174fadc32a97d8eea266ef11b3dc07b11f3b83d571d9c5b15cf96cb53",
+        "predictions.jsonl": "0d420a944013ead71103d5862019af97f8cd50fd9cf9c77113d3a54d7f9686f9",
+        "metrics.json": "5c498101cdf146cdd51e5a51cc3af967f07144a5d0d6956c7ccfe24f36218031"
+      },
+      "partition_sizes": {
+        "fit": 800,
+        "validation": 200,
+        "test": 200
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account"
+      ],
+      "original": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "recalculated": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "accuracy": 0.845,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "missing_distributions_unavailable": true,
+        "missing_confidence_unavailable": true
+      }
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n10__sentence-transformer-logreg",
+      "source_sha256": {
+        "config.json": "53d43f22c5efeb7e32e154eab51b2159aa12f1b4f3d89df9eb444977bb89d34b",
+        "predictions.jsonl": "c8e3467f7369afbc23df65c6da8f7c5e1e976e548d4f11c898f85183053be687",
+        "metrics.json": "5703fc2d152815ce944530e7587681a6b5eb037b22546f907dd36e4e3d48839e"
+      },
+      "partition_sizes": {
+        "fit": 800,
+        "validation": 200,
+        "test": 200
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account"
+      ],
+      "original": {
+        "top_label_ece": 0.04874276831746101,
+        "adaptive_ece": 0.04742863580584527,
+        "multiclass_log_loss": 0.12176936669347521,
+        "multiclass_brier_score": 0.04764304219280721
+      },
+      "recalculated": {
+        "top_label_ece": 0.04874276831746101,
+        "adaptive_ece": 0.04742863580584527,
+        "multiclass_log_loss": 0.12176936669347521,
+        "multiclass_brier_score": 0.04764304219280721
+      },
+      "accuracy": 0.97,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.04874276831746101,
+        "adaptive_ece": 0.04742863580584525,
+        "multiclass_log_loss": 0.12176936669347521,
+        "multiclass_brier_score": 0.04764304219280721
+      },
+      "mean_confidence": 0.9225713641941548,
+      "max_normalization_error": 2.2079620976001024e-07,
+      "selected_c_values": [
+        10.0
+      ]
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n20__bert-finetuned",
+      "source_sha256": {
+        "config.json": "f17ad0c8bd2bd6c846474cc31682717cfb11fc24f9c0223facb37e8ec6df90b6",
+        "predictions.jsonl": "0f153fd4cc74104b1898068c4b9266324bc5e08e6361e12af28e188144c09729",
+        "metrics.json": "481307c916cfdaffb1308d8f760c74a89fd786e7c1ca3c69efff40c42658275d"
+      },
+      "partition_sizes": {
+        "fit": 1600,
+        "validation": 400,
+        "test": 400
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card"
+      ],
+      "original": {
+        "top_label_ece": 0.2117882864549756,
+        "adaptive_ece": 0.2109006082639098,
+        "multiclass_log_loss": 0.4142112318786842,
+        "multiclass_brier_score": 0.1379309744068294
+      },
+      "recalculated": {
+        "top_label_ece": 0.2117882864549756,
+        "adaptive_ece": 0.2109006082639098,
+        "multiclass_log_loss": 0.4142112318786842,
+        "multiclass_brier_score": 0.1379309744068294
+      },
+      "accuracy": 0.9425,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.2117882864549756,
+        "adaptive_ece": 0.2109006082639098,
+        "multiclass_log_loss": 0.4142112318786842,
+        "multiclass_brier_score": 0.13793097440682944
+      },
+      "mean_confidence": 0.7315993917360902,
+      "max_normalization_error": 1.762527972459793e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n20__emissary-zero-shot",
+      "source_sha256": {
+        "config.json": "d84c8846e231c1e652eda3b723e8cfa57a92de7dd324ed5cfe2531858a709e66",
+        "predictions.jsonl": "689c01880bb11ec8c2b9fbab53ce57fea359148a52003b88cf05083564acc3c1",
+        "metrics.json": "ddf3e359d279ec8d5a673d03be6ec2ca00828761fca1460ad8e145a9a1f41e65"
+      },
+      "partition_sizes": {
+        "fit": 1600,
+        "validation": 400,
+        "test": 400
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card"
+      ],
+      "original": {
+        "top_label_ece": 0.05489798922091724,
+        "adaptive_ece": 0.07619342628866434,
+        "multiclass_log_loss": 0.8769462004867754,
+        "multiclass_brier_score": 0.3165383863574356
+      },
+      "recalculated": {
+        "top_label_ece": 0.05489798922091724,
+        "adaptive_ece": 0.07619342628866434,
+        "multiclass_log_loss": 0.8769462004867754,
+        "multiclass_brier_score": 0.3165383863574356
+      },
+      "accuracy": 0.7925,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.05489798922091722,
+        "adaptive_ece": 0.07619342628866435,
+        "multiclass_log_loss": 0.8769462004867754,
+        "multiclass_brier_score": 0.3165383863574357
+      },
+      "mean_confidence": 0.7691300725564361,
+      "max_normalization_error": 1.9441358745098114e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n20__openai-zero-shot",
+      "source_sha256": {
+        "config.json": "fb8de5219494e1ccde97cf1b3602cf3624076c97ea9108abe08d960476dec2b7",
+        "predictions.jsonl": "fccb57d5508d02e153e5532275bd45dd472378aec0879c0b7951602d04e9d92b",
+        "metrics.json": "176e536c6999d517c3a936fd7952b9ef49232957b396f354bf855c17063315be"
+      },
+      "partition_sizes": {
+        "fit": 1600,
+        "validation": 400,
+        "test": 400
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card"
+      ],
+      "original": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "recalculated": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "accuracy": 0.855,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "missing_distributions_unavailable": true,
+        "missing_confidence_unavailable": true
+      }
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n20__sentence-transformer-logreg",
+      "source_sha256": {
+        "config.json": "2d8ce5cb3d6570d2b26500fa4983f68f9ed438774b12705290277f71507803df",
+        "predictions.jsonl": "9a1679ca247b924c92c49d45d3b1458dc84d32f7060261ac1f0a91550cf7a8f8",
+        "metrics.json": "e1c78d736bba85e2bb6e985f30bc0eaae4df75114a06cb9ea0022a5284e055bd"
+      },
+      "partition_sizes": {
+        "fit": 1600,
+        "validation": 400,
+        "test": 400
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card"
+      ],
+      "original": {
+        "top_label_ece": 0.06418185688555242,
+        "adaptive_ece": 0.06141709603369239,
+        "multiclass_log_loss": 0.14131755591949977,
+        "multiclass_brier_score": 0.05222283481184165
+      },
+      "recalculated": {
+        "top_label_ece": 0.06418185688555242,
+        "adaptive_ece": 0.06141709603369239,
+        "multiclass_log_loss": 0.14131755591949977,
+        "multiclass_brier_score": 0.05222283481184165
+      },
+      "accuracy": 0.97,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.0641818568855524,
+        "adaptive_ece": 0.061417096033692366,
+        "multiclass_log_loss": 0.14131755591949977,
+        "multiclass_brier_score": 0.05222283481184164
+      },
+      "mean_confidence": 0.9085829039663076,
+      "max_normalization_error": 2.9047077987343073e-07,
+      "selected_c_values": [
+        10.0
+      ]
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n25__bert-finetuned",
+      "source_sha256": {
+        "config.json": "7c4327fb5a5ffc8acb7da02f6ef567a22f56530d4f23a69398bd50d3634312a5",
+        "predictions.jsonl": "b255500de7f0f5be5c07d9a25de8df0a4004137e2bd98d91a0ea8d96761751e4",
+        "metrics.json": "7f61bf1b9456859ec7bceb07e00fd967c4a65d39b542400bec78192b85510481"
+      },
+      "partition_sizes": {
+        "fit": 2000,
+        "validation": 500,
+        "test": 500
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card",
+        "supported_cards_and_currencies",
+        "card_payment_not_recognised",
+        "age_limit",
+        "pending_transfer",
+        "verify_source_of_funds"
+      ],
+      "original": {
+        "top_label_ece": 0.220359492957592,
+        "adaptive_ece": 0.21953805381059646,
+        "multiclass_log_loss": 0.46554612206621915,
+        "multiclass_brier_score": 0.1640163551236997
+      },
+      "recalculated": {
+        "top_label_ece": 0.220359492957592,
+        "adaptive_ece": 0.21953805381059646,
+        "multiclass_log_loss": 0.46554612206621915,
+        "multiclass_brier_score": 0.1640163551236997
+      },
+      "accuracy": 0.924,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.220359492957592,
+        "adaptive_ece": 0.21953805381059646,
+        "multiclass_log_loss": 0.46554612206621915,
+        "multiclass_brier_score": 0.16401635512369966
+      },
+      "mean_confidence": 0.7044619461894035,
+      "max_normalization_error": 1.8114224076271057e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n25__emissary-zero-shot",
+      "source_sha256": {
+        "config.json": "9bcb39eb5c6d73482f2c9d82bf145f91c89185e609e79f8c75baa8a1055fc016",
+        "predictions.jsonl": "b3b8551604dd28d80ff8c51d18e43bdc604ea0c5bb1e8954950030de68d6a6f9",
+        "metrics.json": "d69be908c3947d687b9d4193753e01f49614dc8d6607fa1a2f54be2936225338"
+      },
+      "partition_sizes": {
+        "fit": 2000,
+        "validation": 500,
+        "test": 500
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card",
+        "supported_cards_and_currencies",
+        "card_payment_not_recognised",
+        "age_limit",
+        "pending_transfer",
+        "verify_source_of_funds"
+      ],
+      "original": {
+        "top_label_ece": 0.060956039071083046,
+        "adaptive_ece": 0.06133850806951521,
+        "multiclass_log_loss": 0.9476780914832891,
+        "multiclass_brier_score": 0.32191309664950335
+      },
+      "recalculated": {
+        "top_label_ece": 0.060956039071083046,
+        "adaptive_ece": 0.06133850806951521,
+        "multiclass_log_loss": 0.9476780914832891,
+        "multiclass_brier_score": 0.32191309664950335
+      },
+      "accuracy": 0.784,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.06095603907108307,
+        "adaptive_ece": 0.06133850806951523,
+        "multiclass_log_loss": 0.9476780914832891,
+        "multiclass_brier_score": 0.3219130966495033
+      },
+      "mean_confidence": 0.7347700528502464,
+      "max_normalization_error": 1.6763806343078613e-07
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n25__openai-zero-shot",
+      "source_sha256": {
+        "config.json": "4e18019e0c3140303a8150c449df23b56eb12206ee9079cac235540d987e0949",
+        "predictions.jsonl": "ffafc6ace459840136365710ee9d3d724f0007d25da1d6964fdf844264de253e",
+        "metrics.json": "5d40cfe600face81a4b791db5d2816974fc51fc665c4ca2d5188997969815afe"
+      },
+      "partition_sizes": {
+        "fit": 2000,
+        "validation": 500,
+        "test": 500
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card",
+        "supported_cards_and_currencies",
+        "card_payment_not_recognised",
+        "age_limit",
+        "pending_transfer",
+        "verify_source_of_funds"
+      ],
+      "original": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "recalculated": {
+        "top_label_ece": null,
+        "adaptive_ece": null,
+        "multiclass_log_loss": null,
+        "multiclass_brier_score": null
+      },
+      "accuracy": 0.852,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "missing_distributions_unavailable": true,
+        "missing_confidence_unavailable": true
+      }
+    },
+    {
+      "run_id": "20260804T014841Z__seed42__n25__sentence-transformer-logreg",
+      "source_sha256": {
+        "config.json": "fa51614006798fe8bc451eff0396272ba3539f7d5a322731a74ab172ffba047f",
+        "predictions.jsonl": "2e717c3162a683f4eda8b4e9532648750aa74caa78a18ff9f698de3076d5863c",
+        "metrics.json": "70b056815ebbbffc8eaa6887f9139caff69eb8c71ead7187a6cb82de5125ff0f"
+      },
+      "partition_sizes": {
+        "fit": 2000,
+        "validation": 500,
+        "test": 500
+      },
+      "class_names": [
+        "card_about_to_expire",
+        "failed_transfer",
+        "disposable_card_limits",
+        "unable_to_verify_identity",
+        "card_delivery_estimate",
+        "beneficiary_not_allowed",
+        "cash_withdrawal_not_recognised",
+        "passcode_forgotten",
+        "wrong_amount_of_cash_received",
+        "transfer_into_account",
+        "card_not_working",
+        "pending_card_payment",
+        "direct_debit_payment_not_recognised",
+        "top_up_reverted",
+        "transfer_not_received_by_recipient",
+        "order_physical_card",
+        "edit_personal_details",
+        "change_pin",
+        "reverted_card_payment?",
+        "activate_my_card",
+        "supported_cards_and_currencies",
+        "card_payment_not_recognised",
+        "age_limit",
+        "pending_transfer",
+        "verify_source_of_funds"
+      ],
+      "original": {
+        "top_label_ece": 0.05840964204072947,
+        "adaptive_ece": 0.053940982043743146,
+        "multiclass_log_loss": 0.19166921100675208,
+        "multiclass_brier_score": 0.07833625349672732
+      },
+      "recalculated": {
+        "top_label_ece": 0.05840964204072947,
+        "adaptive_ece": 0.053940982043743146,
+        "multiclass_log_loss": 0.19166921100675208,
+        "multiclass_brier_score": 0.07833625349672732
+      },
+      "accuracy": 0.946,
+      "checks": {
+        "unique_partition_ids": true,
+        "disjoint_partitions": true,
+        "exact_test_ids_and_order": true,
+        "known_labels": true,
+        "saved_metrics_match": true,
+        "complete_label_maps": true,
+        "finite_in_range": true,
+        "normalized": true,
+        "prediction_is_argmax": true,
+        "confidence_matches_prediction": true,
+        "independent_metrics_match": true
+      },
+      "independent": {
+        "top_label_ece": 0.05840964204072953,
+        "adaptive_ece": 0.05394098204374313,
+        "multiclass_log_loss": 0.1916692110067521,
+        "multiclass_brier_score": 0.07833625349672743
+      },
+      "mean_confidence": 0.8920590179562569,
+      "max_normalization_error": 3.0063893063925207e-07,
+      "selected_c_values": [
+        10.0
+      ]
+    }
+  ],
+  "replay": {
+    "model_snapshot": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+    "model_files_sha256": {
+      "1_Pooling/config.json": "4be450dde3b0273bb9787637cfbd28fe04a7ba6ab9d36ac48e92b11e350ffc23",
+      "README.md": "dcd602d2fd35c203a247304a06fec6654a12f7941b739f9221a064fe8dc3b7f0",
+      "config.json": "953f9c0d463486b10a6871cc2fd59f223b2c70184f49815e7efbcab5d8908b41",
+      "config_sentence_transformers.json": "061ca9d39661d6c6d6de5ba27f79a1cd5770ea247f8d46412a68a498dc5ac9f3",
+      "model.safetensors": "53aa51172d142c89d9012cce15ae4d6cc0ca6895895114379cacb4fab128d9db",
+      "modules.json": "84e40c8e006c9b1d6c122e02cba9b02458120b5fb0c87b746c41e0207cf642cf",
+      "sentence_bert_config.json": "fc1993fde0a95c24ec6c022539d41cf6e2f7c9721e5415d6fb6897472a9cd4b7",
+      "special_tokens_map.json": "303df45a03609e4ead04bc3dc1536d0ab19b5358db685b6f3da123d05ec200e3",
+      "tokenizer.json": "be50c3628f2bf5bb5e3a7f17b1f74611b2561a3a27eeab05e5aa30f411572037",
+      "tokenizer_config.json": "acb92769e8195aabd29b7b2137a9e6d6e25c476a4f15aa4355c233426c61576b",
+      "vocab.txt": "07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3"
+    },
+    "source_sha256": {
+      "train_arrow": "3b7ca0707caf59b338877c35b27cd4899f8680382d97b5d611a5f1eeab286ac3",
+      "test_arrow": "5df082b28e3c12b6a4b73a8c1a14427630783ff83c25657d2be678c74c0691cc"
+    },
+    "device": "cpu",
+    "torch_threads": 4,
+    "library_versions": {
+      "numpy": "2.5.1",
+      "scipy": "1.18.0",
+      "scikit-learn": "1.9.0",
+      "torch": "2.13.0",
+      "sentence-transformers": "5.6.1",
+      "transformers": "5.14.1",
+      "datasets": "4.8.5"
+    },
+    "runs": [
+      {
+        "run_id": "20260804T014841Z__seed42__n05__sentence-transformer-logreg",
+        "selected_c": 0.1,
+        "saved_selected_c": 0.1,
+        "candidates": [
+          {
+            "c": 0.1,
+            "validation_accuracy": 0.97,
+            "validation_metrics": {
+              "top_label_ece": 0.41298864781856537,
+              "adaptive_ece": 0.41298864781856537,
+              "multiclass_log_loss": 0.6123504249502386,
+              "multiclass_brier_score": 0.2676524046505677
+            },
+            "test_accuracy": 0.97,
+            "test_mean_confidence": 0.5505024194717407,
+            "test_metrics": {
+              "top_label_ece": 0.4194975712895393,
+              "adaptive_ece": 0.41949757128953935,
+              "multiclass_log_loss": 0.6218217003637279,
+              "multiclass_brier_score": 0.2741363241832893
+            },
+            "coefficient_l2_norm": 5.124992847442627,
+            "iterations": [
+              11
+            ],
+            "max_probability_difference_from_saved": 3.5762786865234375e-07,
+            "predicted_labels_match_saved": true
+          },
+          {
+            "c": 1.0,
+            "validation_accuracy": 0.97,
+            "validation_metrics": {
+              "top_label_ece": 0.11592521518468857,
+              "adaptive_ece": 0.0973481383919716,
+              "multiclass_log_loss": 0.16493155486547043,
+              "multiclass_brier_score": 0.050405296995827256
+            },
+            "test_accuracy": 0.98,
+            "test_mean_confidence": 0.8673317432403564,
+            "test_metrics": {
+              "top_label_ece": 0.11888739854097366,
+              "adaptive_ece": 0.11266825646162032,
+              "multiclass_log_loss": 0.16116820810361754,
+              "multiclass_brier_score": 0.046019979119810116
+            },
+            "coefficient_l2_norm": 11.943421363830566,
+            "iterations": [
+              16
+            ]
+          },
+          {
+            "c": 10.0,
+            "validation_accuracy": 0.97,
+            "validation_metrics": {
+              "top_label_ece": 0.040560472607612606,
+              "adaptive_ece": 0.025529313683509827,
+              "multiclass_log_loss": 0.06167097034235348,
+              "multiclass_brier_score": 0.02767532578812359
+            },
+            "test_accuracy": 0.98,
+            "test_mean_confidence": 0.9641437530517578,
+            "test_metrics": {
+              "top_label_ece": 0.033710694313049315,
+              "adaptive_ece": 0.015856273174285892,
+              "multiclass_log_loss": 0.048491529519551,
+              "multiclass_brier_score": 0.01724617521955543
+            },
+            "coefficient_l2_norm": 20.316072463989258,
+            "iterations": [
+              21
+            ]
+          }
+        ]
+      },
+      {
+        "run_id": "20260804T014841Z__seed42__n10__sentence-transformer-logreg",
+        "selected_c": 10.0,
+        "saved_selected_c": 10.0,
+        "candidates": [
+          {
+            "c": 0.1,
+            "validation_accuracy": 0.95,
+            "validation_metrics": {
+              "top_label_ece": 0.5630912929028272,
+              "adaptive_ece": 0.5630912929028272,
+              "multiclass_log_loss": 1.0031082170678136,
+              "multiclass_brier_score": 0.44710835782808867
+            },
+            "test_accuracy": 0.895,
+            "test_mean_confidence": 0.37726426124572754,
+            "test_metrics": {
+              "top_label_ece": 0.5177357325702906,
+              "adaptive_ece": 0.5177357325702906,
+              "multiclass_log_loss": 1.0365148655862455,
+              "multiclass_brier_score": 0.46260474000603835
+            },
+            "coefficient_l2_norm": 8.629070281982422,
+            "iterations": [
+              13
+            ]
+          },
+          {
+            "c": 1.0,
+            "validation_accuracy": 0.955,
+            "validation_metrics": {
+              "top_label_ece": 0.16727020889520644,
+              "adaptive_ece": 0.1649661499261856,
+              "multiclass_log_loss": 0.28155025132707534,
+              "multiclass_brier_score": 0.1032835991390504
+            },
+            "test_accuracy": 0.95,
+            "test_mean_confidence": 0.7715710401535034,
+            "test_metrics": {
+              "top_label_ece": 0.1784289760887623,
+              "adaptive_ece": 0.1784289760887623,
+              "multiclass_log_loss": 0.3112398321643798,
+              "multiclass_brier_score": 0.11625572820273879
+            },
+            "coefficient_l2_norm": 21.26678466796875,
+            "iterations": [
+              22
+            ]
+          },
+          {
+            "c": 10.0,
+            "validation_accuracy": 0.975,
+            "validation_metrics": {
+              "top_label_ece": 0.04449107855558396,
+              "adaptive_ece": 0.04288559883832933,
+              "multiclass_log_loss": 0.10700747805091212,
+              "multiclass_brier_score": 0.046182335996226814
+            },
+            "test_accuracy": 0.97,
+            "test_mean_confidence": 0.9225714802742004,
+            "test_metrics": {
+              "top_label_ece": 0.04874261647462845,
+              "adaptive_ece": 0.04742851674556732,
+              "multiclass_log_loss": 0.12176853742704818,
+              "multiclass_brier_score": 0.04764264560470744
+            },
+            "coefficient_l2_norm": 38.206787109375,
+            "iterations": [
+              28
+            ],
+            "max_probability_difference_from_saved": 2.0325183868408203e-05,
+            "predicted_labels_match_saved": true
+          }
+        ]
+      }
+    ]
+  }
+}
