@@ -1076,6 +1076,17 @@ class EmissaryClassifier:
                 "Deployment labels must contain exactly the configured class set"
             )
 
+    def inference_metadata(self) -> dict[str, Any]:
+        session = getattr(self.client, "session", None)
+        adapters = getattr(session, "adapters", {})
+        retries = {scheme: getattr(getattr(adapter, "max_retries", None), "total", None)
+                   for scheme, adapter in adapters.items()}
+        return {"backend": "hosted_api", "batch_execution": "sequential_single_example",
+                "transport_retries_by_scheme": retries or None,
+                "transport_attempt_timings": "not exposed; call timing includes any injected-session retries",
+                "connect_read_timeout_seconds": getattr(self.client, "timeout", None),
+                "server_hardware": None}
+
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         self.training.require_live_support()
         if self._status != "ready" or self.model_id is None or self._inference_model is None:

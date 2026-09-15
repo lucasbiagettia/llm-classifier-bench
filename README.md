@@ -249,6 +249,32 @@ load dataset
 
 The runner never branches on classifier names.
 
+## Latency and throughput
+
+The runner now times complete `predict()` calls, including preprocessing and
+output normalization, and saves individual observations in `timings.jsonl`.
+`operational_report.json` separates preparation, warmup, successful calls and
+failed calls; it reports P50, P95, observation counts and throughput. P99 requires
+at least 1,000 observations. Batched-call amortized time is reported separately
+from individual-request latency.
+
+Both campaign scripts accept `--inference-batch-size` (default 1),
+`--warmup-examples` (default 0), `--client-location` and `--cache-condition`.
+Warmup makes extra predictions on fit-training examples; hosted calls may be
+billed. Without explicit warmup the run is labeled unwarmed. The default OpenAI
+client uses no automatic retries and a 120-second timeout.
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src \
+  venv/bin/python scripts/probe_latency.py --run-id local-timing
+
+PYTHONPATH=src venv/bin/python scripts/report_operational.py \
+  artifacts/latency_smoke/local-timing --output /tmp/local-timing.md
+```
+
+See the [measurement contract and validation](docs/latency_measurement.md) for
+timing boundaries, metadata, failure handling, and historical-artifact compatibility.
+
 ## Installation
 
 Target environment:

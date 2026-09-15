@@ -36,6 +36,7 @@ def test_tfidf_only_campaign_and_saved_configuration_replay(script, tmp_path, mo
             "--definitions", str(definitions), "--output-root", str(tmp_path),
             "--tfidf-c-values", "10", "1", "--tfidf-fallback-c", "2",
             "--tfidf-ngram-range", "1", "1", "--tfidf-sublinear-tf"]
+    args += ["--warmup-examples", "1", "--client-location", "local fixture"]
     if script.endswith("_v2"):
         args += ["--min-train-per-class", "4", "--min-test-per-class", "1", "--strict-support"]
     monkeypatch.setattr(sys, "argv", args)
@@ -43,6 +44,7 @@ def test_tfidf_only_campaign_and_saved_configuration_replay(script, tmp_path, mo
     root = tmp_path / "fixture-campaign"
     manifest = json.loads((root / "campaign.json").read_text())
     assert manifest["classifiers"] == ["tfidf"]
+    assert manifest["measurement"]["warmup_examples"] == 1
     assert manifest["tfidf_training_by_seed"]["17"]["c_values"] == [10, 1]
     summary = json.loads((root / "summary.json").read_text())
     assert len(summary) == 1
@@ -57,6 +59,12 @@ def test_tfidf_only_campaign_and_saved_configuration_replay(script, tmp_path, mo
     with (root / "summary.csv").open() as stream:
         assert list(csv.DictReader(stream))[0]["classifier_key"] == "tfidf"
     run_dir = Path(row["run_dir"])
+    operational = json.loads((run_dir / "operational_report.json").read_text())
+    assert operational["warmup"]["observation_count"] == 1
+    assert operational["evaluation"]["successful_examples"] == 2
+    assert operational["measurement"]["runtime"]["classifier"]["device"] == "cpu"
+    assert row["latency_p95_ms"] is not None
+    assert row["latency_p99_ms"] is None
     config = json.loads((run_dir / "config.json").read_text())
     fit = json.loads((run_dir / "fit_metadata.json").read_text())
     assert fit["selected_c"] == row["selected_c"]

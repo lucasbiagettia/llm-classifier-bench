@@ -6,6 +6,7 @@ from llm_classifier_bench.metrics import (
     CostPer1000Metric,
     EvaluationRecord,
     LatencyP50Metric,
+    LatencyP95Metric,
     LatencyP99Metric,
     MeanLatencyMetric,
     TotalCostMetric,
@@ -41,7 +42,14 @@ def test_latency_metrics() -> None:
     assert percentile((10.0, 20.0, 30.0, 40.0), 0.5) == pytest.approx(25.0)
     assert MeanLatencyMetric().compute(records).value == pytest.approx(25.0)
     assert LatencyP50Metric().compute(records).value == pytest.approx(25.0)
-    assert LatencyP99Metric().compute(records).value == pytest.approx(39.7)
+    assert LatencyP95Metric().compute(records).value == pytest.approx(38.5)
+    assert LatencyP99Metric().compute(records).value is None
+
+
+def test_p99_requires_one_thousand_individual_observations() -> None:
+    records = tuple(record(str(i), latency_ms=float(i), cost_usd=None) for i in range(1000))
+    assert LatencyP99Metric().compute(records[:-1]).value is None
+    assert LatencyP99Metric().compute(records).value == pytest.approx(989.01)
 
 
 def test_cost_metrics() -> None:

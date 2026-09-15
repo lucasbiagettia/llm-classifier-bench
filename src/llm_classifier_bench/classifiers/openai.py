@@ -56,6 +56,18 @@ class OpenAIClassifier:
     def name(self) -> str:
         return self._name
 
+    def inference_metadata(self) -> dict[str, Any]:
+        timeout = getattr(self._client, "timeout", None)
+        return {
+            "backend": "hosted_api", "batch_execution": "sequential_single_example",
+            "transport_max_retries": getattr(self._client, "max_retries", None),
+            "transport_attempt_timings": "not exposed; call timing includes any injected-client retries",
+            "timeout_seconds": timeout if isinstance(timeout, (int, float)) else {
+                key: getattr(timeout, key, None) for key in ("connect", "read", "write", "pool")
+            },
+            "server_hardware": None,
+        }
+
     def prepare(self, classes: Sequence[ClassDefinition]) -> None:
         frozen = tuple(classes)
         if len(frozen) < 2:
@@ -176,7 +188,8 @@ def _build_openai_client(api_key: str | None) -> Any:
             "openai is not installed. Run pip install -r requirements.txt."
         ) from exc
 
-    return OpenAI(api_key=resolved_api_key)
+    # Keep a measured logical call to one SDK attempt; record injected policies.
+    return OpenAI(api_key=resolved_api_key, max_retries=0, timeout=120.0)
 
 
 def _serialize_response(response: Any) -> dict[str, Any]:

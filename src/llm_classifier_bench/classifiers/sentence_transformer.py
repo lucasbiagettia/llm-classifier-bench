@@ -147,6 +147,11 @@ class SentenceTransformerLogisticClassifier:
         """Persist candidate scores through the runner's existing metadata hook."""
         return dict(self._fit_metadata)
 
+    def inference_metadata(self) -> dict[str, Any]:
+        device = getattr(self._encoder, "device", None)
+        return {"backend": "local", "device": str(device) if device is not None else None,
+                "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
+
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         if self._encoder is None or self._classifier is None:
             raise RuntimeError("Call prepare(classes) and fit(...) before predict()")

@@ -156,6 +156,10 @@ class BertClassifier:
         self._model = model
         self._device = device
 
+    def inference_metadata(self) -> dict[str, Any]:
+        return {"backend": "local", "device": str(self._device) if self._device is not None else None,
+                "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
+
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         if self._tokenizer is None or self._model is None or self._device is None:
             raise RuntimeError("Call prepare(classes) and fit(...) before predict()")

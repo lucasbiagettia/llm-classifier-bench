@@ -18,6 +18,7 @@ from llm_classifier_bench.core import LabeledExample
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
 from llm_classifier_bench.datasets.selection import validate_partition_disjointness
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
+from llm_classifier_bench.measurement import MeasurementConfig, TimingRecorder
 
 
 @dataclass(frozen=True, slots=True)
@@ -36,6 +37,7 @@ class BenchmarkRunConfig:
     metadata: Mapping[str, Any] = field(default_factory=dict)
     class_definitions_path: Path | None = None
     dry_run: bool = False
+    measurement: MeasurementConfig = field(default_factory=MeasurementConfig)
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.validation_fraction < 1.0:
@@ -71,7 +73,7 @@ def run_benchmark(
     4. persist the exact data identity and run configuration;
     5. ``classifier.prepare(classes)``;
     6. ``classifier.fit(train, validation_examples=validation)``;
-    7. predict the untouched dataset test split;
+    7. optionally warm up on fit inputs, then time calls on the untouched test split;
     8. validate and persist normalized predictions;
     9. compute metrics from the persisted artifact.
     """
@@ -88,6 +90,7 @@ def run_benchmark(
     fit_metadata_path = run_dir / "fit_metadata.json"
     persist_fit_metadata = False
     fitted_metadata: Any = None
+    timing: TimingRecorder | None = None
 
     stage = "loading_dataset"
     _write_status(
@@ -153,6 +156,10 @@ def run_benchmark(
                 run_id, run_dir, config_path, predictions_path, status_path, None, 0,
             )
 
+        if resolved_config.measurement.warmup_examples > len(fit_train):
+            raise ValueError("warmup_examples exceeds the fit-training partition")
+        timing = TimingRecorder(run_dir, resolved_config.measurement, classifier, len(bundle.test))
+
         fitted_metadata = getattr(classifier, "fitted_metadata", None)
         metadata_sink = getattr(classifier, "set_fit_metadata_sink", None)
         if callable(metadata_sink):
@@ -168,7 +175,7 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        classifier.prepare(bundle.classes)
+        timing.measure(lambda: classifier.prepare(bundle.classes), kind="stage", phase="prepare")
 
         stage = "fitting_classifier"
         _write_status(
@@ -179,13 +186,24 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        classifier.fit(fit_train, validation_examples=validation)
+        timing.measure(lambda: classifier.fit(fit_train, validation_examples=validation), kind="stage", phase="fit")
 
         # Optional generic hook: retain the pre-fit config and persist learned
         # settings separately, before inference can fail or mutate the model.
         if callable(fitted_metadata):
             stage = "writing_fitted_metadata"
             _write_json(fit_metadata_path, fitted_metadata())
+
+        stage = "warming_up"
+        warmup = fit_train[:resolved_config.measurement.warmup_examples]
+        batch_size = resolved_config.measurement.batch_size
+        for offset in range(0, len(warmup), batch_size):
+            batch = warmup[offset:offset + batch_size]
+            timing.measure(
+                lambda: classifier.predict([example.as_input() for example in batch]), kind="inference", phase="warmup",
+                sample_ids=[example.sample_id for example in batch],
+                validate=lambda outputs: _validate_predictions(bundle, outputs, examples=batch),
+            )
 
         stage = "predicting"
         _write_status(
@@ -196,9 +214,19 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        test_inputs = [example.as_input() for example in bundle.test]
-        predictions = classifier.predict(test_inputs)
-        _validate_predictions(bundle, predictions)
+        predictions = []
+        inference_timings = {}
+        for offset in range(0, len(bundle.test), batch_size):
+            batch = bundle.test[offset:offset + batch_size]
+            inputs = [example.as_input() for example in batch]
+            outputs, observation = timing.measure(
+                lambda: classifier.predict(inputs), kind="inference", phase="evaluation",
+                sample_ids=[example.sample_id for example in batch],
+                validate=lambda outputs: _validate_predictions(bundle, outputs, examples=batch),
+            )
+            predictions.extend(outputs)
+            for example in batch:
+                inference_timings[example.sample_id] = observation
 
         stage = "writing_predictions"
         _write_status(
@@ -214,6 +242,7 @@ def run_benchmark(
             bundle=bundle,
             classifier_name=classifier.name,
             predictions=predictions,
+            inference_timings=inference_timings,
         )
 
         resolved_metrics_path: Path | None = None
@@ -241,6 +270,8 @@ def run_benchmark(
             example_count=len(bundle.test),
         )
 
+        timing.finish("completed")
+
         return BenchmarkRunResult(
             run_id=run_id,
             run_dir=run_dir,
@@ -252,6 +283,13 @@ def run_benchmark(
         )
 
     except Exception as exc:
+        timing_error = None
+        if timing is not None:
+            try:
+                timing.finish("failed")
+            except Exception as report_error:
+                # Keep the provider/fit exception primary if report writing fails.
+                timing_error = type(report_error).__name__
         if persist_fit_metadata:
             try:
                 _write_json(fit_metadata_path, fitted_metadata())
@@ -267,6 +305,7 @@ def run_benchmark(
             classifier=classifier.name,
             error_type=type(exc).__name__,
             error_message=str(exc),
+            timing_report_error_type=timing_error,
         )
         raise
 
@@ -317,15 +356,18 @@ def split_train_validation(
 def _validate_predictions(
     bundle: DatasetBundle,
     predictions: Sequence[Prediction],
+    *,
+    examples: Sequence[LabeledExample] | None = None,
 ) -> None:
-    if len(predictions) != len(bundle.test):
+    test_examples = bundle.test if examples is None else examples
+    if len(predictions) != len(test_examples):
         raise ValueError(
             "Classifier returned a different number of predictions than test inputs: "
-            f"expected {len(bundle.test)}, got {len(predictions)}"
+            f"expected {len(test_examples)}, got {len(predictions)}"
         )
 
     valid_labels = set(bundle.class_names)
-    for index, (example, prediction) in enumerate(zip(bundle.test, predictions, strict=True)):
+    for index, (example, prediction) in enumerate(zip(test_examples, predictions, strict=True)):
         if prediction.sample_id != example.sample_id:
             raise ValueError(
                 "Classifier did not preserve input order/sample_id at position "
@@ -389,9 +431,11 @@ def _write_predictions_jsonl(
     bundle: DatasetBundle,
     classifier_name: str,
     predictions: Sequence[Prediction],
+    inference_timings: Mapping[str, Any],
 ) -> None:
     with path.open("w", encoding="utf-8") as output_file:
         for example, prediction in zip(bundle.test, predictions, strict=True):
+            observation = inference_timings[example.sample_id]
             payload = {
                 "dataset": bundle.name,
                 "classifier": classifier_name,
@@ -402,7 +446,12 @@ def _write_predictions_jsonl(
                 "correct": example.label == prediction.predicted_label,
                 "confidence": prediction.confidence,
                 "probabilities": dict(prediction.probabilities or {}),
-                "latency_ms": prediction.latency_ms,
+                "latency_ms": observation["elapsed_ms"] if observation["batch_size"] == 1 else None,
+                "latency_scope": "predict_call_single_example" if observation["batch_size"] == 1 else "unavailable_for_batched_call",
+                "adapter_latency_ms": prediction.latency_ms,
+                "inference_observation_index": observation["observation_index"],
+                "inference_batch_size": observation["batch_size"],
+                "amortized_latency_ms": observation["amortized_ms_per_example"],
                 "model": prediction.model,
                 "request_id": prediction.request_id,
                 "raw_response": dict(prediction.raw_response or {}),
@@ -425,6 +474,7 @@ def _write_run_config(
         "run_id": run_id,
         "created_at_utc": _utc_now(),
         "dry_run": config.dry_run,
+        "measurement": asdict(config.measurement),
         "dataset": {
             "name": dataset.name,
             "metadata": dict(dataset.metadata),

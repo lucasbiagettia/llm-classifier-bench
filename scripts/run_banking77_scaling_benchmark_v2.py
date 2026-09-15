@@ -82,6 +82,7 @@ from llm_classifier_bench.runner import (
     run_benchmark,
     split_train_validation,
 )
+from llm_classifier_bench.measurement import add_measurement_arguments, measurement_from_args
 
 
 DEFAULT_DEFINITIONS = Path(
@@ -582,11 +583,18 @@ def summary_row(
         "multiclass_brier_score",
         "mean_latency_ms",
         "latency_p50_ms",
+        "latency_p95_ms",
         "latency_p99_ms",
         "total_cost_usd",
         "cost_per_1000_usd",
     ):
         row[metric_name] = load_metric_value(metrics, metric_name)
+
+    operational_path = result.run_dir / "operational_report.json"
+    if operational_path.is_file():
+        operational = json.loads(operational_path.read_text())["evaluation"]
+        row["inference_call_count"] = operational["successful_call_latency"]["observation_count"]
+        row["inference_throughput_examples_per_second"] = operational["throughput_successful_examples_per_second"]
 
     return row
 
@@ -614,6 +622,7 @@ def write_summary_csv(path: Path, rows: Sequence[dict[str, Any]]) -> None:
         "multiclass_brier_score",
         "mean_latency_ms",
         "latency_p50_ms",
+        "latency_p95_ms",
         "latency_p99_ms",
         "total_cost_usd",
         "cost_per_1000_usd",
@@ -765,6 +774,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tfidf-max-iter", type=int, default=2000)
 
     add_emissary_arguments(parser)
+    add_measurement_arguments(parser)
     return parser.parse_args()
 
 
@@ -779,6 +789,7 @@ def tfidf_training_config(args: argparse.Namespace, seed: int) -> TfidfTrainingC
 
 def main() -> None:
     args = parse_args()
+    measurement_config = measurement_from_args(args)
     validate_emissary_arguments(args)
 
     class_counts = tuple(sorted(set(args.class_counts)))
@@ -846,6 +857,7 @@ def main() -> None:
         "requested_test_per_class": support_plan.requested_test_per_class,
         "effective_test_per_class": support_plan.effective_test_per_class,
         "validation_fraction": args.validation_fraction,
+        "measurement": asdict(measurement_config),
         "class_subset_strategy": "support_filtered_then_nested_shuffled_prefix",
         "support_policy": {
             "selection_uses_model_performance": False,
@@ -1001,6 +1013,7 @@ def main() -> None:
                         BenchmarkRunConfig(
                             output_root=runs_root,
                             dry_run=args.dry_run,
+                            measurement=measurement_config,
                             run_id=run_id,
                             validation_fraction=args.validation_fraction,
                             split_seed=seed,

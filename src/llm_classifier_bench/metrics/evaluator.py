@@ -17,6 +17,7 @@ from .classification import AccuracyMetric, MacroF1Metric
 from .operational import (
     CostPer1000Metric,
     LatencyP50Metric,
+    LatencyP95Metric,
     LatencyP99Metric,
     MeanLatencyMetric,
     TotalCostMetric,
@@ -32,6 +33,7 @@ DEFAULT_METRICS: tuple[Metric, ...] = (
     MulticlassBrierScoreMetric(),
     MeanLatencyMetric(),
     LatencyP50Metric(),
+    LatencyP95Metric(),
     LatencyP99Metric(),
     TotalCostMetric(),
     CostPer1000Metric(),
