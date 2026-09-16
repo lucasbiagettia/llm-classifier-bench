@@ -1,0 +1,12 @@
+{
+  "run_id": "simulated-invalid",
+  "status": "failed",
+  "stage": "predicting",
+  "updated_at_utc": "2026-09-16T23:30:16.505319+00:00",
+  "dataset": "tfidf_local_smoke",
+  "classifier": "openai-zero-shot",
+  "error_type": "ValueError",
+  "error_message": "OpenAI returned label 'invalid', which is not in the class set",
+  "timing_report_error_type": null,
+  "cost_report_error_type": null
+}
