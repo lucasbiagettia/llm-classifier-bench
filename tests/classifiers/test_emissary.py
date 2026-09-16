@@ -169,3 +169,22 @@ def test_emissary_classifier_satisfies_classifier_protocol() -> None:
     )
 
     assert isinstance(classifier, Classifier)
+
+
+def test_usage_survives_invalid_emissary_response_without_inventing_a_price():
+    from llm_classifier_bench.costs import load_pricing, price_entry
+
+    response = sample_response()
+    response['usage'] = {'requests': 1, 'cache_hits': 0}
+    response['data'][0]['probs'] = {'sports': .9, 'finance': .9}
+    classifier = EmissaryClassifier(client=StubClient(response), model_id='ex-test/0.0.0')
+    events = []
+    classifier.set_usage_sink(events.append)
+    with pytest.raises(EmissaryResponseError):
+        classifier.predict([ClassificationInput('sample', 'sample text')])
+    assert len(events) == 1
+    assert events[0]['usage'] == {'requests': 1, 'cache_hits': 0}
+    assert events[0]['status'] == 'failed'
+    assert events[0]['model'] == 'ex-test/0.0.0'
+    event = {**events[0], 'event_id': 'a', 'phase': 'evaluation'}
+    assert price_entry(event, load_pricing(None), None)['cost_usd'] is None

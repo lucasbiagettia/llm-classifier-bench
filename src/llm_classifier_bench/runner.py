@@ -18,6 +18,7 @@ from llm_classifier_bench.core import LabeledExample
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
 from llm_classifier_bench.datasets.selection import validate_partition_disjointness
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
+from llm_classifier_bench.costs import CostRecorder
 from llm_classifier_bench.measurement import MeasurementConfig, TimingRecorder
 
 
@@ -38,6 +39,7 @@ class BenchmarkRunConfig:
     class_definitions_path: Path | None = None
     dry_run: bool = False
     measurement: MeasurementConfig = field(default_factory=MeasurementConfig)
+    pricing_path: Path | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.validation_fraction < 1.0:
@@ -91,6 +93,7 @@ def run_benchmark(
     persist_fit_metadata = False
     fitted_metadata: Any = None
     timing: TimingRecorder | None = None
+    costs: CostRecorder | None = None
 
     stage = "loading_dataset"
     _write_status(
@@ -158,7 +161,9 @@ def run_benchmark(
 
         if resolved_config.measurement.warmup_examples > len(fit_train):
             raise ValueError("warmup_examples exceeds the fit-training partition")
-        timing = TimingRecorder(run_dir, resolved_config.measurement, classifier, len(bundle.test))
+        costs = CostRecorder(run_dir, classifier, resolved_config.pricing_path)
+        timing = TimingRecorder(run_dir, resolved_config.measurement, classifier, len(bundle.test),
+                                observation_sink=costs.record_timing)
 
         fitted_metadata = getattr(classifier, "fitted_metadata", None)
         metadata_sink = getattr(classifier, "set_fit_metadata_sink", None)
@@ -199,6 +204,7 @@ def run_benchmark(
         batch_size = resolved_config.measurement.batch_size
         for offset in range(0, len(warmup), batch_size):
             batch = warmup[offset:offset + batch_size]
+            costs.phase, costs.observation_index = "warmup", len(timing.rows)
             timing.measure(
                 lambda: classifier.predict([example.as_input() for example in batch]), kind="inference", phase="warmup",
                 sample_ids=[example.sample_id for example in batch],
@@ -218,6 +224,7 @@ def run_benchmark(
         inference_timings = {}
         for offset in range(0, len(bundle.test), batch_size):
             batch = bundle.test[offset:offset + batch_size]
+            costs.phase, costs.observation_index = "evaluation", len(timing.rows)
             inputs = [example.as_input() for example in batch]
             outputs, observation = timing.measure(
                 lambda: classifier.predict(inputs), kind="inference", phase="evaluation",
@@ -227,6 +234,9 @@ def run_benchmark(
             predictions.extend(outputs)
             for example in batch:
                 inference_timings[example.sample_id] = observation
+
+        timing.finish("completed")
+        cost_report = costs.finish()
 
         stage = "writing_predictions"
         _write_status(
@@ -243,6 +253,7 @@ def run_benchmark(
             classifier_name=classifier.name,
             predictions=predictions,
             inference_timings=inference_timings,
+            cost_report=cost_report,
         )
 
         resolved_metrics_path: Path | None = None
@@ -270,8 +281,6 @@ def run_benchmark(
             example_count=len(bundle.test),
         )
 
-        timing.finish("completed")
-
         return BenchmarkRunResult(
             run_id=run_id,
             run_dir=run_dir,
@@ -290,6 +299,12 @@ def run_benchmark(
             except Exception as report_error:
                 # Keep the provider/fit exception primary if report writing fails.
                 timing_error = type(report_error).__name__
+        cost_error = None
+        if costs is not None and timing is not None:
+            try:
+                costs.finish()
+            except Exception as report_error:
+                cost_error = type(report_error).__name__
         if persist_fit_metadata:
             try:
                 _write_json(fit_metadata_path, fitted_metadata())
@@ -306,8 +321,12 @@ def run_benchmark(
             error_type=type(exc).__name__,
             error_message=str(exc),
             timing_report_error_type=timing_error,
+            cost_report_error_type=cost_error,
         )
         raise
+    finally:
+        if costs is not None:
+            costs.close()
 
 
 def split_train_validation(
@@ -432,6 +451,7 @@ def _write_predictions_jsonl(
     classifier_name: str,
     predictions: Sequence[Prediction],
     inference_timings: Mapping[str, Any],
+    cost_report: Mapping[str, Any],
 ) -> None:
     with path.open("w", encoding="utf-8") as output_file:
         for example, prediction in zip(bundle.test, predictions, strict=True):
@@ -455,6 +475,10 @@ def _write_predictions_jsonl(
                 "model": prediction.model,
                 "request_id": prediction.request_id,
                 "raw_response": dict(prediction.raw_response or {}),
+                "cost_usd": cost_report["per_successful_sample"][example.sample_id]["cost_usd"],
+                "cost_kind": cost_report["per_successful_sample"][example.sample_id]["cost_kind"],
+                "cost_scope": "evaluation attempts for this sample; warmup excluded; see cost_report.json for run totals",
+                "usage_event_ids": cost_report["per_successful_sample"][example.sample_id]["event_ids"],
             }
             output_file.write(json.dumps(payload, ensure_ascii=False) + "\n")
 
@@ -475,6 +499,7 @@ def _write_run_config(
         "created_at_utc": _utc_now(),
         "dry_run": config.dry_run,
         "measurement": asdict(config.measurement),
+        "pricing_path": str(config.pricing_path) if config.pricing_path is not None else None,
         "dataset": {
             "name": dataset.name,
             "metadata": dict(dataset.metadata),

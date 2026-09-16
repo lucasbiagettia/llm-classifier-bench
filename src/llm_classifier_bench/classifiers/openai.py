@@ -12,6 +12,7 @@ from llm_classifier_bench.config import (
     DEFAULT_OPENAI_MODEL,
     DEFAULT_OPENAI_REASONING_EFFORT,
 )
+from llm_classifier_bench.costs import capture_api_usage, capture_response
 from llm_classifier_bench.core import ClassificationInput, ClassDefinition, LabeledExample
 
 
@@ -45,6 +46,7 @@ class OpenAIClassifier:
         self._name = classifier_name
         self._classes: tuple[ClassDefinition, ...] = ()
         self._client = client or _build_openai_client(api_key)
+        self._usage_sink = None
 
         # Explicit experiment metadata. The runner can persist these fields
         # without special-casing OpenAI by classifier name.
@@ -55,6 +57,9 @@ class OpenAIClassifier:
     @property
     def name(self) -> str:
         return self._name
+
+    def set_usage_sink(self, sink) -> None:
+        self._usage_sink = sink
 
     def inference_metadata(self) -> dict[str, Any]:
         timeout = getattr(self._client, "timeout", None)
@@ -92,6 +97,14 @@ class OpenAIClassifier:
         return [self._predict_one(example) for example in examples]
 
     def _predict_one(self, example: ClassificationInput) -> Prediction:
+        with capture_api_usage(
+            self._usage_sink, provider="openai", sample_id=example.sample_id,
+            requested_model=self.model,
+            transport_attempts_complete=getattr(self._client, "max_retries", None) == 0,
+        ) as attempt:
+            return self._predict_one_recorded(example, attempt)
+
+    def _predict_one_recorded(self, example: ClassificationInput, attempt: dict) -> Prediction:
         class_names = [class_definition.name for class_definition in self._classes]
         class_block = "\n".join(
             f"- {class_definition.name}: {class_definition.description}"
@@ -133,6 +146,7 @@ class OpenAIClassifier:
             },
         )
         latency_ms = (perf_counter() - started_at) * 1_000
+        capture_response(attempt, _serialize_response(response))
 
         try:
             content = response.choices[0].message.content

@@ -13,6 +13,7 @@ from typing import Any, Callable, Mapping, Sequence, Self
 import requests
 from dotenv import load_dotenv
 
+from llm_classifier_bench.costs import capture_api_usage, capture_response
 from llm_classifier_bench.config import EmissaryTrainingConfig
 from llm_classifier_bench.datasets.selection import select_labeled_examples
 
@@ -513,6 +514,7 @@ class EmissaryClassifier:
         self._training_status_history: list[dict[str, Any]] = []
         self._deployment_status_history: list[dict[str, Any]] = []
         self.client = client
+        self._usage_sink = None
         self.model_id = model_id
         self.experiment_name = experiment_name
         self._name = classifier_name
@@ -1076,6 +1078,9 @@ class EmissaryClassifier:
                 "Deployment labels must contain exactly the configured class set"
             )
 
+    def set_usage_sink(self, sink) -> None:
+        self._usage_sink = sink
+
     def inference_metadata(self) -> dict[str, Any]:
         session = getattr(self.client, "session", None)
         adapters = getattr(session, "adapters", {})
@@ -1096,33 +1101,39 @@ class EmissaryClassifier:
             self.client = EmissaryClient()
         predictions: list[Prediction] = []
 
+        retries = self.inference_metadata()["transport_retries_by_scheme"]
         for example in examples:
-            started_at = perf_counter()
-            response = self.client.classify(
-                model_id=self._inference_model,
-                text=example.text,
-                data_format="probs",
-            )
-            latency_ms = (perf_counter() - started_at) * 1_000
-
-            prediction = parse_classification_response(
-                response, sample_id=example.sample_id, latency_ms=latency_ms,
-            )
-            if self._classes and set(prediction.probabilities or {}) != {
-                item.name for item in self._classes
-            }:
-                raise EmissaryResponseError(
-                    "Probabilities must contain exactly the configured class set"
+            with capture_api_usage(
+                self._usage_sink, provider="emissary", sample_id=example.sample_id,
+                requested_model=self._inference_model,
+                transport_attempts_complete=bool(retries) and all(v == 0 for v in retries.values()),
+            ) as attempt:
+                started_at = perf_counter()
+                response = self.client.classify(
+                    model_id=self._inference_model,
+                    text=example.text,
+                    data_format="probs",
                 )
-            if self.training.uses_project_fine_tuning:
-                if prediction.model not in {self._deployment_id, self._deployment_name}:
+                latency_ms = (perf_counter() - started_at) * 1_000
+                capture_response(attempt, response)
+
+                prediction = parse_classification_response(
+                    response, sample_id=example.sample_id, latency_ms=latency_ms,
+                )
+                if self._classes and set(prediction.probabilities or {}) != {
+                    item.name for item in self._classes
+                }:
                     raise EmissaryResponseError(
-                        "Response model differs from the pinned deployment"
+                        "Probabilities must contain exactly the configured class set"
                     )
-            elif prediction.model is not None and prediction.model != self.model_id:
-                raise EmissaryResponseError(
-                    "Response model differs from the pinned model version"
-                )
-            predictions.append(prediction)
-
+                if self.training.uses_project_fine_tuning:
+                    if prediction.model not in {self._deployment_id, self._deployment_name}:
+                        raise EmissaryResponseError(
+                            "Response model differs from the pinned deployment"
+                        )
+                elif prediction.model is not None and prediction.model != self.model_id:
+                    raise EmissaryResponseError(
+                        "Response model differs from the pinned model version"
+                    )
+                predictions.append(prediction)
         return predictions

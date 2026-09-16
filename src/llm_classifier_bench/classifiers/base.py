@@ -58,6 +58,10 @@ class Classifier(Protocol):
     Optional ``inference_metadata()`` returns JSON-compatible backend, device,
     batching, timeout and retry settings without making provider requests. Unknown
     transport-attempt timing or hardware must remain explicitly unavailable.
+
+    Optional ``set_usage_sink(callable)`` records each API attempt, including
+    responses rejected during parsing, for runner-owned inference accounting.
+    This hook is separate from Prediction because failed calls have costs too.
     """
 
     @property

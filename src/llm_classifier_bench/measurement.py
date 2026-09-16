@@ -143,10 +143,11 @@ def regenerate_report(run_dir: Path) -> dict:
 class TimingRecorder:
     """Small runner-owned recorder; no retries, scheduling, or model abstraction."""
 
-    def __init__(self, run_dir: Path, config: MeasurementConfig, classifier, planned: int):
+    def __init__(self, run_dir: Path, config: MeasurementConfig, classifier, planned: int, observation_sink=None):
         self.run_dir, self.config, self.classifier = run_dir, config, classifier
         self.origin = perf_counter_ns()
         self.rows: list[dict] = []
+        self.observation_sink = observation_sink
         self.metadata = {
             "schema_version": 1, "config": asdict(config), "planned_test_examples": planned,
             "classifier_name": classifier.name, "model": getattr(classifier, "model", None),
@@ -198,6 +199,8 @@ class TimingRecorder:
             with (self.run_dir / "timings.jsonl").open("a") as stream:
                 stream.write(json.dumps(row, allow_nan=False) + "\n")
                 stream.flush()
+            if self.observation_sink is not None:
+                self.observation_sink(row)
 
     def finish(self, status: str):
         self.metadata["run_status"] = status

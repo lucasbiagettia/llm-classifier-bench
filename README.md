@@ -428,3 +428,14 @@ See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
 [verified API contract and limitations](docs/emissary_contract.md), and
 [offline and live validation evidence](docs/emissary_validation.md). The 5/100
 smoke configuration uses total shots, as confirmed for the authorized live run.
+
+## Inference cost accounting
+
+Runs save `usage.jsonl`, `pricing.json` and `cost_report.json`, including failed
+attempts and warmup. Costs are observed, estimated, or unavailable; missing prices
+never mean free inference. Both maintained campaigns accept an optional
+`--pricing pricing/inference_2026-09-16.json` rate card. Reprice without new calls
+using `scripts/report_costs.py`.
+
+See [cost conventions, commands and validation](docs/inference_costs.md) and the
+[proposal for preparation costs (#12)](docs/preparation_costs_brief.md).

@@ -434,6 +434,12 @@ def summary_row(
     ):
         row[metric_name] = load_metric_value(metrics, metric_name)
 
+    cost_path = result.run_dir / "cost_report.json"
+    if cost_path.is_file():
+        cost_report = json.loads(cost_path.read_text())
+        for key in ("cost_kind", "coverage_complete", "known_cost_subtotal_usd", "failure_rate"):
+            row[key] = cost_report[key]
+
     operational_path = result.run_dir / "operational_report.json"
     if operational_path.is_file():
         operational = json.loads(operational_path.read_text())["evaluation"]
@@ -585,6 +591,7 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--dry-run", action="store_true", help="Plan Emissary selections without remote calls.")
     add_emissary_arguments(parser)
+    parser.add_argument("--pricing", type=Path, default=None, help="Versioned USD rate card; omitted prices stay unavailable")
     add_measurement_arguments(parser)
     return parser.parse_args()
 
@@ -651,6 +658,7 @@ def main() -> None:
         "test_per_class": args.test_per_class,
         "validation_fraction": args.validation_fraction,
         "measurement": asdict(measurement_config),
+        "pricing_path": str(args.pricing) if args.pricing is not None else None,
         "class_subset_strategy": "nested_shuffled_prefix",
         "sampling_strategy": "label_specific_deterministic_random_sample",
         "source_definition_profile": {
@@ -769,6 +777,7 @@ def main() -> None:
                             output_root=runs_root,
                             dry_run=args.dry_run,
                             measurement=measurement_config,
+                            pricing_path=args.pricing,
                             run_id=run_id,
                             validation_fraction=args.validation_fraction,
                             split_seed=seed,
