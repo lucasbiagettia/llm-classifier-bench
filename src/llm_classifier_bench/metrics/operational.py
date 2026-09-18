@@ -9,6 +9,10 @@ from typing import Sequence
 from .base import EvaluationRecord, MetricResult, require_records
 
 
+# At least ten observations in the upper 1%: a reporting heuristic, not a CI.
+MIN_P99_OBSERVATIONS = 1000
+
+
 def _available_latencies(
     records: Sequence[EvaluationRecord],
 ) -> tuple[float, ...] | None:
@@ -125,6 +129,12 @@ class LatencyP99Metric:
 
     def compute(self, records: Sequence[EvaluationRecord]) -> MetricResult:
         frozen = require_records(records)
+        if len(frozen) < MIN_P99_OBSERVATIONS:
+            return MetricResult.unavailable(
+                name=self.name,
+                reason="insufficient observations for p99",
+                metadata={"n_samples": len(frozen), "minimum_observations": MIN_P99_OBSERVATIONS},
+            )
         value = latency_percentile_ms(frozen, quantile=0.99)
         if value is None:
             return MetricResult.unavailable(
@@ -140,8 +150,24 @@ class LatencyP99Metric:
                 "unit": "milliseconds",
                 "quantile": 0.99,
                 "interpolation": "linear",
+                "minimum_observations": MIN_P99_OBSERVATIONS,
             },
         )
+
+
+@dataclass(frozen=True, slots=True)
+class LatencyP95Metric:
+    name: str = "latency_p95_ms"
+
+    def compute(self, records: Sequence[EvaluationRecord]) -> MetricResult:
+        frozen = require_records(records)
+        value = latency_percentile_ms(frozen, quantile=0.95)
+        if value is None:
+            return MetricResult.unavailable(name=self.name, reason="latency is missing for one or more records",
+                                            metadata={"n_samples": len(frozen)})
+        return MetricResult(name=self.name, value=value,
+                            metadata={"n_samples": len(frozen), "unit": "milliseconds",
+                                      "quantile": 0.95, "interpolation": "linear"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -191,6 +217,7 @@ class CostPer1000Metric:
 __all__ = [
     "CostPer1000Metric",
     "LatencyP50Metric",
+    "LatencyP95Metric",
     "LatencyP99Metric",
     "MeanLatencyMetric",
     "TotalCostMetric",

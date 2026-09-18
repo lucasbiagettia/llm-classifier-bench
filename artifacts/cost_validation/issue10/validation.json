@@ -1,0 +1,38 @@
+{
+  "offline_only": true,
+  "checks_passed": true,
+  "code_revision": "8103df2f7b2a4a11cdd80113a0f774c7cf55305e",
+  "working_tree_dirty": false,
+  "reports": {
+    "simulated-success": {
+      "run_status": "completed",
+      "total_cost_usd": 0.000288,
+      "cost_kind": "estimated",
+      "successful_examples": 3,
+      "cost_per_1000_successful_examples_usd": 0.09600000000000002,
+      "failure_rate": 0.0,
+      "usage_sha256": "fe03b73c832519aa2efe0f7ff19406cae55781ec2c069ed6a6f7c294654e11d2",
+      "pricing_sha256": "d8b0a955fe7e43120f658e9c4175d9ecc429a4e66fdb5e0c864a990e5a2963d0"
+    },
+    "simulated-invalid": {
+      "run_status": "failed",
+      "total_cost_usd": 8.6e-05,
+      "cost_kind": "estimated",
+      "successful_examples": 1,
+      "cost_per_1000_successful_examples_usd": 0.08600000000000001,
+      "failure_rate": 0.5,
+      "usage_sha256": "1572f86a709b84a87098bde25478f65369d7f45e46691ce0defc27db7964d048",
+      "pricing_sha256": "d8b0a955fe7e43120f658e9c4175d9ecc429a4e66fdb5e0c864a990e5a2963d0"
+    },
+    "local-tfidf": {
+      "run_status": "completed",
+      "total_cost_usd": 2.3757390715372908e-07,
+      "cost_kind": "estimated",
+      "successful_examples": 3,
+      "cost_per_1000_successful_examples_usd": 7.919130238457636e-05,
+      "failure_rate": 0.0,
+      "usage_sha256": "1786b7e3c95bee0e95b402b4ff917125920a0167150fa7de770ab884abf9d655",
+      "pricing_sha256": "d8b0a955fe7e43120f658e9c4175d9ecc429a4e66fdb5e0c864a990e5a2963d0"
+    }
+  }
+}

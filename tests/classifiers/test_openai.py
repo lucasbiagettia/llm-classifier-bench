@@ -65,3 +65,22 @@ def test_openai_classifier_is_zero_shot_and_normalizes_prediction() -> None:
         "World",
         "Sports",
     ]
+
+
+def test_default_client_has_explicit_timeout_and_no_hidden_retries(monkeypatch):
+    import sys
+    from llm_classifier_bench.classifiers.openai import _build_openai_client
+
+    monkeypatch.setitem(sys.modules, "openai", SimpleNamespace(OpenAI=lambda **kwargs: kwargs))
+    options = _build_openai_client("test-key")
+    assert options["max_retries"] == 0
+    assert options["timeout"] == 120.0
+
+
+def test_injected_client_retry_policy_is_recorded():
+    client = StubClient()
+    client.max_retries = 2
+    client.timeout = 30.0
+    metadata = OpenAIClassifier(client=client).inference_metadata()
+    assert metadata["transport_max_retries"] == 2
+    assert metadata["timeout_seconds"] == 30.0

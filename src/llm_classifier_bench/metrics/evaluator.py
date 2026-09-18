@@ -17,6 +17,7 @@ from .classification import AccuracyMetric, MacroF1Metric
 from .operational import (
     CostPer1000Metric,
     LatencyP50Metric,
+    LatencyP95Metric,
     LatencyP99Metric,
     MeanLatencyMetric,
     TotalCostMetric,
@@ -32,6 +33,7 @@ DEFAULT_METRICS: tuple[Metric, ...] = (
     MulticlassBrierScoreMetric(),
     MeanLatencyMetric(),
     LatencyP50Metric(),
+    LatencyP95Metric(),
     LatencyP99Metric(),
     TotalCostMetric(),
     CostPer1000Metric(),
@@ -153,7 +155,23 @@ def evaluate_jsonl(
     *,
     metrics: Sequence[Metric] | None = None,
 ) -> tuple[MetricResult, ...]:
-    return evaluate_records(load_evaluation_records(path), metrics=metrics)
+    records = load_evaluation_records(path)
+    results = evaluate_records(records, metrics=metrics)
+    artifact = Path(path)
+    if artifact.name != "predictions.jsonl" or not (artifact.parent / "usage.jsonl").exists():
+        return results
+    # Replay the ledger, not the per-prediction sum: warmup and failed attempts
+    # have costs too. A copied/subset artifact must not borrow another run's total.
+    from llm_classifier_bench.costs import recalculate_costs
+    report = recalculate_costs(artifact.parent)
+    if {r.sample_id for r in records} != set(report["per_successful_sample"]):
+        raise ValueError("Prediction sample IDs do not match the inference usage ledger")
+    values = {"total_cost_usd": report["total_cost_usd"],
+              "cost_per_1000_usd": report["cost_per_1000_successful_examples_usd"]}
+    metadata = {k: report[k] for k in ("scope", "cost_kind", "currency", "coverage_complete",
+                "known_cost_subtotal_usd", "failure_rate", "successful_examples", "usage_sha256", "pricing_sha256")}
+    metadata["source"] = "usage.jsonl + pricing.json + measurement.json"
+    return tuple(MetricResult(r.name, values[r.name], metadata) if r.name in values else r for r in results)
 
 
 def results_as_dict(results: Sequence[MetricResult]) -> dict[str, Any]:

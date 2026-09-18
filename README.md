@@ -249,6 +249,32 @@ load dataset
 
 The runner never branches on classifier names.
 
+## Latency and throughput
+
+The runner now times complete `predict()` calls, including preprocessing and
+output normalization, and saves individual observations in `timings.jsonl`.
+`operational_report.json` separates preparation, warmup, successful calls and
+failed calls; it reports P50, P95, observation counts and throughput. P99 requires
+at least 1,000 observations. Batched-call amortized time is reported separately
+from individual-request latency.
+
+Both campaign scripts accept `--inference-batch-size` (default 1),
+`--warmup-examples` (default 0), `--client-location` and `--cache-condition`.
+Warmup makes extra predictions on fit-training examples; hosted calls may be
+billed. Without explicit warmup the run is labeled unwarmed. The default OpenAI
+client uses no automatic retries and a 120-second timeout.
+
+```bash
+OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src \
+  venv/bin/python scripts/probe_latency.py --run-id local-timing
+
+PYTHONPATH=src venv/bin/python scripts/report_operational.py \
+  artifacts/latency_smoke/local-timing --output /tmp/local-timing.md
+```
+
+See the [measurement contract and validation](docs/latency_measurement.md) for
+timing boundaries, metadata, failure handling, and historical-artifact compatibility.
+
 ## Installation
 
 Target environment:
@@ -402,3 +428,14 @@ See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
 [verified API contract and limitations](docs/emissary_contract.md), and
 [offline and live validation evidence](docs/emissary_validation.md). The 5/100
 smoke configuration uses total shots, as confirmed for the authorized live run.
+
+## Inference cost accounting
+
+Runs save `usage.jsonl`, `pricing.json` and `cost_report.json`, including failed
+attempts and warmup. Costs are observed, estimated, or unavailable; missing prices
+never mean free inference. Both maintained campaigns accept an optional
+`--pricing pricing/inference_2026-09-16.json` rate card. Reprice without new calls
+using `scripts/report_costs.py`.
+
+See [cost conventions, commands and validation](docs/inference_costs.md) and the
+[proposal for preparation costs (#12)](docs/preparation_costs_brief.md).

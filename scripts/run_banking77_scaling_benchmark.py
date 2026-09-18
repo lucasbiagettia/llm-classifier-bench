@@ -76,6 +76,7 @@ from llm_classifier_bench.runner import (
     run_benchmark,
     split_train_validation,
 )
+from llm_classifier_bench.measurement import add_measurement_arguments, measurement_from_args
 
 
 DEFAULT_DEFINITIONS = Path(
@@ -426,11 +427,24 @@ def summary_row(
         "multiclass_brier_score",
         "mean_latency_ms",
         "latency_p50_ms",
+        "latency_p95_ms",
         "latency_p99_ms",
         "total_cost_usd",
         "cost_per_1000_usd",
     ):
         row[metric_name] = load_metric_value(metrics, metric_name)
+
+    cost_path = result.run_dir / "cost_report.json"
+    if cost_path.is_file():
+        cost_report = json.loads(cost_path.read_text())
+        for key in ("cost_kind", "coverage_complete", "known_cost_subtotal_usd", "failure_rate"):
+            row[key] = cost_report[key]
+
+    operational_path = result.run_dir / "operational_report.json"
+    if operational_path.is_file():
+        operational = json.loads(operational_path.read_text())["evaluation"]
+        row["inference_call_count"] = operational["successful_call_latency"]["observation_count"]
+        row["inference_throughput_examples_per_second"] = operational["throughput_successful_examples_per_second"]
 
     return row
 
@@ -458,6 +472,7 @@ def write_summary_csv(path: Path, rows: Sequence[dict[str, Any]]) -> None:
         "multiclass_brier_score",
         "mean_latency_ms",
         "latency_p50_ms",
+        "latency_p95_ms",
         "latency_p99_ms",
         "total_cost_usd",
         "cost_per_1000_usd",
@@ -576,6 +591,8 @@ def parse_args() -> argparse.Namespace:
 
     parser.add_argument("--dry-run", action="store_true", help="Plan Emissary selections without remote calls.")
     add_emissary_arguments(parser)
+    parser.add_argument("--pricing", type=Path, default=None, help="Versioned USD rate card; omitted prices stay unavailable")
+    add_measurement_arguments(parser)
     return parser.parse_args()
 
 
@@ -590,6 +607,7 @@ def tfidf_training_config(args: argparse.Namespace, seed: int) -> TfidfTrainingC
 
 def main() -> None:
     args = parse_args()
+    measurement_config = measurement_from_args(args)
     validate_emissary_arguments(args)
 
     class_counts = tuple(sorted(set(args.class_counts)))
@@ -639,6 +657,8 @@ def main() -> None:
         "train_per_class": args.train_per_class,
         "test_per_class": args.test_per_class,
         "validation_fraction": args.validation_fraction,
+        "measurement": asdict(measurement_config),
+        "pricing_path": str(args.pricing) if args.pricing is not None else None,
         "class_subset_strategy": "nested_shuffled_prefix",
         "sampling_strategy": "label_specific_deterministic_random_sample",
         "source_definition_profile": {
@@ -756,6 +776,8 @@ def main() -> None:
                         BenchmarkRunConfig(
                             output_root=runs_root,
                             dry_run=args.dry_run,
+                            measurement=measurement_config,
+                            pricing_path=args.pricing,
                             run_id=run_id,
                             validation_fraction=args.validation_fraction,
                             split_seed=seed,

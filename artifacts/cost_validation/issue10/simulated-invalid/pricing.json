@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "currency": "USD",
+  "api_rates": [
+    {
+      "provider": "openai",
+      "models": [
+        "gpt-5-nano",
+        "gpt-5-nano-2025-08-07"
+      ],
+      "service_tiers": [
+        "default"
+      ],
+      "input_usd_per_million": "0.05",
+      "cached_input_usd_per_million": "0.005",
+      "output_usd_per_million": "0.40",
+      "cache_write_usd_per_million": null,
+      "source": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+      "effective_date": "2026-09-16",
+      "date_basis": "Verified on this date; not a claim about the original tariff start date",
+      "assumptions": "Standard text Chat Completions; no Batch/Flex/priority pricing, taxes, tools, audio, discounts or regional surcharges. Snapshot explicitly mapped to its model family."
+    }
+  ],
+  "local_hardware": {
+    "device": "cpu",
+    "resource": "Illustrative AWS Lightsail Linux public-IPv4 2Xlarge: 8 vCPUs, 32 GB RAM",
+    "usd_per_hour": "0.2246575342465753424657534247",
+    "source": "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html",
+    "effective_date": "2026-09-16",
+    "interpretation": "cloud_equivalent",
+    "assumptions": "Published USD 164/month divided by an assumed 730 hours/month. Apply to measured active inference time only. Not an AWS invoice, per-hour offer, hardware performance equivalence or total owned-machine cost; excludes idle allocation and preparation. No GPU rate provided."
+  }
+}

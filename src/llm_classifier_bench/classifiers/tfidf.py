@@ -137,6 +137,10 @@ class TfidfLogisticClassifier:
         """JSON-compatible post-fit information for the runner's optional hook."""
         return dict(self._fit_metadata)
 
+    def inference_metadata(self) -> dict[str, Any]:
+        return {"backend": "local", "device": "cpu", "transport_max_retries": 0,
+                "batch_execution": "sequential_single_example"}
+
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
         if self._vectorizer is None or self._classifier is None:
             raise RuntimeError("Call prepare(classes) and fit(...) before predict()")

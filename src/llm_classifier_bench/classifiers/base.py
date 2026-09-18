@@ -19,6 +19,10 @@ class Prediction:
     ``probabilities`` is optional because not every classification API exposes a
     full distribution. Emissary and the supervised local classifiers do; the OpenAI
     generative baseline intentionally does not fabricate one.
+
+    ``latency_ms`` is the adapter's internal observation. The runner preserves it
+    as ``adapter_latency_ms`` in JSONL and records its common outer-call boundary
+    separately; direct workflow consumers still see the adapter observation.
     """
 
     sample_id: str
@@ -50,6 +54,14 @@ class Classifier(Protocol):
 
     ``prepare`` communicates the closed label space without leaking labeled
     examples. ``fit`` may be a no-op for zero-shot classifiers.
+
+    Optional ``inference_metadata()`` returns JSON-compatible backend, device,
+    batching, timeout and retry settings without making provider requests. Unknown
+    transport-attempt timing or hardware must remain explicitly unavailable.
+
+    Optional ``set_usage_sink(callable)`` records each API attempt, including
+    responses rejected during parsing, for runner-owned inference accounting.
+    This hook is separate from Prediction because failed calls have costs too.
     """
 
     @property

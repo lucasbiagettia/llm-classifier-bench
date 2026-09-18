@@ -30,6 +30,7 @@ from .evaluator import (
 from .operational import (
     CostPer1000Metric,
     LatencyP50Metric,
+    LatencyP95Metric,
     LatencyP99Metric,
     MeanLatencyMetric,
     TotalCostMetric,
@@ -47,6 +48,7 @@ __all__ = [
     "DEFAULT_METRICS",
     "EvaluationRecord",
     "LatencyP50Metric",
+    "LatencyP95Metric",
     "LatencyP99Metric",
     "MacroF1Metric",
     "MeanLatencyMetric",

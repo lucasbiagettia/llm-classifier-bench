@@ -11,6 +11,7 @@ from llm_classifier_bench.classifiers.base import Prediction
 from llm_classifier_bench.core import ClassDefinition, ClassificationInput, LabeledExample
 from llm_classifier_bench.datasets.base import DatasetBundle
 from llm_classifier_bench.runner import BenchmarkRunConfig, run_benchmark
+from llm_classifier_bench.measurement import MeasurementConfig, regenerate_report
 
 
 @dataclass
@@ -163,6 +164,7 @@ def test_runner_records_failure_stage_and_re_raises(tmp_path: Path) -> None:
                 output_root=tmp_path,
                 run_id="failed-run",
                 evaluate=False,
+                measurement=MeasurementConfig(batch_size=2),
             ),
         )
 
@@ -171,6 +173,98 @@ def test_runner_records_failure_stage_and_re_raises(tmp_path: Path) -> None:
     assert status_payload["status"] == "failed"
     assert status_payload["stage"] == "predicting"
     assert status_payload["error_type"] == "ValueError"
+    report = regenerate_report(tmp_path / "failed-run")
+    assert report["evaluation"]["failed_calls"] == 1
+    assert report["evaluation"]["successful_examples"] == 0
+    assert report["evaluation"]["failed_call_latency"]["observation_count"] == 1
+
+
+def test_measurement_separates_preparation_warmup_and_inference(tmp_path, monkeypatch):
+    ticks = iter(t * 1_000_000 for t in (0, 1, 11, 12, 32, 33, 38, 40, 50, 60, 90))
+    monkeypatch.setattr("llm_classifier_bench.measurement.perf_counter_ns", lambda: next(ticks))
+    result = run_benchmark(FakeDataset(build_bundle()), FakeClassifier(), BenchmarkRunConfig(
+        output_root=tmp_path, measurement=MeasurementConfig(warmup_examples=1,
+            client_location="local test", cache_condition="fixture; no response cache")))
+    rows = [json.loads(line) for line in (result.run_dir / "timings.jsonl").read_text().splitlines()]
+    assert [(r["phase"], r["elapsed_ms"]) for r in rows] == [
+        ("prepare", 10), ("fit", 20), ("warmup", 5), ("evaluation", 10), ("evaluation", 30)]
+    assert rows[2]["sample_ids"] == ["train-1"]
+    predictions = [json.loads(line) for line in result.predictions_path.read_text().splitlines()]
+    assert [p["latency_ms"] for p in predictions] == [10, 30]
+    assert [p["adapter_latency_ms"] for p in predictions] == [1.5, 1.5]
+    report = regenerate_report(result.run_dir)
+    assert report == json.loads((result.run_dir / "operational_report.json").read_text())
+    measured = report["evaluation"]
+    assert measured["successful_call_latency"]["p50_ms"] == 20
+    assert measured["successful_call_latency"]["p95_ms"] == 29
+    assert measured["successful_call_latency"]["p99_ms"] is None
+    assert measured["throughput_successful_examples_per_second"] == 40
+    assert measured["active_call_throughput_successful_examples_per_second"] == 50
+    assert measured["successful_call_latency"]["observation_count"] == 2
+    assert report["measurement"]["concurrency"] == 1
+
+
+def test_batch_time_is_not_per_example_request_latency(tmp_path, monkeypatch):
+    ticks = iter(t * 1_000_000 for t in (0, 1, 2, 3, 4, 5, 25))
+    monkeypatch.setattr("llm_classifier_bench.measurement.perf_counter_ns", lambda: next(ticks))
+    result = run_benchmark(FakeDataset(build_bundle()), FakeClassifier(), BenchmarkRunConfig(
+        output_root=tmp_path, measurement=MeasurementConfig(batch_size=2)))
+    predictions = [json.loads(line) for line in result.predictions_path.read_text().splitlines()]
+    assert all(p["latency_ms"] is None for p in predictions)
+    assert all(p["amortized_latency_ms"] == 10 for p in predictions)
+    metrics = json.loads(result.metrics_path.read_text())
+    assert metrics["latency_p50_ms"]["available"] is False
+    assert metrics["accuracy"]["value"] == 1
+    measured = regenerate_report(result.run_dir)["evaluation"]
+    assert measured["successful_call_latency"]["p50_ms"] == 20
+    assert measured["successful_call_latency"]["observation_count"] == 1
+    assert measured["throughput_successful_examples_per_second"] == 100
+
+
+def test_failed_call_is_durable_and_included_in_throughput(tmp_path, monkeypatch):
+    class FailingClassifier(FakeClassifier):
+        calls = 0
+
+        def predict(self, examples):
+            self.calls += 1
+            if self.calls == 2:
+                raise TimeoutError("do not persist this provider response")
+            return super().predict(examples)
+
+    ticks = iter(t * 1_000_000 for t in (0, 1, 2, 3, 4, 5, 15, 15, 45))
+    monkeypatch.setattr("llm_classifier_bench.measurement.perf_counter_ns", lambda: next(ticks))
+    classifier = FailingClassifier()
+    with pytest.raises(TimeoutError):
+        run_benchmark(FakeDataset(build_bundle()), classifier, BenchmarkRunConfig(output_root=tmp_path, run_id="timeout"))
+    report = regenerate_report(tmp_path / "timeout")
+    measured = report["evaluation"]
+    assert classifier.calls == 2  # No application retry.
+    assert measured["failed_call_latency"]["p50_ms"] == 30
+    assert measured["successful_call_latency"]["p50_ms"] == 10
+    assert measured["throughput_successful_examples_per_second"] == 25
+    assert measured["failed_call_fraction"] == 0.5
+    assert report["measurement"]["run_status"] == "failed"
+    assert "provider response" not in (tmp_path / "timeout" / "timings.jsonl").read_text()
+
+
+def test_warmup_failure_does_not_enter_evaluation(tmp_path):
+    class FailingWarmup(FakeClassifier):
+        def predict(self, examples):
+            raise TimeoutError()
+
+    with pytest.raises(TimeoutError):
+        run_benchmark(FakeDataset(build_bundle()), FailingWarmup(), BenchmarkRunConfig(
+            output_root=tmp_path, run_id="warmup-fail", measurement=MeasurementConfig(warmup_examples=1)))
+    report = regenerate_report(tmp_path / "warmup-fail")
+    assert report["warmup_failed_calls"] == 1
+    assert report["evaluation"]["attempted_examples"] == 0
+    assert report["evaluation"]["unattempted_examples"] == 2
+
+
+@pytest.mark.parametrize("kwargs", [{"batch_size": 0}, {"warmup_examples": -1}, {"batch_size": True}])
+def test_invalid_measurement_config_is_rejected(kwargs):
+    with pytest.raises(ValueError):
+        MeasurementConfig(**kwargs)
 
 
 def test_runner_refuses_to_overwrite_an_existing_run(tmp_path: Path) -> None:
