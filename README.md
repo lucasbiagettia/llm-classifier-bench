@@ -439,3 +439,9 @@ using `scripts/report_costs.py`.
 
 See [cost conventions, commands and validation](docs/inference_costs.md) and the
 [proposal for preparation costs (#12)](docs/preparation_costs_brief.md).
+
+For local classifiers, cost reports also show continuous-throughput projections
+and optional deployed-allocation costs including idle time. Use
+`report_costs.py --deployment-hours 24 --volumes 1000 10000 100000`; this only
+replays saved evidence. See [self-hosted inference cost scenarios](docs/self_hosted_inference_costs.md)
+for hardware/rate matching, input-length metadata and feasibility checks.
