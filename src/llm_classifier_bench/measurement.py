@@ -22,6 +22,7 @@ class MeasurementConfig:
     warmup_examples: int = 0
     client_location: str | None = None
     cache_condition: str = "uncontrolled; provider cache hits not observed"
+    hardware_profile: str | None = None
 
     def __post_init__(self):
         for name, minimum in (("batch_size", 1), ("warmup_examples", 0)):
@@ -30,6 +31,8 @@ class MeasurementConfig:
                 raise ValueError(f"{name} must be an integer >= {minimum}")
         if not self.cache_condition.strip():
             raise ValueError("cache_condition cannot be empty")
+        if self.hardware_profile is not None and (not isinstance(self.hardware_profile, str) or not self.hardware_profile.strip()):
+            raise ValueError("hardware_profile cannot be empty")
 
 
 def runtime_metadata(classifier) -> dict[str, Any]:
@@ -217,8 +220,11 @@ def add_measurement_arguments(parser):
                         help="Extra inference on fit examples before evaluation; hosted calls may be billed.")
     parser.add_argument("--client-location", default=None)
     parser.add_argument("--cache-condition", default=MeasurementConfig().cache_condition)
+    parser.add_argument("--hardware-profile", default=None,
+                        help="Operator-declared identity of the whole measured allocation; matches a measured_hardware rate card.")
 
 
 def measurement_from_args(args):
     return MeasurementConfig(batch_size=args.inference_batch_size, warmup_examples=args.warmup_examples,
-                             client_location=args.client_location, cache_condition=args.cache_condition)
+                             client_location=args.client_location, cache_condition=args.cache_condition,
+                             hardware_profile=args.hardware_profile)

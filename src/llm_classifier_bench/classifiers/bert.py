@@ -158,6 +158,7 @@ class BertClassifier:
 
     def inference_metadata(self) -> dict[str, Any]:
         return {"backend": "local", "device": str(self._device) if self._device is not None else None,
+                "max_input_tokens": self.training.max_length, "truncation": True,
                 "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:

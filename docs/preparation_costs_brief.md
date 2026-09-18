@@ -1,72 +1,67 @@
-# Propuesta breve para el issue #12
+# Alcance del issue #12: preparación y amortización como complemento
 
-Estado: propuesta para discutir; **todavía no implementada**.
+Dirección acordada con el owner: **priorizar el costo de inferencia**. La extensión
+del #10 cubre throughput medido, hardware/tarifa explícitos y escenarios de uso
+continuo o instancia desplegada. El #12 agrega la inversión inicial y su
+amortización; su implementación sigue pendiente y no bloquea ese reporte principal.
 
-## Qué mediría
+## Entregable principal: extensión del #10
 
-Reutilizaría los registros de tiempo del #11 y las convenciones de costos del #10.
-Agregaría mediciones dentro de los `fit` existentes, sin cambiar el entrenamiento:
+- USD por 1.000 clasificaciones válidas, con condiciones y tarifas documentadas.
+- Para deploy propio: throughput observado en una asignación de hardware concreta,
+  con batch, concurrencia, longitud de entrada, latencia y caché visibles.
+- Dos escenarios: procesamiento continuo y asignación desplegada durante horas
+  elegidas, incluyendo inactividad y límites de volumen según el rendimiento medido.
+- Separar tarifa del hardware medido de un equivalente ilustrativo en nube.
+- FLOPs por predicción son opcionales; TFLOPS teóricos no determinan el costo.
+
+[Implementación, fórmulas y límites](self_hosted_inference_costs.md).
+
+## Complemento: preparación (#12)
+
+Medir dentro de los `fit` existentes, sin cambiar el entrenamiento:
 
 | Método | Etapas |
 | --- | --- |
-| TF-IDF + LR | Ajustar vectorizador, transformar validación, entrenar/evaluar cada candidato de regularización, seleccionar modelo |
-| MiniLM + LR | Cargar encoder, obtener embeddings de train/validación, entrenar/evaluar candidatos, seleccionar modelo |
+| TF-IDF + LR | Ajustar vectorizador, transformar validación, entrenar/evaluar candidatos y seleccionar modelo |
+| MiniLM + LR | Cargar encoder, extraer embeddings de train/validación, entrenar/evaluar candidatos y seleccionar modelo |
 | BERT | Cargar modelo/tokenizador, tokenizar, entrenar/evaluar y guardar selección |
-| APIs | Preparar experimento o dataset, entrenar/desplegar cuando aplique; cargos devueltos por el proveedor |
+| APIs | Preparar experimento/dataset, entrenar/desplegar cuando aplique y conservar cargos expuestos |
 
-Cada etapa guardaría duración, CPU/GPU, memoria y recursos asignados cuando se
-conozcan, parámetros, estado y artefactos de caché reutilizados. Los eventos padre
-(`fit` completo) y sus etapas hijas no se sumarían entre sí. El tiempo de carga o
-descarga del modelo quedaría separado para comparar condiciones con y sin caché.
+Registrar duración, hardware/recursos asignados, configuración, estado y caché
+reutilizada. Los intervalos padre (`fit` completo) y sus etapas hijas no se suman
+entre sí. Carga/descarga del modelo se identifica por separado.
 
-## Selección frente a ajuste del modelo elegido
+Reportar como primera vista la **inversión completa**, incluyendo búsqueda de
+hiperparámetros. Como segunda vista, identificar el ajuste del candidato elegido,
+que ya forma parte del total. TF-IDF y MiniLM conservan el mejor candidato sin un
+nuevo ajuste final: marcar `final_refit_performed=false`, sin cobrarlo dos veces.
+Los features compartidos se cuentan una sola vez. La preparación desde cero y la
+reutilización de caché se distinguen, conservando procedencia de los artefactos.
 
-Reportaría dos vistas:
+Usar cargos observados cuando existan; para recursos propios, tiempo y equivalente
+en nube claramente rotulado. No deducir una factura del tiempo de espera de un
+job remoto. Conservar como desconocidos los costos que no tengan evidencia.
 
-1. **Inversión real del experimento:** extracción de features + todos los candidatos
-   y sus evaluaciones + cualquier ajuste final que efectivamente se ejecute.
-2. **Configuración elegida:** tiempo/costo del ajuste de ese candidato, identificado
-   como parte del total; útil para estimar qué costaría repetirlo con parámetros ya fijados.
+## Amortización
 
-TF-IDF y MiniLM hoy conservan el mejor candidato de la búsqueda. No hacen un nuevo
-ajuste al final: marcaría `final_refit_performed=false`. No sumaría otra vez ese
-entrenamiento ni cambiaría los splits para crear un ajuste final ficticio.
-Los tiempos compartidos de features irían una sola vez en el total.
+Para **1.000, 10.000 y 100.000 resultados válidos**:
 
-## Cómo lo llevaría a dinero
+`costo total por predicción = preparación / volumen + costo del escenario de inferencia / volumen`
 
-- **Nube:** tiempo realmente facturable × cantidad/tipo de recursos × tarifa
-  versionada; registrar mínimos/redondeos y períodos de asignación cuando existan.
-- **Máquina propia:** duración observada + estimación equivalente en nube,
-  explícitamente separada de un gasto real. La tarifa ilustrativa del #10 no
-  demuestra equivalencia de rendimiento; elegiríamos una referencia apropiada.
-- **Proveedor:** usar cargos expuestos con su origen. Si sólo conocemos cuánto
-  tardó un job, su costo monetario sigue desconocido: la espera no determina la factura.
-- **Caché:** mostrar costo incremental de esta ejecución y procedencia del recurso
-  reutilizado. Recomiendo reportar por separado una preparación desde cero y una
-  ejecución con caché, sin repartir el costo original arbitrariamente entre condiciones.
+Elegir explícitamente el escenario de inferencia del #10: procesamiento continuo
+o asignación desplegada. Cada escenario ya cuenta un calentamiento medido; no
+sumarlo también como preparación. Tampoco extrapolar repetidamente el warmup de
+un smoke diminuto a cada grupo de predicciones. Si el escenario es inviable o
+falta un costo, la suma completa queda desconocida y se muestran sus componentes.
 
-Mantendría costos de preparación e inferencia en reportes separados, con una tabla
-combinada para **1.000, 10.000 y 100.000 predicciones**:
+Validar con cálculos manuales, tiempos locales y pruebas de ausencia de doble
+conteo. La elección de una tarifa CPU/GPU representativa sigue siendo una decisión
+experimental: la referencia ilustrativa no equivale a validar hardware de nube.
 
-`costo amortizado por predicción = costo de preparación / volumen + costo de inferencia por predicción`
+## Límite de alcance
 
-Usaría el costo de inferencia por resultado válido del #10, incluyendo fallos y
-warmup amortizado en su muestra; explicitaría ese supuesto al extrapolar. Si falta
-un costo, la suma completa también queda desconocida, mostrando los componentes
-conocidos. Las proyecciones asumirían iguales tarifas, recursos, tasa de fallos y
-condiciones de inferencia; no serían mediciones directas a esos volúmenes.
-
-## Decisiones sobre las que me interesa tu opinión
-
-- **Perspectiva principal:** recomiendo amortizar la inversión completa de búsqueda
-  y mostrar, como segunda vista, el costo con hiperparámetros ya elegidos.
-- **Hardware de referencia:** qué instancia CPU/GPU usar para el equivalente en nube;
-  mantener también los tiempos reales de tu máquina para no confundir ambos datos.
-- **Caché:** recomiendo resultados separados con preparación desde cero y con
-  artefactos reutilizados; la caché compartida necesita un origen identificable.
-
-La validación sería local: comprobar que las etapas no se cuentan dos veces,
-que el candidato elegido corresponde a los metadatos guardados, que los costos
-faltantes se propagan y que la amortización coincide con ejemplos calculados a mano.
-Una ejecución paga para validar cargos del proveedor sería un paso posterior.
+No modelar tráfico variable, autoscaling, disponibilidad, consumo energético ni
+depreciación. No exigir un perfilador universal de FLOPs ni desplegar recursos
+pagos para terminar el cálculo offline. Es un complemento económico del benchmark,
+no un estudio completo de operación de infraestructura.

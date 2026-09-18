@@ -20,6 +20,7 @@ from llm_classifier_bench.datasets.selection import validate_partition_disjointn
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
 from llm_classifier_bench.costs import CostRecorder
 from llm_classifier_bench.measurement import MeasurementConfig, TimingRecorder
+from llm_classifier_bench.metrics.operational import percentile
 
 
 @dataclass(frozen=True, slots=True)
@@ -514,6 +515,14 @@ def _write_run_config(
             "fit_train_size": len(fit_train),
             "validation_size": len(validation),
             "test_size": len(dataset.test),
+            "test_input_characters": {
+                "unit": "Unicode code points before preprocessing; not tokens",
+                "count": len(dataset.test),
+                "min": min((len(item.text) for item in dataset.test), default=None),
+                "max": max((len(item.text) for item in dataset.test), default=None),
+                "p50": percentile([len(item.text) for item in dataset.test], .5) if dataset.test else None,
+                "p95": percentile([len(item.text) for item in dataset.test], .95) if dataset.test else None,
+            },
         },
         "class_definitions": dict(class_definitions_metadata),
         "split": {

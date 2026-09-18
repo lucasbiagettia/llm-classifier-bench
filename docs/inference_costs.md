@@ -164,3 +164,15 @@ Offline regression result: **192 passed, 3 integration tests deselected** with
 `PYTHONPATH=src venv/bin/pytest -q -m 'not integration'`. No paid API validation
 was performed. The evidence records the committed code revision and whether its
 working tree was clean when the probe started.
+
+## Extension: self-hosted inference scenarios
+
+The report now also projects continuous processing and a user-specified deployed
+allocation, including idle time, for 1,000 / 10,000 / 100,000 valid classifications.
+Use `report_costs.py --deployment-hours H --volumes ...`; no deployment occurs.
+These projections are separate from recorded-run totals. A `measured_hardware`
+rate additionally requires an exact recorded `--hardware-profile` match; the
+original `cloud_equivalent` interpretation remains supported.
+
+See [formulas, rate scope, commands and limitations](self_hosted_inference_costs.md).
+Preparation/amortization remains complementary scope in #12; FLOPs are optional.

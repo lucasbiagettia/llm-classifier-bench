@@ -51,8 +51,12 @@ def load_pricing(path: Path | None) -> dict:
         amount(local["usd_per_hour"])
         if local.get("device") not in {"cpu", "cuda", "mps"} or not local.get("resource"):
             raise ValueError("Local rate requires device and resource description")
-        if local.get("interpretation") != "cloud_equivalent":
-            raise ValueError("Local runtime estimates must be labeled cloud_equivalent")
+        if local.get("interpretation") not in {"cloud_equivalent", "measured_hardware"}:
+            raise ValueError("Local estimates require cloud_equivalent or measured_hardware interpretation")
+        if local["interpretation"] == "measured_hardware" and (
+            not isinstance(local.get("hardware_profile"), str) or not local["hardware_profile"].strip()
+        ):
+            raise ValueError("A measured_hardware rate requires a hardware_profile")
     for rate in [*card.get("api_rates", []), *([local] if local else [])]:
         if not rate.get("source") or not rate.get("effective_date"):
             raise ValueError("Each rate needs a source and effective_date")
@@ -116,7 +120,18 @@ def _count(value) -> int:
     return value
 
 
-def price_entry(entry: dict, card: dict, device: str | None) -> dict:
+def local_hardware_rate(card: dict, device: str | None, hardware_profile: str | None = None) -> dict:
+    rate = card.get("local_hardware")
+    if not rate or not device or device.split(":")[0] != rate["device"]:
+        raise ValueError("matching hardware rate/device unavailable")
+    if rate["interpretation"] == "measured_hardware" and (
+        not hardware_profile or hardware_profile != rate.get("hardware_profile")
+    ):
+        raise ValueError("measured hardware profile does not match the selected rate")
+    return rate
+
+
+def price_entry(entry: dict, card: dict, device: str | None, hardware_profile: str | None = None) -> dict:
     result = {"event_id": entry["event_id"], "phase": entry["phase"],
               "sample_ids": entry.get("sample_ids", [entry.get("sample_id")]),
               "kind": "unavailable", "cost_usd": None, "reason": None}
@@ -128,11 +143,10 @@ def price_entry(entry: dict, card: dict, device: str | None) -> dict:
             cost = amount(charge["amount"])
             result.update(kind="observed", source=charge["source"])
         elif entry["kind"] == "local_call":
-            rate = card.get("local_hardware")
-            if not rate or not device or device.split(":")[0] != rate["device"]:
-                raise ValueError("matching hardware rate/device unavailable")
+            rate = local_hardware_rate(card, device, hardware_profile)
             cost = amount(entry["elapsed_ms"]) / Decimal(3600000) * amount(rate["usd_per_hour"])
-            result.update(kind="estimated", rate=rate, basis="active inference wall time; cloud equivalent")
+            result.update(kind="estimated", rate=rate,
+                          basis=f"active inference wall time; {rate['interpretation']}")
         elif entry.get("provider") == "openai":
             rate = next((r for r in card.get("api_rates", []) if
                          r["provider"] == "openai" and entry.get("model") in r["models"]
@@ -186,7 +200,8 @@ def build_cost_report(entries: list[dict], card: dict, metadata: dict) -> dict:
     calls = [e for e in entries if e["kind"] == "inference_call"]
     attempts = [e for e in entries if e["kind"] in {"api_attempt", "local_call", "unavailable_call"}]
     device = metadata.get("runtime", {}).get("classifier", {}).get("device")
-    priced = [price_entry(e, card, device) for e in attempts]
+    profile = metadata.get("config", {}).get("hardware_profile")
+    priced = [price_entry(e, card, device, profile) for e in attempts]
 
     def summarize(phase=None):
         selected = [(e, p) for e, p in zip(attempts, priced) if phase is None or e["phase"] == phase]
@@ -243,7 +258,9 @@ def build_cost_report(entries: list[dict], card: dict, metadata: dict) -> dict:
     }
 
 
-def recalculate_costs(run_dir: Path, pricing_path: Path | None = None) -> dict:
+def recalculate_costs(run_dir: Path, pricing_path: Path | None = None, *,
+                      deployment_hours: float | None = None,
+                      volumes: tuple[int, ...] = (1000, 10000, 100000)) -> dict:
     card = load_pricing(pricing_path or run_dir / "pricing.json")
     entries = [json.loads(line) for line in (run_dir / "usage.jsonl").read_text().splitlines() if line.strip()]
     metadata = json.loads((run_dir / "measurement.json").read_text())
@@ -251,6 +268,10 @@ def recalculate_costs(run_dir: Path, pricing_path: Path | None = None) -> dict:
     report["usage_sha256"] = hashlib.sha256((run_dir / "usage.jsonl").read_bytes()).hexdigest()
     report["pricing_sha256"] = hashlib.sha256((pricing_path or run_dir / "pricing.json").read_bytes()).hexdigest()
     report["measurement_sha256"] = hashlib.sha256((run_dir / "measurement.json").read_bytes()).hexdigest()
+    from llm_classifier_bench.self_hosted_costs import self_hosted_cost_report
+    report["self_hosted"] = self_hosted_cost_report(
+        run_dir, card, deployment_hours=deployment_hours, volumes=volumes,
+    )
     return report
 
 

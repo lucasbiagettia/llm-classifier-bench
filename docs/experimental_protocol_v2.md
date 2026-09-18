@@ -300,3 +300,21 @@ does not fit the cap, revise scope explicitly before final inference.
 Completion of issue #6 means the protocol and owner decisions are recorded, with
 remaining engineering/API dependencies explicit. It does not require implementing
 all those dependencies or executing the final benchmark in this documentation change.
+
+## Implementation follow-up: inference cost priority
+
+The owner-approved economic priority is inference cost per 1,000 valid
+classifications. The extension of #10 adds local-hardware throughput projections
+for continuous processing and a user-specified deployed allocation including idle
+time. It records pricing assumptions and checks volume feasibility under the
+measured conditions; it does not perform a deployment.
+
+Preparation/training investment and amortization in #12 are a complementary second
+step. FLOPs per prediction are optional diagnostics, not a completion requirement
+or a conversion from peak TFLOPS to money. Traffic modeling, autoscaling,
+availability engineering, energy and depreciation are outside this benchmark's
+scope. This clarification does not authorize spending or resolve the other open
+protocol decisions.
+
+See [self-hosted cost scenarios](self_hosted_inference_costs.md) and
+[the revised preparation scope](preparation_costs_brief.md).

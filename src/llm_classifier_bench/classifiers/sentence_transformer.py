@@ -150,6 +150,7 @@ class SentenceTransformerLogisticClassifier:
     def inference_metadata(self) -> dict[str, Any]:
         device = getattr(self._encoder, "device", None)
         return {"backend": "local", "device": str(device) if device is not None else None,
+                "max_input_tokens": getattr(self._encoder, "max_seq_length", None),
                 "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
 
     def predict(self, examples: Sequence[ClassificationInput]) -> list[Prediction]:
