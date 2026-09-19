@@ -233,6 +233,14 @@ def test_end_to_end_runner_uses_confirmed_project_payloads_and_pins_deployment(t
         BenchmarkRunConfig(output_root=tmp_path, validation_fraction=0.25),
     )
 
+    preparation = json.loads((result.run_dir / "preparation_report.json").read_text())
+    assert preparation["complete"]
+    assert preparation["total_cost_usd"] is None
+    assert preparation["metadata"]["adapter"]["dataset_sha256"]
+    assert {"provider.training_submit", "provider.training_wait", "provider.deployment_wait"} <= {
+        event["name"] for event in preparation["events"]
+    }
+
     get_calls = session.get.call_args_list
     assert get_calls[0].args[0].endswith("/v1/projects/ms-fixture")
     assert get_calls[1].args[0].endswith("/v1/models/Llama-3.2-1B-Instruct")

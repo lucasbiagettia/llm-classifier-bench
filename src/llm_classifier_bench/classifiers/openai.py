@@ -61,6 +61,12 @@ class OpenAIClassifier:
     def set_usage_sink(self, sink) -> None:
         self._usage_sink = sink
 
+    def preparation_metadata(self):
+        return {"remote_preparation_performed": False, "reason": "zero-shot adapter performs no remote prepare/fit operations"}
+
+    def set_preparation_sink(self, sink):
+        self._preparation_sink = sink
+
     def inference_metadata(self) -> dict[str, Any]:
         timeout = getattr(self._client, "timeout", None)
         return {

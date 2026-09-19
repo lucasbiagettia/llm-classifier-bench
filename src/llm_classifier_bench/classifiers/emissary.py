@@ -14,6 +14,7 @@ import requests
 from dotenv import load_dotenv
 
 from llm_classifier_bench.costs import capture_api_usage, capture_response
+from llm_classifier_bench.preparation import preparation_stage
 from llm_classifier_bench.config import EmissaryTrainingConfig
 from llm_classifier_bench.datasets.selection import select_labeled_examples
 
@@ -750,11 +751,12 @@ class EmissaryClassifier:
             if self.client is None:
                 self.client = EmissaryClient()
             started = perf_counter()
-            experiment = self.client.create_experiment(
-                name=self.experiment_name,
-                classes=frozen,
-                mode="routing",
-            )
+            with preparation_stage(self, "provider.experiment_create", "provider", billing_units="unavailable"):
+                experiment = self.client.create_experiment(
+                    name=self.experiment_name,
+                    classes=frozen,
+                    mode="routing",
+                )
             self.model_id = experiment.model_id
             self._experiment = experiment
             self._creation_ms = (perf_counter() - started) * 1000
@@ -841,28 +843,31 @@ class EmissaryClassifier:
         if self._dataset_id is None:
             self._status = "uploading_dataset"
             upload_started = perf_counter()
-            response = self.client.upload_dataset(
-                project_id=project_id,
-                name=f"{self.experiment_name}-dataset",
-                filename=f"{self.experiment_name}.jsonl",
-                content=dataset_payload,
-            )
+            with preparation_stage(self, "provider.dataset_upload", "provider", billing_units="unavailable"):
+                response = self.client.upload_dataset(
+                    project_id=project_id,
+                    name=f"{self.experiment_name}-dataset",
+                    filename=f"{self.experiment_name}.jsonl",
+                    content=dataset_payload,
+                )
             self._dataset_upload_ms = (perf_counter() - upload_started) * 1_000
             self._dataset_response = response
             self._dataset_id = self._require_id(response, resource="dataset")
             self._persist_progress()
-        self._dataset_response = self._wait_for_dataset(project_id, self._dataset_id)
+        with preparation_stage(self, "provider.dataset_profile", "provider", dataset_id=self._dataset_id, payload_sha256=self._dataset_payload_sha256, reused=self.training.dataset_id is not None, billing_units="unavailable"):
+            self._dataset_response = self._wait_for_dataset(project_id, self._dataset_id)
 
         if self._training_job_id is None:
             self._status = "submitting_training"
             submission_started = perf_counter()
-            response = self.client.create_training_job(
-                project_id=project_id,
-                base_model=base_model,
-                train_dataset_id=self._dataset_id,
-                name=f"{self.experiment_name}-training",
-                parameters=self.training.training_parameters(),
-            )
+            with preparation_stage(self, "provider.training_submit", "provider", billing_units="unavailable"):
+                response = self.client.create_training_job(
+                    project_id=project_id,
+                    base_model=base_model,
+                    train_dataset_id=self._dataset_id,
+                    name=f"{self.experiment_name}-training",
+                    parameters=self.training.training_parameters(),
+                )
             self._training_submission_ms = (
                 perf_counter() - submission_started
             ) * 1_000
@@ -872,11 +877,12 @@ class EmissaryClassifier:
 
         training_started = perf_counter()
         try:
-            self._training_response = self._wait_for_training(
-                project_id,
-                self._training_job_id,
-                initial=None,
-            )
+            with preparation_stage(self, "provider.training_wait", "provider", billing_units="unavailable"):
+                self._training_response = self._wait_for_training(
+                    project_id,
+                    self._training_job_id,
+                    initial=None,
+                )
         finally:
             self._training_wall_ms = (perf_counter() - training_started) * 1_000
         self._validate_training_identity(self._training_response)
@@ -905,13 +911,14 @@ class EmissaryClassifier:
         if self._deployment_id is None:
             self._status = "submitting_deployment"
             submission_started = perf_counter()
-            response = self.client.create_deployment(
-                project_id=project_id,
-                training_job_id=self._training_job_id,
-                checkpoint=self._checkpoint,
-                name=f"{self.experiment_name}-deployment",
-                inactive_timeout_s=self.training.inactive_timeout_s,
-            )
+            with preparation_stage(self, "provider.deployment_submit", "provider", billing_units="unavailable"):
+                response = self.client.create_deployment(
+                    project_id=project_id,
+                    training_job_id=self._training_job_id,
+                    checkpoint=self._checkpoint,
+                    name=f"{self.experiment_name}-deployment",
+                    inactive_timeout_s=self.training.inactive_timeout_s,
+                )
             self._deployment_submission_ms = (
                 perf_counter() - submission_started
             ) * 1_000
@@ -922,11 +929,12 @@ class EmissaryClassifier:
             self._persist_progress()
 
         try:
-            self._deployment_response = self._wait_for_deployment(
-                project_id,
-                self._deployment_id,
-                initial=None,
-            )
+            with preparation_stage(self, "provider.deployment_wait", "provider", billing_units="unavailable"):
+                self._deployment_response = self._wait_for_deployment(
+                    project_id,
+                    self._deployment_id,
+                    initial=None,
+                )
         finally:
             self._deployment_wall_ms = (perf_counter() - deployment_started) * 1_000
         self._validate_deployment_identity(self._deployment_response)
@@ -1080,6 +1088,19 @@ class EmissaryClassifier:
 
     def set_usage_sink(self, sink) -> None:
         self._usage_sink = sink
+
+    def preparation_metadata(self):
+        return {"remote_preparation_performed": self.training.uses_project_fine_tuning or self._reference_model_id is None,
+                "model_id": self.model_id, "dataset_id": self._dataset_id,
+                "dataset_sha256": self._dataset_payload_sha256, "training_job_id": self._training_job_id,
+                "deployment_id": self._deployment_id, "checkpoint": self._checkpoint,
+                "continuation": {"dataset_id": self.training.dataset_id,
+                                 "training_job_id": self.training.training_job_id,
+                                 "deployment_id": self.training.deployment_id},
+                "billing": None, "billing_reason": "No documented preparation charges or billable resource time exposed by this adapter"}
+
+    def set_preparation_sink(self, sink):
+        self._preparation_sink = sink
 
     def inference_metadata(self) -> dict[str, Any]:
         session = getattr(self.client, "session", None)

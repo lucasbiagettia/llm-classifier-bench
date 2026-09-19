@@ -7,6 +7,7 @@ from time import perf_counter
 from typing import Any, Sequence
 
 from llm_classifier_bench.classifiers.base import Prediction
+from llm_classifier_bench.preparation import preparation_stage
 from llm_classifier_bench.config import TfidfTrainingConfig
 from llm_classifier_bench.core import ClassificationInput, ClassDefinition, LabeledExample
 
@@ -86,30 +87,40 @@ class TfidfLogisticClassifier:
         }
         vectorizer = TfidfVectorizer(**vectorizer_settings)
         try:
-            train_features = vectorizer.fit_transform([item.text for item in train])
+            with preparation_stage(self, "tfidf.fit_transform", "features", cache="computed_this_run", partition="fit_train"):
+                train_features = vectorizer.fit_transform([item.text for item in train])
         except ValueError as exc:
             raise ValueError(f"Could not fit TF-IDF vocabulary: {exc}") from exc
         train_labels = [item.label for item in train]
-        validation_features = (
-            vectorizer.transform([item.text for item in validation]) if validation else None
-        )
+        with preparation_stage(self, "tfidf.validation_transform", "features", cache="computed_this_run", partition="validation"):
+            validation_features = (
+                vectorizer.transform([item.text for item in validation]) if validation else None
+            )
         validation_labels = [item.label for item in validation]
         candidates = self.training.c_values if validation else (self.training.fallback_c,)
         best_score = float("-inf")
         best_classifier = None
         scores = []
-        for c_value in candidates:
+        for candidate_index, c_value in enumerate(candidates):
             candidate = LogisticRegression(
                 C=c_value, max_iter=self.training.max_iter,
                 random_state=self.training.seed, solver="lbfgs",
             )
-            candidate.fit(train_features, train_labels)
-            score = (float(candidate.score(validation_features, validation_labels))
-                     if validation else None)
+            with preparation_stage(self, f"lr.fit.{candidate_index}", "fit", c=c_value):
+                candidate.fit(train_features, train_labels)
+            with preparation_stage(self, f"lr.validate.{candidate_index}", "selection", c=c_value):
+                score = (float(candidate.score(validation_features, validation_labels))
+                         if validation else None)
             scores.append({"c": c_value, "validation_accuracy": score})
             if best_classifier is None or (score is not None and score > best_score):
                 best_classifier = candidate
+                best_index = candidate_index
                 best_score = score if score is not None else best_score
+
+        with preparation_stage(self, "lr.select", "selection",
+                               selected_configuration={"c": best_classifier.C}, final_refit_performed=False,
+                               selected_fit_names=[f"lr.fit.{best_index}"]):
+            pass
 
         # Publish fitted state only after all candidates have completed successfully.
         self._fit_metadata = {
@@ -121,6 +132,7 @@ class TfidfLogisticClassifier:
             "c_candidates": list(self.training.c_values),
             "fallback_c": self.training.fallback_c,
             "selected_c": best_classifier.C,
+            "final_refit_performed": False,
             "selection_metric": "validation_accuracy" if validation else "fixed_fallback",
             "tie_breaking": "first_candidate_in_configured_order",
             "candidate_scores": scores,
@@ -136,6 +148,9 @@ class TfidfLogisticClassifier:
     def fitted_metadata(self) -> dict[str, Any]:
         """JSON-compatible post-fit information for the runner's optional hook."""
         return dict(self._fit_metadata)
+
+    def set_preparation_sink(self, sink):
+        self._preparation_sink = sink
 
     def inference_metadata(self) -> dict[str, Any]:
         return {"backend": "local", "device": "cpu", "transport_max_retries": 0,

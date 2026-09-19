@@ -7,6 +7,7 @@ from time import perf_counter
 from typing import Any, Sequence
 
 from llm_classifier_bench.classifiers.base import Prediction
+from llm_classifier_bench.preparation import preparation_stage
 from llm_classifier_bench.config import (
     DEFAULT_SENTENCE_TRANSFORMER_MODEL,
     SentenceTransformerTrainingConfig,
@@ -76,26 +77,35 @@ class SentenceTransformerLogisticClassifier:
         if unknown:
             raise ValueError(f"Training data contains unknown labels: {unknown}")
 
-        encoder = self._encoder or _load_sentence_transformer(self.model)
+        with preparation_stage(self, "encoder.load", "load",
+                               cache="reused_in_memory" if self._encoder is not None else "disk_cache_hit_unknown",
+                               model=self.model, original_build_cost="unavailable") as evidence:
+            encoder = self._encoder or _load_sentence_transformer(self.model)
+            evidence["encoder_type"] = f"{type(encoder).__module__}.{type(encoder).__qualname__}"
+            module = getattr(encoder, "_modules", {}).get("0")
+            encoder_config = getattr(getattr(module, "auto_model", None), "config", None)
+            evidence["resolved_revision"] = getattr(encoder_config, "_commit_hash", None)
         self._encoder = encoder
 
-        train_embeddings = encoder.encode(
-            [item.text for item in train],
-            batch_size=self.training.embedding_batch_size,
-            show_progress_bar=False,
-            convert_to_numpy=True,
-        )
+        with preparation_stage(self, "encoder.fit_train", "features", cache="computed_this_run", partition="fit_train"):
+            train_embeddings = encoder.encode(
+                [item.text for item in train],
+                batch_size=self.training.embedding_batch_size,
+                show_progress_bar=False,
+                convert_to_numpy=True,
+            )
         train_labels = [item.label for item in train]
 
         validation_embeddings = None
         validation_labels: list[str] = []
         if validation:
-            validation_embeddings = encoder.encode(
-                [item.text for item in validation],
-                batch_size=self.training.embedding_batch_size,
-                show_progress_bar=False,
-                convert_to_numpy=True,
-            )
+            with preparation_stage(self, "encoder.validation", "features", cache="computed_this_run", partition="validation"):
+                validation_embeddings = encoder.encode(
+                    [item.text for item in validation],
+                    batch_size=self.training.embedding_batch_size,
+                    show_progress_bar=False,
+                    convert_to_numpy=True,
+                )
             validation_labels = [item.label for item in validation]
 
         LogisticRegression = _load_logistic_regression()
@@ -104,18 +114,20 @@ class SentenceTransformerLogisticClassifier:
         best_c: float | None = None
         candidate_scores = []
 
-        for c_value in self.training.c_values:
+        for candidate_index, c_value in enumerate(self.training.c_values):
             candidate = LogisticRegression(
                 C=c_value,
                 max_iter=self.training.max_iter,
                 random_state=self.training.seed,
             )
-            candidate.fit(train_embeddings, train_labels)
+            with preparation_stage(self, f"lr.fit.{candidate_index}", "fit", c=c_value):
+                candidate.fit(train_embeddings, train_labels)
 
             if validation_embeddings is None:
                 score = 0.0
             else:
-                score = float(candidate.score(validation_embeddings, validation_labels))
+                with preparation_stage(self, f"lr.validate.{candidate_index}", "selection", c=c_value):
+                    score = float(candidate.score(validation_embeddings, validation_labels))
 
             candidate_scores.append({
                 "c": c_value,
@@ -126,14 +138,20 @@ class SentenceTransformerLogisticClassifier:
                 best_score = score
                 best_classifier = candidate
                 best_c = c_value
+                best_index = candidate_index
 
         if best_classifier is None or best_c is None:  # defensive
             raise RuntimeError("Could not fit logistic regression")
 
+        with preparation_stage(self, "lr.select", "selection",
+                               selected_configuration={"c": best_c}, final_refit_performed=False,
+                               selected_fit_names=[f"lr.fit.{best_index}"]):
+            pass
         self._classifier = best_classifier
         self.selected_c = best_c
         self._fit_metadata = {
             "selected_c": best_c,
+            "final_refit_performed": False,
             "candidate_scores": candidate_scores,
             "selection_metric": "validation_accuracy" if validation else "first_candidate_no_validation",
             "tie_breaking": "first_candidate_in_configured_order",
@@ -146,6 +164,9 @@ class SentenceTransformerLogisticClassifier:
     def fitted_metadata(self) -> dict[str, Any]:
         """Persist candidate scores through the runner's existing metadata hook."""
         return dict(self._fit_metadata)
+
+    def set_preparation_sink(self, sink):
+        self._preparation_sink = sink
 
     def inference_metadata(self) -> dict[str, Any]:
         device = getattr(self._encoder, "device", None)
