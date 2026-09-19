@@ -245,6 +245,7 @@ def build_cost_report(entries: list[dict], card: dict, metadata: dict) -> dict:
     return {
         "schema_version": 1, "currency": "USD", "pricing": card,
         "run_status": metadata.get("run_status"),
+        "backend": metadata.get("runtime", {}).get("classifier", {}).get("backend"),
         "pricing_mode": "selected rate card; estimates are not historical invoices",
         "scope": "recorded inference attempts including warmup and failures; preparation excluded",
         **total, "evaluation": summarize("evaluation"), "warmup": summarize("warmup"),

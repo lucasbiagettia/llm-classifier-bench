@@ -1,0 +1,288 @@
+{
+  "schema_version": 1,
+  "available": true,
+  "complete": true,
+  "scope": "incremental preparation in this run; inference and its warmup excluded",
+  "total_elapsed_ms": 916.261975,
+  "total_cost_usd": 5.717921000761035e-05,
+  "cost_kind": "estimated",
+  "currency": "USD",
+  "reason": null,
+  "basis": "active prepare/fit wall time at whole-allocation rate; children are explanatory components",
+  "metadata": {
+    "schema_version": 1,
+    "supports_stages": true,
+    "runtime": {
+      "platform": "Linux-7.1.9-1-MANJARO-x86_64-with-glibc2.44",
+      "python": "3.14.7",
+      "cpu_model": "Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz",
+      "logical_cpu_count": 8,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "thread_environment": {
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": null,
+        "TOKENIZERS_PARALLELISM": null
+      },
+      "torch_threads": null,
+      "gpu_devices": [],
+      "library_versions": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "torch": "2.13.0",
+        "transformers": "5.14.1",
+        "sentence-transformers": "5.6.1",
+        "openai": "2.52.0",
+        "requests": "2.34.2"
+      },
+      "classifier": {
+        "backend": "local",
+        "device": "cpu",
+        "transport_max_retries": 0,
+        "batch_execution": "sequential_single_example"
+      }
+    },
+    "adapter": {},
+    "boundary": "prepare and fit only; construction before runner, dataset loading and inference warmup excluded",
+    "unavailable_resource_details": [
+      "RAM allocation quota",
+      "GPU sharing/reservation"
+    ],
+    "allocation": "one whole allocation retained throughout each prepare/fit call; gaps between calls excluded",
+    "cache_scope": "incremental work in this run; prior artifact creation is never inferred to be free"
+  },
+  "pricing": {
+    "schema_version": 1,
+    "currency": "USD",
+    "api_rates": [],
+    "local_hardware": {
+      "device": "cpu",
+      "resource": "Illustrative AWS Lightsail Linux public-IPv4 2Xlarge: 8 vCPUs, 32 GB RAM",
+      "usd_per_hour": "0.2246575342465753424657534247",
+      "source": "https://docs.aws.amazon.com/lightsail/latest/userguide/amazon-lightsail-bundles.html",
+      "effective_date": "2026-09-16",
+      "interpretation": "cloud_equivalent",
+      "assumptions": "Illustrative flat hourly cloud equivalent derived from the September 16 snapshot: USD 164/month divided by an assumed 730 hours/month. Applied to active processing or user-specified allocation hours, including idle time. Not a quoted hourly offer, provider invoice or hardware performance equivalence. Excludes preparation, taxes, storage/network extras, billing minimums, rounding and autoscaling. No GPU rate supplied.",
+      "date_basis": "Frozen source-price snapshot from pricing/inference_2026-09-16.json; not a new current-price verification"
+    }
+  },
+  "billing": null,
+  "source_sha256": {
+    "preparation.jsonl": "349865d20db5449880e0e99ea4195b2c61142f8694b8397058d0b4ac99e88311",
+    "preparation_metadata.json": "63d6e11f123bddb28504384799a7a3ea8fc8abb4b6b0f5ac501e443f0f55e952",
+    "config.json": "30f9db798ea1f5fb683be273bfcc1454b5d40ed8dd52a606c30fbad8ac31723a",
+    "selected_pricing": "cd04d9082e716c20aa86eb3c1053bb0c5f7ef1bf9ed3979537d05bf996b71290"
+  },
+  "exclusive_ms_by_category": {
+    "parent": 894.864095,
+    "features": 10.180573,
+    "fit": 8.304565,
+    "selection": 2.912742
+  },
+  "selected_configuration": {
+    "selected_configuration": {
+      "c": 0.1
+    },
+    "final_refit_performed": false,
+    "selected_fit_names": [
+      "lr.fit.0"
+    ],
+    "selected_fit_exclusive_ms": 3.209115,
+    "selected_fit_cost_estimate_usd": 2.0026440639269407e-07,
+    "role": "subset of total investment; excludes shared features, selection evaluation and restoration; never add to total"
+  },
+  "cache_provenance": [
+    {
+      "stage": "tfidf.fit_transform",
+      "cache": "computed_this_run",
+      "partition": "fit_train"
+    },
+    {
+      "stage": "tfidf.validation_transform",
+      "cache": "computed_this_run",
+      "partition": "validation"
+    }
+  ],
+  "prior_artifact_creation_cost_usd": null,
+  "events": [
+    {
+      "event_id": "prep-000000",
+      "parent_id": null,
+      "name": "prepare",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 164571,
+      "end_ns": 171770,
+      "elapsed_ms": 0.007199,
+      "exclusive_ms": 0.007199,
+      "exclusive_cost_estimate_usd": 4.4925266362252663e-10
+    },
+    {
+      "event_id": "prep-000002",
+      "parent_id": "prep-000001",
+      "name": "tfidf.fit_transform",
+      "category": "features",
+      "details": {
+        "cache": "computed_this_run",
+        "partition": "fit_train"
+      },
+      "status": "success",
+      "start_ns": 892173491,
+      "end_ns": 901897299,
+      "elapsed_ms": 9.723808,
+      "exclusive_ms": 9.723808,
+      "exclusive_cost_estimate_usd": 6.068129802130898e-07
+    },
+    {
+      "event_id": "prep-000003",
+      "parent_id": "prep-000001",
+      "name": "tfidf.validation_transform",
+      "category": "features",
+      "details": {
+        "cache": "computed_this_run",
+        "partition": "validation"
+      },
+      "status": "success",
+      "start_ns": 902000718,
+      "end_ns": 902457483,
+      "elapsed_ms": 0.456765,
+      "exclusive_ms": 0.456765,
+      "exclusive_cost_estimate_usd": 2.8504360730593608e-08
+    },
+    {
+      "event_id": "prep-000004",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.0",
+      "category": "fit",
+      "details": {
+        "c": 0.1
+      },
+      "status": "success",
+      "start_ns": 902591437,
+      "end_ns": 905800552,
+      "elapsed_ms": 3.209115,
+      "exclusive_ms": 3.209115,
+      "exclusive_cost_estimate_usd": 2.0026440639269407e-07
+    },
+    {
+      "event_id": "prep-000005",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.0",
+      "category": "selection",
+      "details": {
+        "c": 0.1
+      },
+      "status": "success",
+      "start_ns": 905907363,
+      "end_ns": 906967854,
+      "elapsed_ms": 1.060491,
+      "exclusive_ms": 1.060491,
+      "exclusive_cost_estimate_usd": 6.617980365296804e-08
+    },
+    {
+      "event_id": "prep-000006",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.1",
+      "category": "fit",
+      "details": {
+        "c": 1.0
+      },
+      "status": "success",
+      "start_ns": 907062816,
+      "end_ns": 909202969,
+      "elapsed_ms": 2.140153,
+      "exclusive_ms": 2.140153,
+      "exclusive_cost_estimate_usd": 1.335559710806697e-07
+    },
+    {
+      "event_id": "prep-000007",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.1",
+      "category": "selection",
+      "details": {
+        "c": 1.0
+      },
+      "status": "success",
+      "start_ns": 909285474,
+      "end_ns": 910185511,
+      "elapsed_ms": 0.900037,
+      "exclusive_ms": 0.900037,
+      "exclusive_cost_estimate_usd": 5.6166692541856926e-08
+    },
+    {
+      "event_id": "prep-000008",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.2",
+      "category": "fit",
+      "details": {
+        "c": 10.0
+      },
+      "status": "success",
+      "start_ns": 910291744,
+      "end_ns": 913247041,
+      "elapsed_ms": 2.955297,
+      "exclusive_ms": 2.955297,
+      "exclusive_cost_estimate_usd": 1.8442492694063928e-07
+    },
+    {
+      "event_id": "prep-000009",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.2",
+      "category": "selection",
+      "details": {
+        "c": 10.0
+      },
+      "status": "success",
+      "start_ns": 913362197,
+      "end_ns": 914313011,
+      "elapsed_ms": 0.950814,
+      "exclusive_ms": 0.950814,
+      "exclusive_cost_estimate_usd": 5.9335424657534244e-08
+    },
+    {
+      "event_id": "prep-000010",
+      "parent_id": "prep-000001",
+      "name": "lr.select",
+      "category": "selection",
+      "details": {
+        "selected_configuration": {
+          "c": 0.1
+        },
+        "final_refit_performed": false,
+        "selected_fit_names": [
+          "lr.fit.0"
+        ]
+      },
+      "status": "success",
+      "start_ns": 914447251,
+      "end_ns": 914448651,
+      "elapsed_ms": 0.0014,
+      "exclusive_ms": 0.0014,
+      "exclusive_cost_estimate_usd": 8.736681887366819e-11
+    },
+    {
+      "event_id": "prep-000001",
+      "parent_id": null,
+      "name": "fit",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 1875037,
+      "end_ns": 918129813,
+      "elapsed_ms": 916.254776,
+      "exclusive_ms": 894.856896,
+      "exclusive_cost_estimate_usd": 5.584342882191781e-05
+    }
+  ]
+}

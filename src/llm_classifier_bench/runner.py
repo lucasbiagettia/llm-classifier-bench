@@ -19,6 +19,7 @@ from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBun
 from llm_classifier_bench.datasets.selection import validate_partition_disjointness
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
 from llm_classifier_bench.costs import CostRecorder
+from llm_classifier_bench.preparation import PreparationRecorder
 from llm_classifier_bench.measurement import MeasurementConfig, TimingRecorder
 from llm_classifier_bench.metrics.operational import percentile
 
@@ -95,6 +96,7 @@ def run_benchmark(
     fitted_metadata: Any = None
     timing: TimingRecorder | None = None
     costs: CostRecorder | None = None
+    preparation: PreparationRecorder | None = None
 
     stage = "loading_dataset"
     _write_status(
@@ -166,6 +168,8 @@ def run_benchmark(
         timing = TimingRecorder(run_dir, resolved_config.measurement, classifier, len(bundle.test),
                                 observation_sink=costs.record_timing)
 
+        preparation = PreparationRecorder(run_dir, classifier)
+
         fitted_metadata = getattr(classifier, "fitted_metadata", None)
         metadata_sink = getattr(classifier, "set_fit_metadata_sink", None)
         if callable(metadata_sink):
@@ -181,7 +185,7 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        timing.measure(lambda: classifier.prepare(bundle.classes), kind="stage", phase="prepare")
+        timing.measure(lambda: preparation.measure(lambda: classifier.prepare(bundle.classes), "prepare"), kind="stage", phase="prepare")
 
         stage = "fitting_classifier"
         _write_status(
@@ -192,7 +196,8 @@ def run_benchmark(
             dataset=bundle.name,
             classifier=classifier.name,
         )
-        timing.measure(lambda: classifier.fit(fit_train, validation_examples=validation), kind="stage", phase="fit")
+        timing.measure(lambda: preparation.measure(lambda: classifier.fit(fit_train, validation_examples=validation), "fit"), kind="stage", phase="fit")
+        preparation.finish()
 
         # Optional generic hook: retain the pre-fit config and persist learned
         # settings separately, before inference can fail or mutate the model.
@@ -306,6 +311,12 @@ def run_benchmark(
                 costs.finish()
             except Exception as report_error:
                 cost_error = type(report_error).__name__
+        preparation_error = None
+        if preparation is not None:
+            try:
+                preparation.finish()
+            except Exception as report_error:
+                preparation_error = type(report_error).__name__
         if persist_fit_metadata:
             try:
                 _write_json(fit_metadata_path, fitted_metadata())
@@ -323,9 +334,12 @@ def run_benchmark(
             error_message=str(exc),
             timing_report_error_type=timing_error,
             cost_report_error_type=cost_error,
+            preparation_report_error_type=preparation_error,
         )
         raise
     finally:
+        if preparation is not None:
+            preparation.close()
         if costs is not None:
             costs.close()
 

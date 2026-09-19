@@ -8,6 +8,7 @@ from time import perf_counter
 from typing import Any, Sequence
 
 from llm_classifier_bench.classifiers.base import Prediction
+from llm_classifier_bench.preparation import preparation_stage
 from llm_classifier_bench.config import BertTrainingConfig, DEFAULT_BERT_MODEL
 from llm_classifier_bench.core import ClassificationInput, ClassDefinition, LabeledExample
 
@@ -84,18 +85,24 @@ class BertClassifier:
                 + ", ".join(missing_train_labels)
             )
 
+        self._fit_metadata = {}
         torch, AutoTokenizer, AutoModelForSequenceClassification = _load_transformer_stack()
         _set_seed(torch, self.training.seed)
 
-        tokenizer = AutoTokenizer.from_pretrained(self.model)
-        model = AutoModelForSequenceClassification.from_pretrained(
-            self.model,
-            num_labels=len(self._class_names),
-            label2id=self._label_to_id,
-            id2label=self._id_to_label,
-        )
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        model.to(device)
+        self._device = device
+        sync = lambda: torch.cuda.synchronize(device) if str(device).startswith("cuda") else None
+        with preparation_stage(self, "bert.load", "load", synchronize=sync,
+                               model=self.model, cache="disk_cache_hit_unknown") as evidence:
+            tokenizer = AutoTokenizer.from_pretrained(self.model)
+            model = AutoModelForSequenceClassification.from_pretrained(
+                self.model,
+                num_labels=len(self._class_names),
+                label2id=self._label_to_id,
+                id2label=self._id_to_label,
+            )
+            model.to(device)
+            evidence["resolved_revision"] = getattr(getattr(model, "config", None), "_commit_hash", None)
 
         optimizer = torch.optim.AdamW(
             model.parameters(),
@@ -105,56 +112,77 @@ class BertClassifier:
 
         best_state: dict[str, Any] | None = None
         best_validation_loss = float("inf")
+        selected_epoch = self.training.epochs - 1
 
         for _epoch in range(self.training.epochs):
-            model.train()
-            batches = _batched(train, self.training.batch_size, shuffle=True, seed=self.training.seed + _epoch)
-            for batch in batches:
-                encoded = tokenizer(
-                    [item.text for item in batch],
-                    padding=True,
-                    truncation=True,
-                    max_length=self.training.max_length,
-                    return_tensors="pt",
-                )
-                encoded = {key: value.to(device) for key, value in encoded.items()}
-                encoded["labels"] = torch.tensor(
-                    [self._label_to_id[item.label] for item in batch],
-                    dtype=torch.long,
-                    device=device,
-                )
+            with preparation_stage(self, f"bert.epoch.{_epoch}", "fit", synchronize=sync, epoch=_epoch):
+                model.train()
+                batches = _batched(train, self.training.batch_size, shuffle=True, seed=self.training.seed + _epoch)
+                for batch_index, batch in enumerate(batches):
+                    with preparation_stage(self, f"bert.tokenize.{_epoch}.{batch_index}", "tokenization", epoch=_epoch, partition="fit_train"):
+                        encoded = tokenizer(
+                            [item.text for item in batch],
+                            padding=True,
+                            truncation=True,
+                            max_length=self.training.max_length,
+                            return_tensors="pt",
+                        )
+                    encoded = {key: value.to(device) for key, value in encoded.items()}
+                    encoded["labels"] = torch.tensor(
+                        [self._label_to_id[item.label] for item in batch],
+                        dtype=torch.long,
+                        device=device,
+                    )
 
-                optimizer.zero_grad(set_to_none=True)
-                output = model(**encoded)
-                output.loss.backward()
-                optimizer.step()
-
+                    optimizer.zero_grad(set_to_none=True)
+                    output = model(**encoded)
+                    output.loss.backward()
+                    optimizer.step()
             if validation:
-                validation_loss = _mean_validation_loss(
-                    torch=torch,
-                    model=model,
-                    tokenizer=tokenizer,
-                    examples=validation,
-                    label_to_id=self._label_to_id,
-                    batch_size=self.training.batch_size,
-                    max_length=self.training.max_length,
-                    device=device,
-                )
+                with preparation_stage(self, f"bert.validate.{_epoch}", "selection", synchronize=sync, epoch=_epoch):
+                    validation_loss = _mean_validation_loss(
+                        torch=torch,
+                        model=model,
+                        tokenizer=tokenizer,
+                        examples=validation,
+                        label_to_id=self._label_to_id,
+                        batch_size=self.training.batch_size,
+                        max_length=self.training.max_length,
+                        device=device,
+                        preparation_owner=self,
+                    )
                 if validation_loss < best_validation_loss:
                     best_validation_loss = validation_loss
-                    best_state = {
-                        key: value.detach().cpu().clone()
-                        for key, value in model.state_dict().items()
-                    }
+                    selected_epoch = _epoch
+                    with preparation_stage(self, f"bert.save.{_epoch}", "selection", synchronize=sync, epoch=_epoch):
+                        best_state = {
+                            key: value.detach().cpu().clone()
+                            for key, value in model.state_dict().items()
+                        }
 
         if best_state is not None:
-            model.load_state_dict(best_state)
-            model.to(device)
+            with preparation_stage(self, "bert.restore", "restore", synchronize=sync, selected_epoch=selected_epoch):
+                model.load_state_dict(best_state)
+                model.to(device)
 
+        with preparation_stage(self, "bert.select", "selection",
+                               selected_configuration={"epoch": selected_epoch + 1}, final_refit_performed=False,
+                               selected_fit_names=[f"bert.epoch.{e}" for e in range(selected_epoch+1)],
+                               selection_basis="cumulative training prefix; epochs are not independent candidates"):
+            pass
+        self._fit_metadata = {"selected_epoch": selected_epoch+1, "epochs_run": self.training.epochs,
+                              "final_refit_performed": False,
+                              "selection_metric": "validation_loss" if validation else "last_epoch"}
         model.eval()
         self._tokenizer = tokenizer
         self._model = model
         self._device = device
+
+    def fitted_metadata(self):
+        return dict(getattr(self, "_fit_metadata", {}))
+
+    def set_preparation_sink(self, sink):
+        self._preparation_sink = sink
 
     def inference_metadata(self) -> dict[str, Any]:
         return {"backend": "local", "device": str(self._device) if self._device is not None else None,
@@ -248,18 +276,20 @@ def _mean_validation_loss(
     batch_size: int,
     max_length: int,
     device: Any,
+    preparation_owner=None,
 ) -> float:
     model.eval()
     losses: list[float] = []
     with torch.no_grad():
         for batch in _batched(examples, batch_size, shuffle=False, seed=0):
-            encoded = tokenizer(
-                [item.text for item in batch],
-                padding=True,
-                truncation=True,
-                max_length=max_length,
-                return_tensors="pt",
-            )
+            with preparation_stage(preparation_owner, "bert.validation_tokenize", "tokenization", partition="validation"):
+                encoded = tokenizer(
+                    [item.text for item in batch],
+                    padding=True,
+                    truncation=True,
+                    max_length=max_length,
+                    return_tensors="pt",
+                )
             encoded = {key: value.to(device) for key, value in encoded.items()}
             encoded["labels"] = torch.tensor(
                 [label_to_id[item.label] for item in batch],
