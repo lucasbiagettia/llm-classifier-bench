@@ -3,7 +3,7 @@
 Dirección acordada con el owner: **priorizar el costo de inferencia**. La extensión
 del #10 cubre throughput medido, hardware/tarifa explícitos y escenarios de uso
 continuo o instancia desplegada. El #12 agrega la inversión inicial y su
-amortización; su implementación sigue pendiente y no bloquea ese reporte principal.
+amortización; la implementación y su validación están en [preparation_costs.md](preparation_costs.md).
 
 ## Entregable principal: extensión del #10
 

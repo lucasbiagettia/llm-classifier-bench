@@ -445,3 +445,18 @@ and optional deployed-allocation costs including idle time. Use
 `report_costs.py --deployment-hours 24 --volumes 1000 10000 100000`; this only
 replays saved evidence. See [self-hosted inference cost scenarios](docs/self_hosted_inference_costs.md)
 for hardware/rate matching, input-length metadata and feasibility checks.
+
+
+## Preparation investment and amortization
+
+Runs also save `preparation.jsonl`, `preparation_metadata.json` and
+`preparation_report.json`. These measure loading/features, candidate fitting and
+selection without counting nested work twice. The winning TF-IDF/MiniLM fit is a
+component of the total; no final refit is introduced. Remote waiting time is not
+assumed to be billable compute.
+
+Use `scripts/report_preparation.py RUN_DIR --inference-scenario continuous` or
+`--inference-scenario deployed --deployment-hours 24` to combine preparation with
+saved inference scenarios for 1,000 / 10,000 / 100,000 valid predictions. Hosted
+APIs use `--inference-scenario recorded_api`. Unknown components remain unavailable.
+See [accounting rules, evidence formats, commands and validation](docs/preparation_costs.md).

@@ -62,6 +62,10 @@ class Classifier(Protocol):
     Optional ``set_usage_sink(callable)`` records each API attempt, including
     responses rejected during parsing, for runner-owned inference accounting.
     This hook is separate from Prediction because failed calls have costs too.
+
+    Optional ``set_preparation_sink(callable)`` installs a stage-context factory
+    during prepare/fit. ``preparation_metadata()`` may expose resource/cache
+    provenance and documented billing evidence; missing provider prices stay unknown.
     """
 
     @property
