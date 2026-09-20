@@ -22,6 +22,7 @@ from llm_classifier_bench.costs import CostRecorder
 from llm_classifier_bench.preparation import PreparationRecorder
 from llm_classifier_bench.measurement import MeasurementConfig, TimingRecorder
 from llm_classifier_bench.metrics.operational import percentile
+from llm_classifier_bench.budgets import MatchedBudgetConfig, UnsupportedConfiguration, select_matched_pools
 
 
 @dataclass(frozen=True, slots=True)
@@ -42,6 +43,7 @@ class BenchmarkRunConfig:
     dry_run: bool = False
     measurement: MeasurementConfig = field(default_factory=MeasurementConfig)
     pricing_path: Path | None = None
+    matched_budget: MatchedBudgetConfig | None = None
 
     def __post_init__(self) -> None:
         if not 0.0 <= self.validation_fraction < 1.0:
@@ -97,6 +99,7 @@ def run_benchmark(
     timing: TimingRecorder | None = None
     costs: CostRecorder | None = None
     preparation: PreparationRecorder | None = None
+    budget_metadata = None
 
     stage = "loading_dataset"
     _write_status(
@@ -134,6 +137,25 @@ def run_benchmark(
             seed=resolved_config.split_seed,
         )
 
+        # Validate the complete partitions before discarding unused examples.
+        validate_partition_disjointness(fit_train, validation, bundle.test)
+        if resolved_config.matched_budget is not None:
+            stage = "selecting_matched_budget"
+            # Retain the source candidates/configuration even if a budget is impossible.
+            _write_run_config(config_path, run_id=run_id, dataset=bundle, classifier=classifier,
+                              config=resolved_config, fit_train=(), validation=(),
+                              class_definitions_metadata=class_definitions_metadata)
+            budget_metadata = {"comparison_regime": "matched_labeled_budget",
+                               "budget": asdict(resolved_config.matched_budget)}
+            _write_json(run_dir / "labeled_budget.json", budget_metadata)
+            try:
+                fit_train, validation, budget_metadata = select_matched_pools(
+                    fit_train, validation, bundle.classes, resolved_config.matched_budget,
+                )
+            except ValueError as exc:
+                raise UnsupportedConfiguration(f"insufficient_pool_support: {exc}") from exc
+            _write_json(run_dir / "labeled_budget.json", budget_metadata)
+
         _write_run_config(
             config_path,
             run_id=run_id,
@@ -147,12 +169,36 @@ def run_benchmark(
 
         stage = "validating_partitions"
         validate_partition_disjointness(fit_train, validation, bundle.test)
+        if budget_metadata is not None:
+            stage = "checking_matched_support"
+            if resolved_config.measurement.warmup_examples > len(fit_train):
+                raise UnsupportedConfiguration("insufficient_warmup_inputs: warmup exceeds selected pool")
+            if getattr(classifier, "requires_full_training_coverage", False):
+                if budget_metadata["selection"]["class_coverage"] < 1:
+                    raise UnsupportedConfiguration("insufficient_class_coverage: every configured class needs a fit example")
+            context_planner = getattr(classifier, "plan_context", None)
+            if callable(context_planner):
+                if fit_train and not classifier.in_context:
+                    raise UnsupportedConfiguration("matched_pool_not_consumed: enable in_context")
+                context_plan = context_planner(
+                    bundle.classes, fit_train,
+                    [e.as_input() for e in (*fit_train[:resolved_config.measurement.warmup_examples], *bundle.test)],
+                )
+                _write_json(run_dir / "context_plan.json", context_plan)
+                if not context_plan["supported"]:
+                    raise UnsupportedConfiguration("context_limit_exceeded: conservative preflight estimate")
         planner = getattr(classifier, "plan_fit", None)
         if callable(planner):
             stage = "planning_preparation"
             plan = planner(bundle.classes, fit_train, validation_examples=validation)
             _write_json(run_dir / "preparation_plan.json", plan)
-        elif resolved_config.dry_run:
+            if budget_metadata is not None:
+                selected_ids = {e["sample_id"] for e in plan["selection"]["selected_examples"]}
+                if selected_ids != {e.sample_id for e in fit_train}:
+                    raise UnsupportedConfiguration("matched_pool_not_consumed: adapter selected a different pool")
+                if not plan["live_supported"]:
+                    raise UnsupportedConfiguration(plan["blocker"])
+        elif resolved_config.dry_run and budget_metadata is None:
             raise ValueError("Dry-run requires a classifier with plan_fit support")
         if resolved_config.dry_run:
             _write_status(status_path, status="dry_run", stage="planned", run_id=run_id,
@@ -198,6 +244,19 @@ def run_benchmark(
         )
         timing.measure(lambda: preparation.measure(lambda: classifier.fit(fit_train, validation_examples=validation), "fit"), kind="stage", phase="fit")
         preparation.finish()
+
+        if budget_metadata is not None:
+            # Adapter metadata distinguishes parameter fitting from demonstrations.
+            fit_info = fitted_metadata() if callable(fitted_metadata) else {}
+            training_used = fit_info.get("training_examples_used", getattr(classifier, "training_examples_used", len(fit_train)))
+            context_used = getattr(classifier, "context_examples_used", 0)
+            validation_used = fit_info.get("validation_examples_used", getattr(classifier, "validation_examples_used", len(validation)))
+            budget_metadata["consumption"] = {
+                "training_examples_used": training_used, "context_examples_used": context_used,
+                "validation_examples_used": validation_used,
+                "total_labeled_examples_used": training_used + context_used + validation_used,
+            }
+            _write_json(run_dir / "labeled_budget.json", budget_metadata)
 
         # Optional generic hook: retain the pre-fit config and persist learned
         # settings separately, before inference can fail or mutate the model.
@@ -325,7 +384,7 @@ def run_benchmark(
                 pass
         _write_status(
             status_path,
-            status="failed",
+            status="unsupported" if isinstance(exc, UnsupportedConfiguration) else "failed",
             stage=stage,
             run_id=run_id,
             dataset=dataset.name,
@@ -336,6 +395,8 @@ def run_benchmark(
             cost_report_error_type=cost_error,
             preparation_report_error_type=preparation_error,
         )
+        if isinstance(exc, UnsupportedConfiguration):
+            return BenchmarkRunResult(run_id, run_dir, config_path, predictions_path, status_path, None, 0)
         raise
     finally:
         if preparation is not None:
@@ -515,6 +576,8 @@ def _write_run_config(
         "dry_run": config.dry_run,
         "measurement": asdict(config.measurement),
         "pricing_path": str(config.pricing_path) if config.pricing_path is not None else None,
+        "comparison_regime": "matched_labeled_budget" if config.matched_budget else "full_training_reference",
+        "matched_budget": asdict(config.matched_budget) if config.matched_budget else None,
         "dataset": {
             "name": dataset.name,
             "metadata": dict(dataset.metadata),
@@ -570,6 +633,10 @@ def _classifier_metadata(classifier: Classifier) -> dict[str, Any]:
         "training_examples_used",
         "validation_examples_used",
         "reasoning_effort",
+        "in_context",
+        "context_window_tokens",
+        "completion_reserve_tokens",
+        "framing_allowance_tokens",
     ):
         value = getattr(classifier, attribute, None)
         if value is not None:

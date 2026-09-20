@@ -23,6 +23,8 @@ class SentenceTransformerLogisticClassifier:
     The final held-out dataset test split is never seen during training or selection.
     """
 
+    requires_full_training_coverage = True
+
     def __init__(
         self,
         *,
@@ -45,6 +47,9 @@ class SentenceTransformerLogisticClassifier:
         self._class_names: tuple[str, ...] = ()
         self.selected_c: float | None = None
         self._fit_metadata: dict[str, Any] = {}
+        self.supervision_regime = "supervised"
+        self.training_examples_used = 0
+        self.validation_examples_used = 0
 
     @property
     def name(self) -> str:
@@ -149,6 +154,8 @@ class SentenceTransformerLogisticClassifier:
             pass
         self._classifier = best_classifier
         self.selected_c = best_c
+        self.training_examples_used = len(train)
+        self.validation_examples_used = len(validation)
         self._fit_metadata = {
             "selected_c": best_c,
             "final_refit_performed": False,

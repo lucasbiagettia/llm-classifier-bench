@@ -1,6 +1,8 @@
 # v2 experimental protocol and release scope — issue #6
 
-Status: **draft for owner decisions**, 2026-09-15. This document specifies the
+Status: **draft for final evaluation decisions**, updated 2026-09-19.
+Issue #14 implements the supported matched-budget matrix in section 3; owner
+decisions about the final paid evaluation remain open. This document specifies the
 experiment; it does not launch it. Proposed settings below are not claims that
 the current campaign runner already implements them. Resolve the dependency
 table before freezing a final evaluation manifest.
@@ -33,7 +35,8 @@ that the full matrix fits the budget.
 
 ## 2. Implementation and artifact inventory
 
-Reviewed at main commit `241933e`. Issue #7's separate audit is at
+Original inventory reviewed at main commit `241933e`; sampling and OpenAI entries
+updated for issue #14 on top of main `0c1e0d0`. Issue #7's separate audit is at
 [`a1c2139`](https://github.com/lucasbiagettia/llm-classifier-bench/blob/a1c2139/docs/calibration_audit_v2.md).
 
 | Component | Implemented evidence | v2 role / remaining limit |
@@ -41,11 +44,11 @@ Reviewed at main commit `241933e`. Issue #7's separate audit is at
 | TF-IDF + LR | `classifiers/tfidf.py`; real cached Banking77 validation and replay in [TFIDF_VALIDATION.md](../TFIDF_VALIDATION.md) | Include explicitly; omitted from the campaign's default classifier list |
 | MiniLM + LR | Frozen `all-MiniLM-L6-v2`, validation accuracy selects C; four historical scaling runs | Include; merge #7 artifact validation and candidate-score metadata |
 | BERT | `google-bert/bert-base-uncased`, supervised fine-tuning; validation loss selects epoch | Include |
-| OpenAI | Structured label-only zero-shot adapter; historical scaling runs | Include; no comparable confidence/probability output; in-context few-shot is not implemented |
+| OpenAI | Structured label-only zero-shot and configurable in-context adapter | Matched demonstrations implemented in #14; probability metrics remain unavailable; explicit context preflight required |
 | Emissary routing | Zero-shot class names/descriptions and inference | Include as a zero-shot control |
 | Emissary Projects SFT | Explicit separate base-model training, dataset/job/deployment persistence, offline tests | Conditional inclusion; live training acceptance remains unresolved |
 | Datasets | Banking77 and AG News registry adapters | Banking77 scaling; AG News has four labels and cannot support K=5/10/20/25 |
-| Sampling | Support-filtered nested class prefixes, seeded per-class source samples, persisted split IDs | Current fit/validation split is not stable across K; shared fit-budget selection across local classifiers is missing |
+| Sampling | Support-filtered nested class prefixes, seeded per-class source samples, persisted split IDs | Shared fit/context pools and validation budgets implemented in #14; fit/validation membership is not guaranteed stable across K |
 | Metrics | Accuracy, macro-F1, fixed/adaptive ECE, log loss, Brier, mean/p50/p99 latency, cost reducers | Bootstrap, failure-aware reporting and end-to-end cost attribution still needed |
 
 The historical Banking77 campaign
@@ -62,56 +65,69 @@ before training. See [validation](emissary_validation.md),
 These are dated observations; account readiness and pricing must be checked
 again before execution.
 
-## 3. Proposed evaluation matrix and shot semantics
+## 3. Supported comparison matrix and labeled-budget semantics
 
-Main dataset: Banking77. Final K={5,10,20,25}; repetitions
-`seeds=[42,43,44,45,46]`. Five seeds are a pragmatic initial scope; publish
-individual-seed values and do not claim broad dataset generality.
+Main proposed dataset: Banking77, K={5,10,20,25}, repetitions
+`seeds=[42,43,44,45,46]`. The final dataset, units and paid scope still need the
+owner decisions above. The implementation accepts explicit budgets and units;
+5/100 are supported values, not hardcoded defaults.
 
-| Regime | Classifiers | Fit examples | Inference-context examples |
-| --- | --- | --- | --- |
-| Zero-shot controls | OpenAI, Emissary routing | 0; no validation consumed | 0 |
-| Fit-budget curve | TF-IDF + LR, MiniLM + LR, BERT; Emissary Projects if ready | 5 and 100, using the confirmed unit | 0 |
-| Historical-support reference | TF-IDF + LR, MiniLM + LR, BERT | 80 per class, plus 20 validation per class | 0 |
+Both maintained campaign entry points now accept `--matched-budgets 0 5 100`
+and require `--budget-unit total` or `per_class`. Matched campaigns contain only
+matched cells. Without that flag, existing full-training/adapter-specific-budget
+results remain in the separate `full_training_reference` regime. Never relabel
+80 fit + 20 validation examples/class as a 100-fit-shot result.
 
-Run each zero-shot control once per K/seed, then reuse that result across budget
-plots. Repeated plotting is not an independent run. The historical-support
-reference is a separate condition; it is never relabeled as 100-shot.
+A shared **labeled-example budget** means distinct examples available for
+parameter fitting **or** in-context learning. `total` means S altogether;
+`per_class` means S×K. Track `training_examples_used`, `context_examples_used`,
+`validation_examples_used` and their sum `total_labeled_examples_used` separately.
+These are distinct-label counts, not epochs or repeated billed prompt tokens.
 
-**A shot means an example actually used to fit parameters**, not an example
-in an inference prompt and not an example reserved for validation. Track
-`fit_examples_used`, `validation_examples_used`, `context_examples_used`, their
-per-class counts and IDs, and `total_labeled_examples_used` for every run.
-Do not use the current `--train-per-class` flag as a synonym for fit shots.
+| Method | S=0 | 0<S<K total | Full class coverage | Use of shared examples |
+| --- | --- | --- | --- | --- |
+| TF-IDF + LR | Unsupported | Unsupported | Supported with usable vocabulary | Vectorizer/LR training |
+| MiniLM + LR | Unsupported | Unsupported | Supported | Frozen embeddings, LR training |
+| BERT | Unsupported | Unsupported | Supported | Parameter training |
+| OpenAI | Zero-shot | Supported subject to context | Supported subject to context | Every selected example in every inference prompt |
+| Emissary routing | Supported | Unsupported | Unsupported for nonzero S | No labeled examples |
+| Emissary Projects SFT | No SFT at zero | Unsupported | Conditional on explicit mechanism/base model and provider readiness | Selected pool uploaded for training |
 
-For the working `total` proposal, S=5 or 100 is spread by balanced round-robin
-across the K labels. S=100 gives 20/10/5/4 fit examples per class at K=5/10/20/25.
-S=5 covers every class only at K=5. **Mark S=5, K>5 supervised conditions
-`infeasible_insufficient_class_coverage` before training**, including Projects
-SFT. Do not oversample, add examples, shrink the requested class set, or invent
-zero probabilities to make them run. A future partial-coverage study is outside
-this release. This leaves 25 feasible K/budget/seed cells per supervised method.
+At S=5 total, only K=5 is supported by the supervised methods; OpenAI can use a
+partial-coverage context at K=10/20/25. S=100 total covers all proposed K values.
+Per-class budgets cover all labels if enough source examples remain after the
+split. Save every cell, coverage and reason, including unsupported ones; never
+add examples, duplicate them or reduce K to force support. Class definitions
+still include every configured label. Zero-shot controls run once per K/seed.
 
-If the owner chooses `per_class`, S means S for every class and the fit total is
-S×K. All requested cells then have class coverage, subject to dataset/provider
-support. Update the matrix and eligible label pool before freezing the manifest;
-do not mix units in one curve.
+OpenAI requires an explicit context-window setting. Preflight checks all test
+and warmup requests using a conservative UTF-8 byte proxy plus declared framing
+and completion reserves; it is not a provider token count. Unknown limits,
+over-limit estimates and provider context rejection produce `unsupported` cells.
+No demonstration is silently dropped. In-context and parameter training differ
+in mechanisms and inference cost; matching labels does not remove those effects.
+Projects SFT also changes the base model relative to Emissary routing.
 
 ### Validation budget is an additional labeled resource
 
-Reserve a fixed **20 validation examples per selected class** from source train,
-disjoint from all fit budgets. Local supervised methods use this set for model
-selection. Thus a local total-shot run uses S+20K labeled examples; a per-class
-run uses (S+20)K. Describe the curve as **fit budget at fixed validation support**,
-not performance with only S labeled examples available in total.
+`--validation-budget V` supplies V **total additional** labels selected from the
+reserved validation partition; default V=0. Every method receives the same
+available fit/context and validation pools. TF-IDF, MiniLM and BERT consume V
+for model selection. OpenAI and Emissary consume zero local validation labels.
+At V>0, describe results as a fit/context budget at fixed validation availability,
+not equal total labeled consumption across all methods. V=0 provides the strict
+shared-label-count comparison without additional labeled selection data.
 
-Emissary Projects currently does not receive this local validation set; report
-zero local validation examples consumed and separately record any provider
-internal split of the uploaded S examples if exposed. The split is currently
-unknown. Do not claim equal total labeled-data consumption between these regimes.
-If the research target instead caps *all* labeled data at 5/100, revise this
-design before freezing: validation must come out of that cap or tuning must be
-fixed without validation. That is a different experiment.
+The earlier proposal of 20 validation examples/class is an optional final-run
+setting: invoke each K with V=20×K and sufficient reserved support. It is not the
+matched-mode default. Provider internal splits of uploaded Emissary data remain
+unknown unless exposed; no extra local labels are supplied there.
+
+At V=0, retain current fallback rules: TF-IDF uses its configured fallback C,
+MiniLM retains the first configured C, and BERT keeps the last epoch. No final
+refit is added. At V>0, retain the selection rules in section 5.
+
+See [matched-budget commands, artifacts and limitations](matched_label_budgets.md).
 
 ## 4. Dataset, split, seed, and label-description policy
 
@@ -129,26 +145,25 @@ fixed without validation. That is a different experiment.
    `random.Random(seed)` and take K-prefixes. Within a seed, label sets are nested;
    across seeds, class selection changes. Every method receives identical class
    names/order and the same test IDs within a condition.
-4. For each eligible label, start from IDs sorted lexicographically. Shuffle its
-   source-train IDs with `random.Random(f"{seed}:protocol-v2:train:{label}")`.
-   Reserve the first 20 for validation and keep the remaining ordered sequence
-   as fit candidates. Perform this once per seed/label, independent of K and S.
-   Do not call the current shared-RNG split separately for each K.
-5. Select fit examples using the existing balanced-round-robin selector's rule:
-   sorted class names shuffled by `f"{seed}:classes"`, and sorted fit-candidate
-   IDs shuffled per label by `f"{seed}:examples:{label}"`. Pass the same seed
-   explicitly to every method; the current Emissary selection default is always
-   42 and must not silently override repetition seeds. Smaller S is a prefix of
-   larger S for the same K. Freeze manifests and reuse them across classifiers.
-6. With a fixed **total** budget, per-class fit support decreases as K grows.
-   Actual fit sets therefore need not be nested across K. With **per-class**
-   budgets, shared classes retain fit IDs across K. Use the 80-per-class reference
-   for a comparison that preserves shared-class training support; even there,
-   adding classes also adds training examples and changes the learned model.
-7. Select 20 test IDs per class once per seed using sorted source IDs and
-   `random.Random(f"{seed}:protocol-v2:test:{label}")`. Keep them fixed across
-   methods and S, and for shared labels across K. Report the full balanced test
-   set and a secondary fixed K=5 test cohort at larger K. Never mix their metrics.
+4. The implemented matched comparison preserves the existing deterministic
+   stratified fit/validation split within each K/seed. Select only the explicit
+   validation budget from its reserved partition; unused reserved examples stay
+   withheld. The earlier proposal of a per-label split stable across K remains a
+   separate final-protocol decision; current artifacts must not claim that property.
+5. Select fit/context examples by balanced round-robin: sorted class names
+   shuffled by `f"{seed}:classes"`, and sorted candidate IDs shuffled per label
+   by `f"{seed}:examples:{label}"`. Both campaigns pass their repetition seed to
+   every method, including Emissary. Smaller S is a prefix of larger S for the
+   same K/seed/split. Save IDs, content hashes, per-class counts and a common pool
+   hash. Identical hashes establish the paired fit/context and validation pools.
+6. With a fixed total budget, per-class support decreases as K grows. Fit sets
+   need not be nested across K. Even per-class budgets currently have no cross-K
+   fit identity guarantee because of the split above. Restrict matched-method
+   comparisons to the same K/seed, and distinguish changing-K analysis explicitly.
+7. The existing campaign source sampler uses independent label-specific seeded
+   sampling. Test IDs are identical across methods and budgets within K/seed.
+   Verify saved IDs before any fixed-cohort comparison across K. Report the full
+   balanced test set and any secondary fixed K=5 cohort separately.
 8. Reject overlapping IDs and exact UTF-8 text across fit/validation/test before
    any remote operation, using the existing partition validator. Record a split
    failure; do not silently resample a favorable replacement. Any source cleanup
@@ -174,7 +189,7 @@ is not established. Record the actual information each method receives.
 | TF-IDF + LR | Word ngrams (1,2), lowercase, min_df=1, no max_features, no sublinear TF; C=(0.1,1,10), max_iter=2000 |
 | MiniLM + LR | Frozen `all-MiniLM-L6-v2`; embedding batch 64; C=(0.1,1,10), max_iter=2000 |
 | BERT | `bert-base-uncased`; 3 epochs, batch 16, learning rate 2e-5, weight decay .01, max_length=128; minimum validation-loss epoch, first epoch wins an exact tie |
-| OpenAI | Pin an available dated snapshot explicitly; reasoning `minimal`; existing structured label-only prompt |
+| OpenAI | Pin an available dated snapshot explicitly; reasoning `minimal`; label-only structured prompt, shared demonstrations in matched mode, explicit context/completion settings |
 | Emissary routing | Freeze experiment IDs, class configuration and any exposed model/version identifiers |
 | Emissary Projects | Provisional `Llama-3.2-1B-Instruct`; 3 epochs, learning rate 2e-4, train/eval batch 2/1; explicit checkpoint/deployment identity; subject to live acceptance |
 
@@ -245,8 +260,9 @@ Never automatically retry ambiguous training/deployment submissions.
 Primary latency summary: per-example p50 and p99; include mean and per-seed
 values. Use sequential single-example inference, fixed hardware/network context,
 and record client timeouts/retries. Exclude training and loading from inference
-latency but report their wall times separately. Use five source-train inputs for
-warmup per prepared model, outside the scored cohort; count their cost. Schedule
+latency but report their wall times separately. The default matched implementation uses no warmup. Any final warmup setting must
+fit within the selected pool (zero-shot has no selected fit inputs); record the
+chosen setting and count its cost, outside the scored cohort. Schedule
 method/condition order with a saved seeded permutation to limit ordering bias.
 Do not combine GPU and CPU runs into one timing estimate. Remote timings include
 client-observed network/service time; existing local adapter timings have different
@@ -290,7 +306,7 @@ does not fit the cap, revise scope explicitly before final inference.
 | D2 | Owner: USD limits | Replace proposed USD 50/5 with confirmed total/pilot caps |
 | D3 | Owner: final dataset scope | Confirm Banking77-only; any second dataset needs source/revision, license, labels, support, frozen definitions and its own K grid |
 | D4 | Dataset freeze | Pin source bytes; freeze eligible labels, exact splits and duplicate policy |
-| D5 | Sampling implementation | Stable per-label validation, explicit shared fit-budget selection, paired test IDs and recorded seeds |
+| D5 | Sampling implementation | Shared fit/context budgets, paired IDs and seeds implemented in #14; decide whether final cross-K analysis requires a new stable per-label split |
 | D6 | Issue #7 integration | Merge audit validation/metadata; retain documented C tie rule |
 | D7 | Model/description freeze | Review profile, pin model revisions and resolve README/config snapshot mismatch |
 | D8 | Emissary live acceptance | Recheck account readiness, pricing/bounds, checkpoint policy and output contract; SFT and routing are different products/base models |

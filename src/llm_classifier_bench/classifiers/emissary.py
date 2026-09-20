@@ -629,6 +629,10 @@ class EmissaryClassifier:
                      "reason": "Published API and model detail expose no price estimate"},
         }
 
+    @property
+    def requires_full_training_coverage(self):
+        return self.training.shots > 0
+
     def fitted_metadata(self) -> dict[str, Any]:
         identity = self.model_id.rsplit("/", 1) if self.model_id else []
         return {

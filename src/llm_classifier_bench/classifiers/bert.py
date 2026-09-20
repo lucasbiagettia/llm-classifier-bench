@@ -21,6 +21,8 @@ class BertClassifier:
     The benchmark's held-out test split is never consumed here.
     """
 
+    requires_full_training_coverage = True
+
     def __init__(
         self,
         *,
@@ -43,6 +45,9 @@ class BertClassifier:
         self._tokenizer: Any | None = None
         self._model: Any | None = None
         self._device: Any | None = None
+        self.supervision_regime = "supervised"
+        self.training_examples_used = 0
+        self.validation_examples_used = 0
 
     @property
     def name(self) -> str:
@@ -170,7 +175,10 @@ class BertClassifier:
                                selected_fit_names=[f"bert.epoch.{e}" for e in range(selected_epoch+1)],
                                selection_basis="cumulative training prefix; epochs are not independent candidates"):
             pass
-        self._fit_metadata = {"selected_epoch": selected_epoch+1, "epochs_run": self.training.epochs,
+        self.training_examples_used = len(train)
+        self.validation_examples_used = len(validation)
+        self._fit_metadata = {"training_examples_used": len(train), "validation_examples_used": len(validation),
+                              "selected_epoch": selected_epoch+1, "epochs_run": self.training.epochs,
                               "final_refit_performed": False,
                               "selection_metric": "validation_loss" if validation else "last_epoch"}
         model.eval()

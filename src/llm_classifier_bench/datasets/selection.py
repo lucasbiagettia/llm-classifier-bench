@@ -1,13 +1,33 @@
 """Small deterministic fit-partition selector, independent of provider HTTP."""
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 from hashlib import sha256
 import random
 from typing import Any, Sequence
 
 from llm_classifier_bench.config import EmissaryTrainingConfig
 from llm_classifier_bench.core import ClassDefinition, LabeledExample
+
+
+@dataclass(frozen=True, slots=True)
+class LabeledSelectionConfig:
+    """Provider-independent budget; the unit must always be explicit."""
+
+    shots: int
+    shot_unit: str
+    selection_seed: int = 42
+    selection_policy: str = "balanced_round_robin_v1"
+
+    def __post_init__(self):
+        if type(self.shots) is not int or self.shots < 0:
+            raise ValueError("shots must be a nonnegative integer")
+        if self.shot_unit not in ("total", "per_class"):
+            raise ValueError("shot_unit must be total or per_class")
+        if type(self.selection_seed) is not int:
+            raise ValueError("selection_seed must be an integer")
+        if self.selection_policy != "balanced_round_robin_v1":
+            raise ValueError("Unsupported selection_policy")
 
 
 def validate_partition_disjointness(*partitions: Sequence[LabeledExample]) -> None:
@@ -32,7 +52,7 @@ def validate_partition_disjointness(*partitions: Sequence[LabeledExample]) -> No
 def select_labeled_examples(
     examples: Sequence[LabeledExample],
     classes: Sequence[ClassDefinition],
-    config: EmissaryTrainingConfig,
+    config: LabeledSelectionConfig | EmissaryTrainingConfig,
     *,
     validation_examples: Sequence[LabeledExample] = (),
 ) -> tuple[tuple[LabeledExample, ...], dict[str, Any]]:
