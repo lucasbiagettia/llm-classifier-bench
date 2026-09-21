@@ -43,8 +43,8 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 
 from _emissary_campaign import (
-    add_emissary_arguments, classifier_conditions, emissary_manifest,
-    emissary_name, validate_emissary_arguments,
+    add_emissary_arguments, emissary_manifest,
+    emissary_name,
 )
 
 from llm_classifier_bench.class_definitions import (
@@ -77,6 +77,8 @@ from llm_classifier_bench.runner import (
     split_train_validation,
 )
 from llm_classifier_bench.measurement import add_measurement_arguments, measurement_from_args
+from _matched_budgets import (add_matched_arguments, validate_budget_arguments,
+                              budget_conditions, budget_manifest, annotate_budget_row)
 
 
 DEFAULT_DEFINITIONS = Path(
@@ -318,6 +320,7 @@ def build_classifier(
     st_max_iter: int,
     tfidf_training: TfidfTrainingConfig | None = None,
     emissary_training: EmissaryTrainingConfig | None = None,
+    openai_options: dict | None = None,
 ) -> Any:
     if name == "tfidf":
         return TfidfLogisticClassifier(
@@ -339,7 +342,7 @@ def build_classifier(
         return OpenAIClassifier(
             model=openai_model,
             reasoning_effort=openai_reasoning_effort,
-            classifier_name="openai-zero-shot",
+            **(openai_options or {"classifier_name": "openai-zero-shot"}),
         )
 
     if name == "bert":
@@ -356,8 +359,6 @@ def build_classifier(
             classifier_name="bert-finetuned",
         )
         classifier.supervision_regime = "supervised"
-        classifier.training_examples_used = condition.fit_train_size
-        classifier.validation_examples_used = condition.validation_size
         return classifier
 
     if name == "sentence-transformer":
@@ -372,8 +373,6 @@ def build_classifier(
             classifier_name="sentence-transformer-logreg",
         )
         classifier.supervision_regime = "supervised"
-        classifier.training_examples_used = condition.fit_train_size
-        classifier.validation_examples_used = condition.validation_size
         return classifier
 
     raise ValueError(f"Unknown classifier {name!r}")
@@ -590,6 +589,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tfidf-max-iter", type=int, default=2000)
 
     parser.add_argument("--dry-run", action="store_true", help="Plan Emissary selections without remote calls.")
+    add_matched_arguments(parser)
     add_emissary_arguments(parser)
     parser.add_argument("--pricing", type=Path, default=None, help="Versioned USD rate card; omitted prices stay unavailable")
     add_measurement_arguments(parser)
@@ -608,7 +608,7 @@ def tfidf_training_config(args: argparse.Namespace, seed: int) -> TfidfTrainingC
 def main() -> None:
     args = parse_args()
     measurement_config = measurement_from_args(args)
-    validate_emissary_arguments(args)
+    validate_budget_arguments(args)
 
     class_counts = tuple(sorted(set(args.class_counts)))
     if not class_counts:
@@ -648,7 +648,8 @@ def main() -> None:
     manifest = {
         "campaign_id": campaign_id,
         "dry_run": args.dry_run,
-        "emissary_conditions": emissary_manifest(args),
+        "emissary_conditions": emissary_manifest(args) if args.matched_budgets is None else [],
+        **budget_manifest(args),
         "created_at_utc": datetime.now(timezone.utc).isoformat(),
         "dataset": "banking77",
         "class_counts": list(class_counts),
@@ -732,7 +733,7 @@ def main() -> None:
             for label in condition.selected_names:
                 print(f"  - {label}")
 
-            for classifier_key, emissary_training in classifier_conditions(args):
+            for classifier_key, emissary_training, matched_budget in budget_conditions(args, seed):
                 print("\n" + "-" * 80)
                 print(
                     f"RUN seed={seed} classes={class_count} "
@@ -748,6 +749,13 @@ def main() -> None:
                     classifier = build_classifier(
                         classifier_key,
                         emissary_training=emissary_training,
+                        openai_options={
+                            "in_context": matched_budget is not None,
+                            "classifier_name": "openai-in-context" if matched_budget and matched_budget.examples else "openai-zero-shot",
+                            "context_window_tokens": args.openai_context_window_tokens,
+                            "completion_reserve_tokens": args.openai_completion_reserve_tokens,
+                            "framing_allowance_tokens": args.openai_framing_allowance_tokens,
+                        },
                         condition=condition,
                         campaign_id=campaign_id,
                         openai_model=args.openai_model,
@@ -769,6 +777,7 @@ def main() -> None:
                     run_id = (
                         f"{campaign_id}__seed{seed}__n{class_count:02d}"
                         f"__{classifier.name}"
+                        + (f"__budget{matched_budget.examples}-{matched_budget.unit}" if matched_budget else "")
                     )
                     result = run_benchmark(
                         StaticDataset(condition.bundle),
@@ -776,6 +785,7 @@ def main() -> None:
                         BenchmarkRunConfig(
                             output_root=runs_root,
                             dry_run=args.dry_run,
+                            matched_budget=matched_budget,
                             measurement=measurement_config,
                             pricing_path=args.pricing,
                             run_id=run_id,
@@ -797,7 +807,10 @@ def main() -> None:
                         ),
                     )
 
-                    if args.dry_run:
+                    if matched_budget is not None:
+                        status = json.loads(result.status_path.read_text())["status"]
+                        print(f"{status}: {result.run_dir}")
+                    elif args.dry_run:
                         plan = json.loads((result.run_dir / "preparation_plan.json").read_text())
                         selection = plan["selection"]
                         print(f"dry_run: {result.run_dir} requested={selection['requested_total']} "
@@ -831,6 +844,7 @@ def main() -> None:
                 )
                 if args.dry_run and error is None:
                     row["status"] = "dry_run"
+                annotate_budget_row(row, result, matched_budget)
                 rows.append(row)
 
                 # Persist after EVERY run so an interrupted campaign still has a
@@ -849,9 +863,10 @@ def main() -> None:
     completed = sum(row["status"] == "completed" for row in rows)
     failed = sum(row["status"] == "failed" for row in rows)
     planned = sum(row["status"] == "dry_run" for row in rows)
+    unsupported = sum(row["status"] == "unsupported" for row in rows)
 
     print("\n" + "=" * 80)
-    print("CAMPAIGN COMPLETE")
+    print(f"CAMPAIGN COMPLETE (unsupported={unsupported})")
     print("=" * 80)
     print(f"completed_runs={completed}")
     print(f"failed_runs={failed}")

@@ -22,6 +22,8 @@ class TfidfLogisticClassifier:
     supervision_regime = "supervised"
     model = "tfidf-logistic-regression"
 
+    requires_full_training_coverage = True
+
     def __init__(
         self, *, training: TfidfTrainingConfig | None = None,
         classifier_name: str = "tfidf-logreg",

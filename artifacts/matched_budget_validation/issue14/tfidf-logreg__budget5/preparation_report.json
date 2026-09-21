@@ -1,0 +1,279 @@
+{
+  "schema_version": 1,
+  "available": false,
+  "complete": true,
+  "scope": "incremental preparation in this run; inference and its warmup excluded",
+  "total_elapsed_ms": 30.527116,
+  "total_cost_usd": null,
+  "cost_kind": "unavailable",
+  "currency": "USD",
+  "reason": "matching hardware rate/device unavailable",
+  "basis": "active prepare/fit wall time at whole-allocation rate; children are explanatory components",
+  "metadata": {
+    "schema_version": 1,
+    "supports_stages": true,
+    "runtime": {
+      "platform": "Linux-7.1.9-1-MANJARO-x86_64-with-glibc2.44",
+      "python": "3.14.7",
+      "cpu_model": "Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz",
+      "logical_cpu_count": 8,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "thread_environment": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "TOKENIZERS_PARALLELISM": null
+      },
+      "torch_threads": null,
+      "gpu_devices": [],
+      "library_versions": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "torch": "2.13.0",
+        "transformers": "5.14.1",
+        "sentence-transformers": "5.6.1",
+        "openai": "2.52.0",
+        "requests": "2.34.2"
+      },
+      "classifier": {
+        "backend": "local",
+        "device": "cpu",
+        "transport_max_retries": 0,
+        "batch_execution": "sequential_single_example"
+      }
+    },
+    "adapter": {},
+    "boundary": "prepare and fit only; construction before runner, dataset loading and inference warmup excluded",
+    "unavailable_resource_details": [
+      "RAM allocation quota",
+      "GPU sharing/reservation"
+    ],
+    "allocation": "one whole allocation retained throughout each prepare/fit call; gaps between calls excluded",
+    "cache_scope": "incremental work in this run; prior artifact creation is never inferred to be free"
+  },
+  "pricing": {
+    "schema_version": 1,
+    "currency": "USD",
+    "api_rates": [],
+    "local_hardware": null
+  },
+  "billing": null,
+  "source_sha256": {
+    "preparation.jsonl": "c20e28a76bbf9824469880fa1784b926b7713c3a7132ad17180c9e72a863fa51",
+    "preparation_metadata.json": "942037e8c94a78ac7bee33831ab22213377dd5fd0b3f80c1ab5f714e45d34bfc",
+    "config.json": "ca0e25d718452c4c2017c1193e1f413a9e1d18c5b7382e4e83941324f6bc1597",
+    "selected_pricing": "e865c8a76a0adfdce79cc40602123a1d5a49f5a99d100d6bd8ec714a5c1f91e8"
+  },
+  "exclusive_ms_by_category": {
+    "parent": 5.665388,
+    "features": 2.035623,
+    "fit": 13.581032,
+    "selection": 9.245073
+  },
+  "selected_configuration": {
+    "selected_configuration": {
+      "c": 10.0
+    },
+    "final_refit_performed": false,
+    "selected_fit_names": [
+      "lr.fit.2"
+    ],
+    "selected_fit_exclusive_ms": 3.562033,
+    "selected_fit_cost_estimate_usd": null,
+    "role": "subset of total investment; excludes shared features, selection evaluation and restoration; never add to total"
+  },
+  "cache_provenance": [
+    {
+      "stage": "tfidf.fit_transform",
+      "cache": "computed_this_run",
+      "partition": "fit_train"
+    },
+    {
+      "stage": "tfidf.validation_transform",
+      "cache": "computed_this_run",
+      "partition": "validation"
+    }
+  ],
+  "prior_artifact_creation_cost_usd": null,
+  "events": [
+    {
+      "event_id": "prep-000000",
+      "parent_id": null,
+      "name": "prepare",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 187935,
+      "end_ns": 196867,
+      "elapsed_ms": 0.008932,
+      "exclusive_ms": 0.008932,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000002",
+      "parent_id": "prep-000001",
+      "name": "tfidf.fit_transform",
+      "category": "features",
+      "details": {
+        "cache": "computed_this_run",
+        "partition": "fit_train"
+      },
+      "status": "success",
+      "start_ns": 522673,
+      "end_ns": 1987947,
+      "elapsed_ms": 1.465274,
+      "exclusive_ms": 1.465274,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000003",
+      "parent_id": "prep-000001",
+      "name": "tfidf.validation_transform",
+      "category": "features",
+      "details": {
+        "cache": "computed_this_run",
+        "partition": "validation"
+      },
+      "status": "success",
+      "start_ns": 2090383,
+      "end_ns": 2660732,
+      "elapsed_ms": 0.570349,
+      "exclusive_ms": 0.570349,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000004",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.0",
+      "category": "fit",
+      "details": {
+        "c": 0.1
+      },
+      "status": "success",
+      "start_ns": 2793926,
+      "end_ns": 9108602,
+      "elapsed_ms": 6.314676,
+      "exclusive_ms": 6.314676,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000005",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.0",
+      "category": "selection",
+      "details": {
+        "c": 0.1
+      },
+      "status": "success",
+      "start_ns": 9255751,
+      "end_ns": 14076214,
+      "elapsed_ms": 4.820463,
+      "exclusive_ms": 4.820463,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000006",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.1",
+      "category": "fit",
+      "details": {
+        "c": 1.0
+      },
+      "status": "success",
+      "start_ns": 14228444,
+      "end_ns": 17932767,
+      "elapsed_ms": 3.704323,
+      "exclusive_ms": 3.704323,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000007",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.1",
+      "category": "selection",
+      "details": {
+        "c": 1.0
+      },
+      "status": "success",
+      "start_ns": 18055216,
+      "end_ns": 19373653,
+      "elapsed_ms": 1.318437,
+      "exclusive_ms": 1.318437,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000008",
+      "parent_id": "prep-000001",
+      "name": "lr.fit.2",
+      "category": "fit",
+      "details": {
+        "c": 10.0
+      },
+      "status": "success",
+      "start_ns": 19481830,
+      "end_ns": 23043863,
+      "elapsed_ms": 3.562033,
+      "exclusive_ms": 3.562033,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000009",
+      "parent_id": "prep-000001",
+      "name": "lr.validate.2",
+      "category": "selection",
+      "details": {
+        "c": 10.0
+      },
+      "status": "success",
+      "start_ns": 23311973,
+      "end_ns": 26416991,
+      "elapsed_ms": 3.105018,
+      "exclusive_ms": 3.105018,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000010",
+      "parent_id": "prep-000001",
+      "name": "lr.select",
+      "category": "selection",
+      "details": {
+        "selected_configuration": {
+          "c": 10.0
+        },
+        "final_refit_performed": false,
+        "selected_fit_names": [
+          "lr.fit.2"
+        ]
+      },
+      "status": "success",
+      "start_ns": 26569497,
+      "end_ns": 26570652,
+      "elapsed_ms": 0.001155,
+      "exclusive_ms": 0.001155,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000001",
+      "parent_id": null,
+      "name": "fit",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 457665,
+      "end_ns": 30975849,
+      "elapsed_ms": 30.518184,
+      "exclusive_ms": 5.656456,
+      "exclusive_cost_estimate_usd": null
+    }
+  ]
+}

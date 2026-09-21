@@ -460,3 +460,12 @@ Use `scripts/report_preparation.py RUN_DIR --inference-scenario continuous` or
 saved inference scenarios for 1,000 / 10,000 / 100,000 valid predictions. Hosted
 APIs use `--inference-scenario recorded_api`. Unknown components remain unavailable.
 See [accounting rules, evidence formats, commands and validation](docs/preparation_costs.md).
+
+## Matched labeled-example budgets
+
+Both Banking77 campaign scripts accept `--matched-budgets 0 5 100 --budget-unit total`
+(or explicit `per_class`) and a separate `--validation-budget`, default 0. They
+save shared fit/context IDs, class coverage, actual label consumption and explicit
+unsupported cells. OpenAI uses the shared pool as demonstrations and requires an
+explicit context-window setting. Full-training references remain a separate mode.
+See [supported matrix and commands](docs/matched_label_budgets.md).
