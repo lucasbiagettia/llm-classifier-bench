@@ -1,0 +1,140 @@
+[
+  {
+    "model": "fixture-openai",
+    "reasoning_effort": "minimal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a closed-set text classifier. Classify the user's text into exactly one of the allowed labels. Use the class descriptions as the decision rubric. Do not invent labels.\n\nAllowed classes:\n- World: World news\n- Sports: Sports news"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nsports goal scored"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"label\": \"Sports\"}"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nworld leaders treaty"
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "closed_set_classification",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "enum": [
+                "World",
+                "Sports"
+              ]
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_completion_tokens": 4096
+  },
+  {
+    "model": "fixture-openai",
+    "reasoning_effort": "minimal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a closed-set text classifier. Classify the user's text into exactly one of the allowed labels. Use the class descriptions as the decision rubric. Do not invent labels.\n\nAllowed classes:\n- World: World news\n- Sports: Sports news"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nsports goal scored"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"label\": \"Sports\"}"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nsports team goal"
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "closed_set_classification",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "enum": [
+                "World",
+                "Sports"
+              ]
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_completion_tokens": 4096
+  },
+  {
+    "model": "fixture-openai",
+    "reasoning_effort": "minimal",
+    "messages": [
+      {
+        "role": "system",
+        "content": "You are a closed-set text classifier. Classify the user's text into exactly one of the allowed labels. Use the class descriptions as the decision rubric. Do not invent labels.\n\nAllowed classes:\n- World: World news\n- Sports: Sports news"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nsports goal scored"
+      },
+      {
+        "role": "assistant",
+        "content": "{\"label\": \"Sports\"}"
+      },
+      {
+        "role": "user",
+        "content": "Text:\nunseentoken"
+      }
+    ],
+    "response_format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "closed_set_classification",
+        "strict": true,
+        "schema": {
+          "type": "object",
+          "properties": {
+            "label": {
+              "type": "string",
+              "enum": [
+                "World",
+                "Sports"
+              ]
+            }
+          },
+          "required": [
+            "label"
+          ],
+          "additionalProperties": false
+        }
+      }
+    },
+    "max_completion_tokens": 4096
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "run_id": "tfidf-logreg__budget0",
+  "created_at_utc": "2026-09-21T15:55:36.855061+00:00",
+  "dry_run": false,
+  "measurement": {
+    "batch_size": 1,
+    "warmup_examples": 0,
+    "client_location": null,
+    "cache_condition": "uncontrolled; provider cache hits not observed",
+    "hardware_profile": null
+  },
+  "pricing_path": null,
+  "comparison_regime": "matched_labeled_budget",
+  "matched_budget": {
+    "examples": 0,
+    "unit": "total",
+    "seed": 17,
+    "validation_examples": 2
+  },
+  "dataset": {
+    "name": "tfidf_local_smoke",
+    "metadata": {
+      "source": "scripts/probe_tfidf_classifier.py:fixture_bundle",
+      "fixture_version": 1
+    },
+    "classes": [
+      {
+        "name": "World",
+        "description": "World news"
+      },
+      {
+        "name": "Sports",
+        "description": "Sports news"
+      }
+    ],
+    "source_train_size": 8,
+    "fit_train_sample_ids": [],
+    "validation_sample_ids": [
+      "train-Sports-0",
+      "train-World-3"
+    ],
+    "test_sample_ids": [
+      "test-0",
+      "test-1",
+      "test-2"
+    ],
+    "fit_train_size": 0,
+    "validation_size": 2,
+    "test_size": 3,
+    "test_input_characters": {
+      "unit": "Unicode code points before preprocessing; not tokens",
+      "count": 3,
+      "min": 11,
+      "max": 20,
+      "p50": 16,
+      "p95": 19.6
+    }
+  },
+  "class_definitions": {
+    "source": "dataset_bundle",
+    "profile": null
+  },
+  "split": {
+    "validation_fraction": 0.25,
+    "seed": 17,
+    "strategy": "deterministic_stratified_by_label"
+  },
+  "classifier": {
+    "name": "tfidf-logreg",
+    "model": "tfidf-logistic-regression",
+    "training": {
+      "ngram_range": [
+        1,
+        2
+      ],
+      "lowercase": true,
+      "min_df": 1,
+      "max_features": null,
+      "sublinear_tf": false,
+      "c_values": [
+        0.1,
+        1.0,
+        10.0
+      ],
+      "fallback_c": 1.0,
+      "max_iter": 2000,
+      "seed": 42
+    },
+    "supervision_regime": "supervised",
+    "training_examples_used": 0,
+    "validation_examples_used": 0
+  },
+  "run_metadata": {
+    "code_revision": "4f5b2f0a329c47930f4ec5dffdf6f3a75832c42a",
+    "working_tree_dirty": false,
+    "offline_fixture": true,
+    "paid_requests": 0,
+    "limitation": "OpenAI label, usage and timings are mock values; TF-IDF is real local sklearn"
+  }
+}

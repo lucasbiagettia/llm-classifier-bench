@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "measurement": {
+    "schema_version": 1,
+    "config": {
+      "batch_size": 1,
+      "warmup_examples": 0,
+      "client_location": null,
+      "cache_condition": "uncontrolled; provider cache hits not observed",
+      "hardware_profile": null
+    },
+    "planned_test_examples": 3,
+    "classifier_name": "openai-in-context",
+    "model": "fixture-openai",
+    "concurrency": 1,
+    "application_retries": 0,
+    "boundary": "classifier.predict(inputs) entry to normalized Prediction list return; includes adapter preprocessing and postprocessing",
+    "excluded": [
+      "dataset loading",
+      "classifier construction before runner",
+      "prepare",
+      "fit including model loading",
+      "warmup",
+      "runner output validation and artifact writing"
+    ],
+    "construction_time_ms": null,
+    "construction_time_reason": "classifier is constructed by caller before run_benchmark",
+    "clock": "perf_counter_ns; process-local monotonic offsets",
+    "run_status": "completed",
+    "runtime": {
+      "platform": "Linux-7.1.9-1-MANJARO-x86_64-with-glibc2.44",
+      "python": "3.14.7",
+      "cpu_model": "Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz",
+      "logical_cpu_count": 8,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "thread_environment": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "TOKENIZERS_PARALLELISM": null
+      },
+      "torch_threads": null,
+      "gpu_devices": [],
+      "library_versions": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "torch": "2.13.0",
+        "transformers": "5.14.1",
+        "sentence-transformers": "5.6.1",
+        "openai": "2.52.0",
+        "requests": "2.34.2"
+      },
+      "classifier": {
+        "backend": "hosted_api",
+        "batch_execution": "sequential_single_example",
+        "transport_max_retries": 0,
+        "transport_attempt_timings": "not exposed; call timing includes any injected-client retries",
+        "timeout_seconds": 120,
+        "server_hardware": null,
+        "context_policy": {
+          "context_window_tokens": 32000,
+          "completion_reserve_tokens": 4096,
+          "framing_allowance_tokens": 1024,
+          "input_estimator": "UTF-8 bytes of serialized messages/schema (conservative byte-BPE proxy)",
+          "limitation": "Not a provider token count; framing allowance is operator supplied. May reject fitting prompts."
+        }
+      }
+    }
+  },
+  "preparation": [
+    {
+      "observation_index": 0,
+      "kind": "stage",
+      "phase": "prepare",
+      "sample_ids": [],
+      "batch_size": 0,
+      "application_attempt": 1,
+      "status": "success",
+      "start_offset_ns": 7086389,
+      "end_offset_ns": 7160134,
+      "elapsed_ms": 0.073745
+    },
+    {
+      "observation_index": 1,
+      "kind": "stage",
+      "phase": "fit",
+      "sample_ids": [],
+      "batch_size": 0,
+      "application_attempt": 1,
+      "status": "success",
+      "start_offset_ns": 7306658,
+      "end_offset_ns": 7389678,
+      "elapsed_ms": 0.08302
+    }
+  ],
+  "warmup": {
+    "observation_count": 0,
+    "mean_ms": null,
+    "p50_ms": null,
+    "p95_ms": null,
+    "p99_ms": null,
+    "p99_minimum_observations": 1000,
+    "p99_unavailable_reason": "insufficient observations"
+  },
+  "warmup_attempted_examples": 0,
+  "warmup_failed_calls": 0,
+  "evaluation": {
+    "phase_label": "unwarmed; cold-start may be included",
+    "attempted_examples": 3,
+    "successful_examples": 3,
+    "unattempted_examples": 0,
+    "failed_calls": 0,
+    "failed_call_fraction": 0.0,
+    "unsuccessful_example_fraction": 0.0,
+    "successful_call_latency": {
+      "observation_count": 3,
+      "mean_ms": 0.20082199999999997,
+      "p50_ms": 0.200094,
+      "p95_ms": 0.2313771,
+      "p99_ms": null,
+      "p99_minimum_observations": 1000,
+      "p99_unavailable_reason": "insufficient observations"
+    },
+    "failed_call_latency": {
+      "observation_count": 0,
+      "mean_ms": null,
+      "p50_ms": null,
+      "p95_ms": null,
+      "p99_ms": null,
+      "p99_minimum_observations": 1000,
+      "p99_unavailable_reason": "insufficient observations"
+    },
+    "successful_call_latency_by_batch_size": {
+      "1": {
+        "observation_count": 3,
+        "mean_ms": 0.20082199999999997,
+        "p50_ms": 0.200094,
+        "p95_ms": 0.2313771,
+        "p99_ms": null,
+        "p99_minimum_observations": 1000,
+        "p99_unavailable_reason": "insufficient observations"
+      }
+    },
+    "window_wall_ms": 0.847477,
+    "active_call_ms": 0.602466,
+    "throughput_successful_examples_per_second": 3539.9190774498893,
+    "active_call_throughput_successful_examples_per_second": 4979.534114788221,
+    "throughput_denominator": "first evaluation call start to last call end, including failures and inter-call validation/logging",
+    "amortized_successful_call_ms_per_example": 0.20082199999999997
+  }
+}

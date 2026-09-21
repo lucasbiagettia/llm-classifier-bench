@@ -1,0 +1,13 @@
+{
+  "run_id": "tfidf-logreg__budget1",
+  "status": "unsupported",
+  "stage": "checking_matched_support",
+  "updated_at_utc": "2026-09-21T15:55:36.896648+00:00",
+  "dataset": "tfidf_local_smoke",
+  "classifier": "tfidf-logreg",
+  "error_type": "UnsupportedConfiguration",
+  "error_message": "insufficient_class_coverage: every configured class needs a fit example",
+  "timing_report_error_type": null,
+  "cost_report_error_type": null,
+  "preparation_report_error_type": null
+}

@@ -1,0 +1,9 @@
+{
+  "run_id": "openai-in-context__budget5",
+  "status": "completed",
+  "stage": "completed",
+  "updated_at_utc": "2026-09-21T15:55:39.649130+00:00",
+  "dataset": "tfidf_local_smoke",
+  "classifier": "openai-in-context",
+  "example_count": 3
+}

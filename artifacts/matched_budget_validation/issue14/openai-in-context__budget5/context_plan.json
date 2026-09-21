@@ -1,0 +1,27 @@
+{
+  "policy": {
+    "context_window_tokens": 32000,
+    "completion_reserve_tokens": 4096,
+    "framing_allowance_tokens": 1024,
+    "input_estimator": "UTF-8 bytes of serialized messages/schema (conservative byte-BPE proxy)",
+    "limitation": "Not a provider token count; framing allowance is operator supplied. May reject fitting prompts."
+  },
+  "requests": [
+    {
+      "sample_id": "test-0",
+      "estimated_total_tokens": 6330,
+      "prompt_sha256": "1204c06cb8192bf853c8223314db68406487b0436c2fca06d807915d99723bf0"
+    },
+    {
+      "sample_id": "test-1",
+      "estimated_total_tokens": 6326,
+      "prompt_sha256": "8a320160595e36c321df5996f333620126f6a6757a3224e84f9cf63975e6b784"
+    },
+    {
+      "sample_id": "test-2",
+      "estimated_total_tokens": 6321,
+      "prompt_sha256": "cbaa841b5c66e1a8fd19c92ec7d72f2d69c83243abc28b164f391059fe0ee668"
+    }
+  ],
+  "supported": true
+}

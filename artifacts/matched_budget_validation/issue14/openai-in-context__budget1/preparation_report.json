@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "available": true,
+  "complete": true,
+  "scope": "incremental preparation in this run; inference and its warmup excluded",
+  "total_elapsed_ms": 0.041156,
+  "total_cost_usd": 0.0,
+  "cost_kind": "no_billable_work",
+  "currency": "USD",
+  "reason": null,
+  "basis": "Adapter performs no remote preparation; client construction/compute excluded",
+  "metadata": {
+    "schema_version": 1,
+    "supports_stages": true,
+    "runtime": {
+      "platform": "Linux-7.1.9-1-MANJARO-x86_64-with-glibc2.44",
+      "python": "3.14.7",
+      "cpu_model": "Intel(R) Core(TM) i5-9300H CPU @ 2.40GHz",
+      "logical_cpu_count": 8,
+      "cpu_affinity": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "thread_environment": {
+        "OMP_NUM_THREADS": null,
+        "OPENBLAS_NUM_THREADS": null,
+        "MKL_NUM_THREADS": null,
+        "TOKENIZERS_PARALLELISM": null
+      },
+      "torch_threads": null,
+      "gpu_devices": [],
+      "library_versions": {
+        "numpy": "2.5.1",
+        "scipy": "1.18.0",
+        "scikit-learn": "1.9.0",
+        "torch": "2.13.0",
+        "transformers": "5.14.1",
+        "sentence-transformers": "5.6.1",
+        "openai": "2.52.0",
+        "requests": "2.34.2"
+      },
+      "classifier": {
+        "backend": "hosted_api",
+        "batch_execution": "sequential_single_example",
+        "transport_max_retries": 0,
+        "transport_attempt_timings": "not exposed; call timing includes any injected-client retries",
+        "timeout_seconds": 120,
+        "server_hardware": null,
+        "context_policy": {
+          "context_window_tokens": 32000,
+          "completion_reserve_tokens": 4096,
+          "framing_allowance_tokens": 1024,
+          "input_estimator": "UTF-8 bytes of serialized messages/schema (conservative byte-BPE proxy)",
+          "limitation": "Not a provider token count; framing allowance is operator supplied. May reject fitting prompts."
+        }
+      }
+    },
+    "adapter": {
+      "remote_preparation_performed": false,
+      "reason": "adapter performs no remote prepare/fit operations"
+    },
+    "boundary": "prepare and fit only; construction before runner, dataset loading and inference warmup excluded",
+    "unavailable_resource_details": [
+      "RAM allocation quota",
+      "GPU sharing/reservation"
+    ],
+    "allocation": "one whole allocation retained throughout each prepare/fit call; gaps between calls excluded",
+    "cache_scope": "incremental work in this run; prior artifact creation is never inferred to be free"
+  },
+  "pricing": {
+    "schema_version": 1,
+    "currency": "USD",
+    "api_rates": [],
+    "local_hardware": null
+  },
+  "billing": null,
+  "source_sha256": {
+    "preparation.jsonl": "b09054a1cf570ffed53205938c0fea03fa5331caedb121d0488801867843317a",
+    "preparation_metadata.json": "54194dd67e6e28694ae56fdc3f269b04f545882e2c40227bb88f1431f9aa08ed",
+    "config.json": "a58a40ee4b70b1187a9cbc5600ffb34feea45a35dc0692b008bbb529b36f5289",
+    "selected_pricing": "e865c8a76a0adfdce79cc40602123a1d5a49f5a99d100d6bd8ec714a5c1f91e8"
+  },
+  "exclusive_ms_by_category": {
+    "parent": 0.041156
+  },
+  "selected_configuration": null,
+  "cache_provenance": [],
+  "prior_artifact_creation_cost_usd": null,
+  "events": [
+    {
+      "event_id": "prep-000000",
+      "parent_id": null,
+      "name": "prepare",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 166727,
+      "end_ns": 171378,
+      "elapsed_ms": 0.004651,
+      "exclusive_ms": 0.004651,
+      "exclusive_cost_estimate_usd": null
+    },
+    {
+      "event_id": "prep-000001",
+      "parent_id": null,
+      "name": "fit",
+      "category": "parent",
+      "details": {},
+      "status": "success",
+      "start_ns": 465556,
+      "end_ns": 502061,
+      "elapsed_ms": 0.036505,
+      "exclusive_ms": 0.036505,
+      "exclusive_cost_estimate_usd": null
+    }
+  ]
+}

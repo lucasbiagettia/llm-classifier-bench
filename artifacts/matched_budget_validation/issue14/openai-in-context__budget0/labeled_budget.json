@@ -1,0 +1,72 @@
+{
+  "comparison_regime": "matched_labeled_budget",
+  "budget": {
+    "examples": 0,
+    "unit": "total",
+    "seed": 17,
+    "validation_examples": 2
+  },
+  "selection": {
+    "shots": 0,
+    "shot_unit": "total",
+    "selection_seed": 17,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 0,
+    "actual_total": 0,
+    "per_class_counts": {
+      "Sports": 0,
+      "World": 0
+    },
+    "covered_class_count": 0,
+    "class_count": 2,
+    "class_coverage": 0.0,
+    "class_order": [
+      "Sports",
+      "World"
+    ],
+    "selected_examples": []
+  },
+  "validation_selection": {
+    "shots": 2,
+    "shot_unit": "total",
+    "selection_seed": 17,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 2,
+    "actual_total": 2,
+    "per_class_counts": {
+      "Sports": 1,
+      "World": 1
+    },
+    "covered_class_count": 2,
+    "class_count": 2,
+    "class_coverage": 1.0,
+    "class_order": [
+      "Sports",
+      "World"
+    ],
+    "selected_examples": [
+      {
+        "sample_id": "train-Sports-0",
+        "label": "Sports",
+        "text": "team scored goal",
+        "order": 0,
+        "content_sha256": "276ee6c868ba601a3152f28e20c6765954b24dc844798878e4ce29ebe886c94d"
+      },
+      {
+        "sample_id": "train-World-3",
+        "label": "World",
+        "text": "world leaders negotiate",
+        "order": 1,
+        "content_sha256": "12beb7fedfbebcd2b82eb0e145f8c78db775cd1ccf53a344e9172b8694906998"
+      }
+    ]
+  },
+  "pool_sha256": "e423e6221542073cc0091d4dfa337d7f2dec929569609031e1428f35df017a30",
+  "validation_policy": "additional reserved labels; never borrowed from fit/context pool",
+  "consumption": {
+    "training_examples_used": 0,
+    "context_examples_used": 0,
+    "validation_examples_used": 0,
+    "total_labeled_examples_used": 0
+  }
+}

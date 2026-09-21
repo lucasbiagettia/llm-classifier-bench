@@ -147,4 +147,5 @@ campaign entry points, nested/shared pools, validation exposure, partial coverag
 context preflight/provider rejection, source shortages and whole-campaign job
 bounds. The saved smoke in `artifacts/matched_budget_validation/issue14` is
 reproduced by `scripts/probe_matched_budgets.py`; it is implementation evidence,
-not comparative model-quality or provider-performance evidence.
+not comparative model-quality or provider-performance evidence. See the
+[validation note](matched_budget_validation.md) for recorded results.

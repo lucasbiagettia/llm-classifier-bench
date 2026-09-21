@@ -1,0 +1,87 @@
+{
+  "comparison_regime": "matched_labeled_budget",
+  "budget": {
+    "examples": 2,
+    "unit": "total",
+    "seed": 17,
+    "validation_examples": 2
+  },
+  "selection": {
+    "shots": 2,
+    "shot_unit": "total",
+    "selection_seed": 17,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 2,
+    "actual_total": 2,
+    "per_class_counts": {
+      "Sports": 1,
+      "World": 1
+    },
+    "covered_class_count": 2,
+    "class_count": 2,
+    "class_coverage": 1.0,
+    "class_order": [
+      "Sports",
+      "World"
+    ],
+    "selected_examples": [
+      {
+        "sample_id": "train-Sports-3",
+        "label": "Sports",
+        "text": "sports goal scored",
+        "order": 0,
+        "content_sha256": "1134fb6d2f07508cc63388de3b583b31b55c66e26b141f5647cef878bb6622e0"
+      },
+      {
+        "sample_id": "train-World-2",
+        "label": "World",
+        "text": "leaders sign treaty",
+        "order": 1,
+        "content_sha256": "30f54a97d7c54e895df36f9525d69d8d82bd58d44a110cdf5ad29ee3ea658d27"
+      }
+    ]
+  },
+  "validation_selection": {
+    "shots": 2,
+    "shot_unit": "total",
+    "selection_seed": 17,
+    "selection_policy": "balanced_round_robin_v1",
+    "requested_total": 2,
+    "actual_total": 2,
+    "per_class_counts": {
+      "Sports": 1,
+      "World": 1
+    },
+    "covered_class_count": 2,
+    "class_count": 2,
+    "class_coverage": 1.0,
+    "class_order": [
+      "Sports",
+      "World"
+    ],
+    "selected_examples": [
+      {
+        "sample_id": "train-Sports-0",
+        "label": "Sports",
+        "text": "team scored goal",
+        "order": 0,
+        "content_sha256": "276ee6c868ba601a3152f28e20c6765954b24dc844798878e4ce29ebe886c94d"
+      },
+      {
+        "sample_id": "train-World-3",
+        "label": "World",
+        "text": "world leaders negotiate",
+        "order": 1,
+        "content_sha256": "12beb7fedfbebcd2b82eb0e145f8c78db775cd1ccf53a344e9172b8694906998"
+      }
+    ]
+  },
+  "pool_sha256": "004846d46fdda97a3abb71155ff003b0ba888e9367e31bf7ac093fd33e1fb3de",
+  "validation_policy": "additional reserved labels; never borrowed from fit/context pool",
+  "consumption": {
+    "training_examples_used": 0,
+    "context_examples_used": 2,
+    "validation_examples_used": 0,
+    "total_labeled_examples_used": 2
+  }
+}
