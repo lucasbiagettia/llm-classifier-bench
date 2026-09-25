@@ -19,8 +19,11 @@ PYTHONPATH=src python scripts/run_banking77_scaling_benchmark_v2.py \
 
 Add `--dry-run` to save every planned cell and its IDs without fitting, loading
 model weights, constructing provider clients or calling APIs. Add
-`sentence-transformer bert openai emissary` to `--classifiers` to plan all methods.
+`sentence-transformer bert openai emissary jev` to `--classifiers` to plan all methods.
 Source-data loading still takes place.
+
+Jev is zero-shot only: zero fit and validation budgets are supported; nonzero
+matched budgets are explicitly unsupported before provider access. See [Jev](jev.md).
 
 For matched OpenAI runs, supply `--openai-context-window-tokens` explicitly from
 the chosen model's documented context limit. An unspecified limit produces an
@@ -86,6 +89,7 @@ wins ties; BERT selects validation loss. There is no added final refit.
 | MiniLM + LR | Unsupported | Unsupported | Supported | Frozen embeddings, LR fitting; separate validation selection |
 | BERT | Unsupported | Unsupported | Supported | Parameter training; separate validation epoch selection |
 | OpenAI | Zero-shot | Supported | Supported | All selected examples, in order, in every prediction prompt; no parameter fitting |
+| Jev Choice | Zero-shot with V=0 | Unsupported | Unsupported for nonzero budgets | Frozen class definitions only; nonzero V also unsupported |
 | Emissary routing | Supported | Unsupported | Unsupported for nonzero budgets | Class definitions only |
 | Emissary Projects SFT | No SFT at zero | Unsupported | Conditional on explicit configuration and provider readiness | Same selected IDs uploaded for parameter training |
 
@@ -104,7 +108,7 @@ counted once. Projects SFT uses a separate base model, not a trained routing
 experiment. Emissary may reorder the same selected pool internally; its actual
 upload order/hash is recorded in its existing preparation/fit metadata.
 
-## Context handling
+## OpenAI context handling
 
 The preflight checks **all test inputs and configured warmup inputs before the
 first request**. It serializes the actual messages and response schema, counts

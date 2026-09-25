@@ -36,7 +36,7 @@ accounting. Preparation is excluded; see [preparation costs](preparation_costs.m
 
 ## Usage, retries and missing information
 
-OpenAI and Emissary adapters emit one event per application-level API attempt,
+Jev, OpenAI and Emissary adapters emit one event per application-level API attempt,
 including the requested model, returned model, request ID, numeric usage fields,
 cache counts when exposed, phase, outcome and transport retry coverage. Usage is
 captured **before parsing the label**. No response probabilities are invented;
@@ -46,7 +46,8 @@ Default clients use zero automatic transport retries. If an injected client can
 retry internally, its final response does not account for every potential charge:
 we retain its known subtotal and mark total coverage unavailable. The ledger can
 sum separately recorded billed retries for the same sample without duplicating
-the successful-example denominator. This change does not add a retry loop.
+the successful-example denominator. Jev optionally retries transient errors with an explicit attempt cap and backoff;
+its default is zero retries.
 
 A timeout or error without billing units is **unknown**, even if the provider might
 ultimately charge zero. Unknown models, service tiers, prices, unsupported audio,
@@ -89,6 +90,16 @@ subset of input tokens: subtract it before applying the ordinary input rate.
 already included in completion tokens and are not added a second time. Missing
 cached-token counts prevent a complete estimate. Nonzero separately billed cache
 writes require a corresponding rate; the example card has none.
+
+### Jev Choice
+
+The opt-in [2026-09-25 card](../pricing/inference_2026-09-25.json) adds the
+[published Jev tariff](https://docs.typesafe.ai/models): USD 0.042 per million
+input tokens, free output, for `jev-1.13.0` at the public TypeSafe endpoint.
+The estimate uses reported `input_tokens`, including on recorded failed responses.
+Missing billable units or unmatched resolved models/endpoints remain unavailable;
+no cache discount or invoice charge is inferred. Existing OpenAI/local entries
+retain their earlier verification dates. See [Jev execution and replay](jev.md).
 
 ### Local compute
 

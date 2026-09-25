@@ -62,6 +62,7 @@ from llm_classifier_bench.classifiers import (
     EmissaryClassifier,
     EmissaryClient,
     OpenAIClassifier,
+    JevClassifier,
     SentenceTransformerLogisticClassifier,
     TfidfLogisticClassifier,
 )
@@ -83,6 +84,7 @@ from llm_classifier_bench.runner import (
     split_train_validation,
 )
 from llm_classifier_bench.measurement import add_measurement_arguments, measurement_from_args
+from _jev_campaign import add_jev_arguments, jev_options
 from _matched_budgets import (add_matched_arguments, validate_budget_arguments,
                               budget_conditions, budget_manifest, annotate_budget_row)
 
@@ -477,7 +479,11 @@ def build_classifier(
     tfidf_training: TfidfTrainingConfig | None = None,
     emissary_training: EmissaryTrainingConfig | None = None,
     openai_options: dict | None = None,
+    jev_config: dict | None = None,
 ) -> Any:
+    if name == "jev":
+        return JevClassifier(**(jev_config or {}))
+
     if name == "tfidf":
         return TfidfLogisticClassifier(
             training=tfidf_training or TfidfTrainingConfig(seed=condition.seed),
@@ -557,6 +563,7 @@ def summary_row(
         "class_count": condition.class_count,
         "classifier_key": classifier_key,
         "classifier": getattr(classifier, "name", classifier_key),
+        "requested_model": getattr(classifier, "model", None),
         "supervision_regime": getattr(classifier, "supervision_regime", None),
         "training_examples_used": getattr(classifier, "training_examples_used", None),
         "validation_examples_used": getattr(classifier, "validation_examples_used", None),
@@ -666,7 +673,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classifiers",
         nargs="+",
-        choices=[*DEFAULT_CLASSIFIERS, "tfidf"],
+        choices=[*DEFAULT_CLASSIFIERS, "tfidf", "jev"],
         default=list(DEFAULT_CLASSIFIERS),
         help="Classifier families to run.",
     )
@@ -778,6 +785,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tfidf-sublinear-tf", action="store_true")
     parser.add_argument("--tfidf-max-iter", type=int, default=2000)
 
+    add_jev_arguments(parser)
     add_matched_arguments(parser)
     add_emissary_arguments(parser)
     parser.add_argument("--pricing", type=Path, default=None, help="Versioned USD rate card; omitted prices stay unavailable")
@@ -859,6 +867,7 @@ def main() -> None:
         "dataset": "banking77",
         "class_counts": list(class_counts),
         "classifiers": list(args.classifiers),
+        "jev": jev_options(args) if "jev" in args.classifiers else None,
         "seeds": list(args.seeds),
         "requested_train_per_class": support_plan.requested_train_per_class,
         "effective_train_per_class": support_plan.effective_train_per_class,
@@ -936,7 +945,7 @@ def main() -> None:
             "were frozen before model execution and recorded in campaign.json."
         )
 
-    if args.dry_run and "emissary" not in args.classifiers and args.matched_budgets is None:
+    if args.dry_run and not {"emissary", "jev"}.intersection(args.classifiers) and args.matched_budgets is None:
         print("\nDRY RUN: no classifier will be created and no model will be trained.")
         for seed in args.seeds:
             master_order = choose_master_label_order(
@@ -994,6 +1003,7 @@ def main() -> None:
                     classifier = build_classifier(
                         classifier_key,
                         emissary_training=emissary_training,
+                        jev_config=jev_options(args),
                         openai_options={
                             "in_context": matched_budget is not None,
                             "classifier_name": "openai-in-context" if matched_budget and matched_budget.examples else "openai-zero-shot",
@@ -1054,7 +1064,7 @@ def main() -> None:
                         ),
                     )
 
-                    if matched_budget is not None:
+                    if matched_budget is not None or json.loads(result.status_path.read_text())["status"] == "unsupported":
                         status = json.loads(result.status_path.read_text())["status"]
                         print(f"{status}: {result.run_dir}")
                     elif args.dry_run:
