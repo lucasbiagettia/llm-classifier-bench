@@ -99,6 +99,9 @@ def require_records(records: Sequence[EvaluationRecord]) -> tuple[EvaluationReco
     frozen = tuple(records)
     if not frozen:
         raise ValueError("At least one evaluation record is required")
+    ids = [record.sample_id for record in frozen]
+    if len(ids) != len(set(ids)):
+        raise ValueError("Duplicate evaluation sample IDs are not allowed")
     return frozen
 
 

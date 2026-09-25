@@ -42,7 +42,7 @@ class SimulatedUsageClient:
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-root', type=Path, default=Path('artifacts/cost_validation/issue10'))
+    parser.add_argument('--output-root', type=Path, default=Path('artifacts/cost_checks'))
     args = parser.parse_args()
     pricing = Path(__file__).resolve().parents[1] / 'pricing/inference_2026-09-16.json'
     revision = subprocess.run(['git', 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()

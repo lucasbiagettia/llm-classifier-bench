@@ -1,16 +1,16 @@
-"""Audit saved campaign probabilities; optionally replay MiniLM C selection offline."""
+"""Audit saved campaign probability metrics with independent NumPy formulas."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
-from importlib.metadata import version
 import json
 from pathlib import Path
 
 import numpy as np
 
 from llm_classifier_bench.metrics import evaluate_jsonl
+from llm_classifier_bench.core import PROBABILITY_SUM_TOLERANCE
 
 
 METRICS = ("top_label_ece", "adaptive_ece", "multiclass_log_loss", "multiclass_brier_score")
@@ -28,7 +28,12 @@ def reference_metrics(probabilities, gold, labels):
     correct = p.argmax(axis=1) == indices
     fixed = np.minimum((confidence * 10).astype(int), 9)
     groups = [np.flatnonzero(fixed == i) for i in range(10)]
-    adaptive = np.array_split(np.argsort(confidence, kind="stable"), min(10, len(p)))
+    order = np.argsort(confidence, kind="stable")
+    nominal = np.cumsum([len(b) for b in np.array_split(order, min(10, len(p)))])
+    # Independent NumPy reference: move quantiles after all equal confidences,
+    # collapse coincident boundaries, then split the ordered population.
+    ends = np.unique(np.searchsorted(confidence[order], confidence[order[nominal - 1]], side="right"))
+    adaptive = np.split(order, ends[:-1])
 
     def ece(bins):
         return float(sum(abs(correct[b].sum() - confidence[b].sum()) / len(p)
@@ -74,7 +79,7 @@ def audit_run(run: Path):
             raise ValueError(f"Incomplete probability maps: {run}")
         p = np.array([[r["probabilities"][label] for label in labels] for r in rows])
         checks["finite_in_range"] = bool(np.isfinite(p).all() and (p >= 0).all() and (p <= 1).all())
-        checks["normalized"] = bool(np.allclose(p.sum(axis=1), 1, atol=1e-5, rtol=0))
+        checks["normalized"] = bool(np.allclose(p.sum(axis=1), 1, atol=PROBABILITY_SUM_TOLERANCE, rtol=0))
         checks["prediction_is_argmax"] = all(r["probabilities"][r["predicted_label"]] == max(r["probabilities"].values()) for r in rows)
         checks["confidence_matches_prediction"] = all(r["confidence"] is None or abs(r["confidence"] - r["probabilities"][r["predicted_label"]]) <= 1e-6 for r in rows)
         reference = reference_metrics(p, [r["gold_label"] for r in rows], labels)
@@ -94,84 +99,15 @@ def audit_run(run: Path):
     return result
 
 
-def replay(campaign: Path, train_arrow: Path, test_arrow: Path, model_path: Path):
-    """Use exact saved sample order, cached source rows, and local model weights."""
-    from datasets import Dataset
-    from sentence_transformers import SentenceTransformer
-    from sklearn.linear_model import LogisticRegression
-    import torch
-
-    torch.set_num_threads(4)
-    encoder = SentenceTransformer(str(model_path), device="cpu", local_files_only=True)
-    sources = {"train": Dataset.from_file(str(train_arrow)), "test": Dataset.from_file(str(test_arrow))}
-    output = {
-        "model_snapshot": model_path.name,
-        "model_files_sha256": {str(p.relative_to(model_path)): sha256(p) for p in sorted(model_path.rglob("*")) if p.is_file()},
-        "source_sha256": {"train_arrow": sha256(train_arrow), "test_arrow": sha256(test_arrow)},
-        "device": "cpu", "torch_threads": 4,
-        "library_versions": {name: version(name) for name in ("numpy", "scipy", "scikit-learn", "torch", "sentence-transformers", "transformers", "datasets")},
-        "runs": [],
-    }
-    for k in (5, 10):
-        run = next((campaign / "runs").glob(f"*__n{k:02d}__sentence-transformer-logreg"))
-        config = json.loads((run / "config.json").read_text())
-        saved = [json.loads(line) for line in (run / "predictions.jsonl").read_text().splitlines()]
-        settings = config["classifier"]["training"]
-        partitions = {}
-        for key in ("fit_train", "validation", "test"):
-            ids = config["dataset"][f"{key}_sample_ids"]
-            rows = [sources[sample_id.split(":")[1]][int(sample_id.split(":")[2])] for sample_id in ids]
-            if key == "test":
-                if any(r["text"] != s["input"] or r["category"] != s["gold_label"] for r, s in zip(rows, saved, strict=True)):
-                    raise ValueError("Cached test rows differ from original artifacts")
-            # Match the original classifier's single-example test encoding.
-            embeddings = encoder.encode([r["text"] for r in rows], batch_size=1 if key == "test" else settings["embedding_batch_size"], show_progress_bar=False, convert_to_numpy=True)
-            partitions[key] = (embeddings, [r["category"] for r in rows])
-        candidates = []
-        best_score, selected = -1, None
-        for c in settings["c_values"]:
-            model = LogisticRegression(C=c, max_iter=settings["max_iter"], random_state=settings["seed"])
-            model.fit(*partitions["fit_train"])
-            validation_accuracy = float(model.score(*partitions["validation"]))
-            if validation_accuracy > best_score:
-                best_score, selected = validation_accuracy, c
-            p = model.predict_proba(partitions["test"][0])
-            val_p = model.predict_proba(partitions["validation"][0])
-            row = {"c": c, "validation_accuracy": validation_accuracy,
-                   "validation_metrics": reference_metrics(val_p, partitions["validation"][1], model.classes_),
-                   "test_accuracy": float(model.score(*partitions["test"])),
-                   "test_mean_confidence": float(p.max(axis=1).mean()),
-                   "test_metrics": reference_metrics(p, partitions["test"][1], model.classes_),
-                   "coefficient_l2_norm": float(np.linalg.norm(model.coef_)),
-                   "iterations": model.n_iter_.tolist()}
-            if c == saved[0]["raw_response"]["selected_c"]:
-                old = np.array([[r["probabilities"][str(label)] for label in model.classes_] for r in saved])
-                row["max_probability_difference_from_saved"] = float(abs(p - old).max())
-                row["predicted_labels_match_saved"] = list(model.predict(partitions["test"][0])) == [r["predicted_label"] for r in saved]
-            candidates.append(row)
-        output["runs"].append({"run_id": run.name, "selected_c": selected,
-                               "saved_selected_c": saved[0]["raw_response"]["selected_c"], "candidates": candidates})
-        print(f"Replayed {run.name}: C={selected}", flush=True)
-    return output
-
-
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--campaign", type=Path, default=Path("artifacts/benchmark_runs/20260804T014841Z"))
+    parser.add_argument("--campaign", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--train-arrow", type=Path)
-    parser.add_argument("--test-arrow", type=Path)
-    parser.add_argument("--model-path", type=Path)
     args = parser.parse_args()
-    replay_args = (args.train_arrow, args.test_arrow, args.model_path)
-    if any(replay_args) and not all(replay_args):
-        parser.error("Replay requires --train-arrow, --test-arrow and --model-path")
     runs = sorted(p.parent for p in (args.campaign / "runs").glob("*/predictions.jsonl"))
     if not runs:
         parser.error("No saved predictions found")
     report = {"campaign": str(args.campaign), "n_bins": 10, "runs": [audit_run(run) for run in runs]}
-    if all(replay_args):
-        report["replay"] = replay(args.campaign, *replay_args)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, allow_nan=False) + "\n")
     print(f"Audited {len(runs)} runs; saved {args.output}")

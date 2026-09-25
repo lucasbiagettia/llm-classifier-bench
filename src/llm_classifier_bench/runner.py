@@ -14,7 +14,7 @@ from typing import Any, Mapping, Sequence
 from llm_classifier_bench.classifiers.base import Classifier, Prediction
 from llm_classifier_bench.class_definitions.loader import load_class_definition_profile
 from llm_classifier_bench.config import DEFAULT_SPLIT_SEED, DEFAULT_VALIDATION_FRACTION
-from llm_classifier_bench.core import LabeledExample
+from llm_classifier_bench.core import LabeledExample, PROBABILITY_SUM_TOLERANCE
 from llm_classifier_bench.datasets.base import ClassificationDataset, DatasetBundle
 from llm_classifier_bench.datasets.selection import validate_partition_disjointness
 from llm_classifier_bench.metrics.evaluator import evaluate_jsonl, write_results_json
@@ -100,6 +100,7 @@ def run_benchmark(
     costs: CostRecorder | None = None
     preparation: PreparationRecorder | None = None
     budget_metadata = None
+    persisted_predictions = 0
 
     stage = "loading_dataset"
     _write_status(
@@ -299,6 +300,14 @@ def run_benchmark(
             predictions.extend(outputs)
             for example in batch:
                 inference_timings[example.sample_id] = observation
+            # Save validated results before the next potentially failing call.
+            # Monetary fields are reconciled atomically after inference finishes.
+            _write_predictions_jsonl(
+                predictions_path, bundle=bundle, classifier_name=classifier.name,
+                predictions=outputs, inference_timings=inference_timings,
+                cost_report=None, examples=batch, append=True,
+            )
+            persisted_predictions += len(outputs)
 
         timing.finish("completed")
         cost_report = costs.finish()
@@ -356,7 +365,7 @@ def run_benchmark(
             example_count=len(bundle.test),
         )
 
-    except Exception as exc:
+    except BaseException as exc:
         timing_error = None
         if timing is not None:
             try:
@@ -389,6 +398,7 @@ def run_benchmark(
             run_id=run_id,
             dataset=dataset.name,
             classifier=classifier.name,
+            persisted_predictions=persisted_predictions,
             error_type=type(exc).__name__,
             error_message=str(exc),
             timing_report_error_type=timing_error,
@@ -498,7 +508,7 @@ def _validate_predictions(
                 )
             normalized[label] = probability
 
-        if not math.isclose(sum(normalized.values()), 1.0, rel_tol=1e-6, abs_tol=1e-6):
+        if not math.isclose(sum(normalized.values()), 1.0, rel_tol=0.0, abs_tol=PROBABILITY_SUM_TOLERANCE):
             raise ValueError(
                 f"Prediction probabilities for {prediction.sample_id!r} do not sum to 1"
             )
@@ -527,11 +537,19 @@ def _write_predictions_jsonl(
     classifier_name: str,
     predictions: Sequence[Prediction],
     inference_timings: Mapping[str, Any],
-    cost_report: Mapping[str, Any],
+    cost_report: Mapping[str, Any] | None,
+    examples: Sequence[LabeledExample] | None = None,
+    append: bool = False,
 ) -> None:
-    with path.open("w", encoding="utf-8") as output_file:
-        for example, prediction in zip(bundle.test, predictions, strict=True):
+    # A failed final reconciliation must not truncate the incremental evidence.
+    target = path if append else path.with_suffix(path.suffix + ".tmp")
+    selected = bundle.test if examples is None else examples
+    with target.open("a" if append else "w", encoding="utf-8") as output_file:
+        for example, prediction in zip(selected, predictions, strict=True):
             observation = inference_timings[example.sample_id]
+            sample_cost = (cost_report["per_successful_sample"][example.sample_id]
+                           if cost_report is not None else
+                           {"cost_usd": None, "cost_kind": "unavailable", "event_ids": []})
             payload = {
                 "dataset": bundle.name,
                 "classifier": classifier_name,
@@ -551,12 +569,15 @@ def _write_predictions_jsonl(
                 "model": prediction.model,
                 "request_id": prediction.request_id,
                 "raw_response": dict(prediction.raw_response or {}),
-                "cost_usd": cost_report["per_successful_sample"][example.sample_id]["cost_usd"],
-                "cost_kind": cost_report["per_successful_sample"][example.sample_id]["cost_kind"],
+                "cost_usd": sample_cost["cost_usd"],
+                "cost_kind": sample_cost["cost_kind"],
+                "cost_reconciled": cost_report is not None,
                 "cost_scope": "evaluation attempts for this sample; warmup excluded; see cost_report.json for run totals",
-                "usage_event_ids": cost_report["per_successful_sample"][example.sample_id]["event_ids"],
+                "usage_event_ids": sample_cost["event_ids"],
             }
             output_file.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    if not append:
+        target.replace(path)
 
 
 def _write_run_config(

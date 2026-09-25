@@ -1,6 +1,6 @@
 # Versioned class definitions
 
-This patch separates **canonical dataset labels** from the semantic descriptions
+The benchmark separates **canonical dataset labels** from the semantic descriptions
 shown to zero-shot classifiers.
 
 The benchmark runner never calls the description-generating LLM. Generation is

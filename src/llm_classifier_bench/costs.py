@@ -99,7 +99,7 @@ def capture_api_usage(sink, *, provider: str, sample_id: str, requested_model: s
     }
     try:
         yield record
-    except Exception as exc:
+    except BaseException as exc:
         record["status"] = "failed"
         record["error_type"] = type(exc).__name__
         body = getattr(exc, "body", None)

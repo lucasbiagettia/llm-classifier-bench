@@ -8,9 +8,8 @@ report that confound with any result.
 
 `EmissaryTrainingConfig` supports arbitrary feasible nonnegative budgets. A
 nonzero budget requires an explicit `shot_unit` (`total` or `per_class`) and the
-explicit mechanism `project_fine_tuning`, project ID and base model. The 5/100
-smoke configuration uses **total** shots, as confirmed for the authorized live
-run on 2026-09-07.
+explicit mechanism `project_fine_tuning`, project ID and base model. Specify
+`total` or `per_class` explicitly; they represent different label budgets.
 
 The selector sorts class names and per-class sample IDs before seeded shuffles.
 It uses seed string `<seed>:classes` for class order and
@@ -22,6 +21,15 @@ than redistributing examples.
 Only the runner's fit-training partition is eligible. Validation and test data
 are never uploaded. Repeated IDs and exact UTF-8 text across partitions are
 rejected before remote operations.
+
+In both maintained campaign entry points and both budget modes,
+`--emissary-max-training-jobs` covers the whole campaign: new nonzero shot
+configurations × distinct seeds × distinct class counts. The total is checked
+before dataset loading or remote operations. For example, one new shot
+configuration across three seeds and four class counts requires a bound of at
+least 12; a bound of 1 is rejected. Zero-shot and reused training jobs do not
+consume new-job slots. Continuation IDs require one seed/class-count condition
+and one nonzero shot configuration. Dry runs do not require a live job bound.
 
 ## Provider flow
 
@@ -77,11 +85,6 @@ For the example above, removing `--dry-run` and adding
 most two new jobs. This bound controls job count, not provider spend. Do not run
 it without explicit authorization for the unpriced training calls.
 
-The 2026-09-07 live smoke uploaded and profiled the 5- and 100-shot datasets, but
-the account rejected training creation because it has no payment method. The
-adapter reports this response explicitly. Reuse the recorded dataset IDs and
-SHA-256 values when continuing after payment setup; do not repeat the uploads.
-
 The training hyperparameters and polling limits are configurable through the
 `--emissary-num-train-epochs`, `--emissary-learning-rate`, batch-size, timeout,
 poll-interval and inactive-timeout options. Defaults match the inspected
@@ -96,5 +99,4 @@ comparability statement and unavailable cost. A live run writes
 sanitized provider responses and status histories. Signed download URLs are
 redacted.
 
-See the [provider contract](emissary_contract.md), [test evidence](emissary_validation.md)
-and [small live plan](emissary_smoke_plan.json).
+See the [adapter contract and limitations](emissary_contract.md).

@@ -64,7 +64,7 @@ def add_emissary_arguments(parser: ArgumentParser) -> None:
     parser.add_argument(
         "--emissary-max-training-jobs",
         type=int,
-        help="Required live safety bound for newly submitted nonzero conditions.",
+        help="Maximum new training jobs across all shot, seed and class-count conditions.",
     )
 
 
@@ -111,6 +111,7 @@ def validate_emissary_arguments(args: Namespace) -> None:
     if "emissary" in args.classifiers:
         configs = emissary_configs(args)
         nonzero = [config for config in configs if config.shots]
+        cells = len(set(args.seeds)) * len(set(args.class_counts))
         if not args.dry_run:
             for config in configs:
                 config.require_live_support()
@@ -119,14 +120,14 @@ def validate_emissary_arguments(args: Namespace) -> None:
                     "Live project fine-tuning has no published cost estimate. Pass "
                     "--emissary-allow-unpriced-training only with explicit authorization."
                 )
-            new_jobs = sum(config.training_job_id is None for config in nonzero)
+            new_jobs = sum(config.training_job_id is None for config in nonzero) * cells
             maximum = args.emissary_max_training_jobs
             if new_jobs and (
                 type(maximum) is not int or maximum < 0 or new_jobs > maximum
             ):
                 raise ValueError(
-                    f"Live run would create {new_jobs} training job(s); set "
-                    "--emissary-max-training-jobs to an equal or larger explicit bound."
+                    f"Live campaign would create {new_jobs} training job(s); set "
+                    f"--emissary-max-training-jobs to at least {new_jobs}."
                 )
         continuation = any(
             config.dataset_id or config.training_job_id or config.deployment_id
@@ -134,10 +135,12 @@ def validate_emissary_arguments(args: Namespace) -> None:
         )
         if continuation and len(nonzero) != 1:
             raise ValueError("Continuation IDs require exactly one nonzero shot condition")
+        if continuation and cells != 1:
+            raise ValueError("Continuation IDs require exactly one seed/class-count condition")
 
 
 def classifier_conditions(args: Namespace) -> Iterator[tuple[str, EmissaryTrainingConfig | None]]:
-    for key in args.classifiers:
+    for key in dict.fromkeys(args.classifiers):
         if key == "emissary":
             for config in emissary_configs(args):
                 yield key, config

@@ -6,6 +6,8 @@ import math
 from dataclasses import dataclass
 from typing import Any, Mapping, Sequence
 
+from llm_classifier_bench.core import PROBABILITY_SUM_TOLERANCE
+
 from .base import EvaluationRecord, MetricResult, require_records
 
 
@@ -24,7 +26,7 @@ def _confidence_rows(
     # consistency checks before trusting explicit confidence or deriving it.
     present = tuple(record for record in records if record.probabilities is not None)
     if present:
-        _validate_probability_distributions(present, sum_tolerance=1e-5)
+        _validate_probability_distributions(present, sum_tolerance=PROBABILITY_SUM_TOLERANCE)
     rows: list[tuple[float, bool]] = []
     for record in records:
         confidence = _top_confidence(record)
@@ -150,11 +152,11 @@ def adaptive_ece_score(
     *,
     n_bins: int = 10,
 ) -> tuple[float, list[dict[str, Any]]] | None:
-    """Equal-frequency top-label ECE.
+    """Approximately equal-frequency top-label ECE, preserving confidence ties.
 
-    Records are sorted by confidence and partitioned into bins whose sizes differ
-    by at most one. With fewer samples than requested bins, each sample forms its
-    own bin.
+    Nominal equal-frequency boundaries move right to the end of a tied group.
+    Boundaries already consumed by a previous group are skipped. Bin sizes may
+    differ and fewer bins may be produced; identical confidences never split.
     """
 
     frozen = require_records(records)
@@ -172,10 +174,17 @@ def adaptive_ece_score(
     details: list[dict[str, Any]] = []
     ece = 0.0
     cursor = 0
+    target_end = 0
     for index in range(effective_bins):
-        size = base_size + (1 if index < remainder else 0)
-        bucket = sorted_rows[cursor : cursor + size]
-        cursor += size
+        target_end += base_size + (1 if index < remainder else 0)
+        if target_end <= cursor:
+            continue
+        end = target_end
+        while end < len(sorted_rows) and sorted_rows[end][0] == sorted_rows[end - 1][0]:
+            end += 1
+        bucket = sorted_rows[cursor:end]
+        cursor = end
+        size = len(bucket)
 
         mean_confidence = sum(confidence for confidence, _ in bucket) / size
         accuracy = sum(correct for _, correct in bucket) / size
@@ -183,7 +192,7 @@ def adaptive_ece_score(
         ece += (size / len(sorted_rows)) * gap
         details.append(
             {
-                "bin_index": index,
+                "bin_index": len(details),
                 "min_confidence": bucket[0][0],
                 "max_confidence": bucket[-1][0],
                 "count": size,
@@ -200,7 +209,7 @@ def multiclass_log_loss_score(
     records: Sequence[EvaluationRecord],
     *,
     epsilon: float = 1e-15,
-    sum_tolerance: float = 1e-5,
+    sum_tolerance: float = PROBABILITY_SUM_TOLERANCE,
 ) -> float | None:
     frozen = require_records(records)
     if not 0.0 < epsilon < 0.5:
@@ -224,7 +233,7 @@ def multiclass_log_loss_score(
 def multiclass_brier_score(
     records: Sequence[EvaluationRecord],
     *,
-    sum_tolerance: float = 1e-5,
+    sum_tolerance: float = PROBABILITY_SUM_TOLERANCE,
 ) -> float | None:
     """Mean multiclass Brier score using the unnormalized classwise sum.
 
@@ -303,7 +312,7 @@ class AdaptiveECEMetric:
                 "n_samples": len(frozen),
                 "requested_bins": self.n_bins,
                 "effective_bins": len(bins),
-                "binning": "equal_frequency",
+                "binning": "equal_frequency_preserve_ties_v2",
                 "bins": bins,
             },
         )
@@ -312,7 +321,7 @@ class AdaptiveECEMetric:
 @dataclass(frozen=True, slots=True)
 class MulticlassLogLossMetric:
     epsilon: float = 1e-15
-    sum_tolerance: float = 1e-5
+    sum_tolerance: float = PROBABILITY_SUM_TOLERANCE
     name: str = "multiclass_log_loss"
 
     def compute(self, records: Sequence[EvaluationRecord]) -> MetricResult:
@@ -341,7 +350,7 @@ class MulticlassLogLossMetric:
 
 @dataclass(frozen=True, slots=True)
 class MulticlassBrierScoreMetric:
-    sum_tolerance: float = 1e-5
+    sum_tolerance: float = PROBABILITY_SUM_TOLERANCE
     name: str = "multiclass_brier_score"
 
     def compute(self, records: Sequence[EvaluationRecord]) -> MetricResult:

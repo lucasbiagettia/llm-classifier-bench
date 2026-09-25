@@ -185,7 +185,7 @@ class TimingRecorder:
                     row["status"] = "invalid_output"
                     raise
             return result, row
-        except Exception as exc:
+        except BaseException as exc:
             if row["status"] == "success":
                 row["status"] = "exception"
             row["error_type"] = type(exc).__name__

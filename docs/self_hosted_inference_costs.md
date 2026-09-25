@@ -1,8 +1,8 @@
-# Self-hosted inference cost scenarios — extension of #10
+# Self-hosted inference cost scenarios
 
 Inference cost is the primary economic comparison. Preparation and amortization
-remain complementary work in #12. This extension reuses #10's usage/rate cards and
-#11's recorded timing windows; it never calls a model to generate a cost report.
+are measured separately. These projections reuse the saved usage, rate cards
+and timing windows; generating a cost report never calls a model.
 
 ## What the report means
 
@@ -95,7 +95,7 @@ profile and whole-allocation rate. No GPU rate or performance estimate is guesse
 opt-in **illustrative** CPU rate for the two scenarios. It reuses the historical
 September 16 price snapshot and explicitly defines the extrapolation assumptions.
 It is not a fresh price verification or a recommended cloud deployment. Original
-saved pricing and the original #10 ledger totals are not overwritten by repricing.
+saved pricing and the original ledger totals are not overwritten by repricing.
 
 ## Commands and recorded conditions
 
@@ -103,13 +103,13 @@ saved pricing and the original #10 ledger totals are not overwritten by repricin
 # Real local fixture measurement. Hardware-profile identity is optional for a
 # cloud-equivalent rate; required when selecting a measured_hardware rate.
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src \
-  venv/bin/python scripts/probe_latency.py \
+  python scripts/probe_latency.py \
   --run-id self-hosted --output-root /tmp/self-hosted-check \
   --hardware-profile local-cpu-fixture \
   --pricing pricing/self_hosted_reference.json
 
 # Extrapolate a hypothetical 24-hour allocation; no new inference or deployment.
-PYTHONPATH=src venv/bin/python scripts/report_costs.py \
+PYTHONPATH=src python scripts/report_costs.py \
   /tmp/self-hosted-check/self-hosted --deployment-hours 24 \
   --volumes 1000 10000 100000 \
   --output /tmp/self-hosted-costs.md --json-output /tmp/self-hosted-costs.json
@@ -132,26 +132,3 @@ existing usage, rate card and measurement metadata.
 FLOPs per prediction are optional diagnostics. They remain unavailable until a
 consistent operation-count method is introduced. Peak hardware TFLOPS do not
 replace measured throughput or determine the dollar estimate.
-
-## Validation
-
-Deterministic tests use USD 2/hour, two valid classifications per evaluation hour,
-and one hour of warmup. Four valid classifications take three hours including
-warmup and cost USD 6 continuously. A four-hour deployed allocation costs USD 8,
-including one idle hour. Eight valid classifications cannot fit in that allocation.
-The fixtures also cover failed-call throughput, missing/mismatched prices, hosted
-APIs, incomplete runs, zero successes, invalid scenario arguments, hardware profile
-matching, input-length metadata and offline CLI repricing without artifact mutation.
-
-A real local TF-IDF fixture validates recording/report generation; it does not
-establish production performance or cloud hardware equivalence. Repeated short
-texts and CPU-only measurements cannot justify GPU or general deployment claims.
-
-Offline validation: **204 passed, 3 external integration tests deselected** using
-`PYTHONPATH=src venv/bin/pytest -q -m 'not integration'`.
-
-Recorded local evidence is under
-[`artifacts/self_hosted_validation`](../artifacts/self_hosted_validation): a real
-200-example TF-IDF fixture with five warmup examples, raw usage/timings, pricing,
-hardware/input-length conditions and 24-hour allocation projections. The latter
-are hypothetical; no resources were deployed and no paid requests were made.

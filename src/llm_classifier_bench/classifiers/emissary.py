@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from llm_classifier_bench.costs import capture_api_usage, capture_response
 from llm_classifier_bench.preparation import preparation_stage
 from llm_classifier_bench.config import EmissaryTrainingConfig
+from llm_classifier_bench.core import PROBABILITY_SUM_TOLERANCE
 from llm_classifier_bench.datasets.selection import select_labeled_examples
 
 from .base import (
@@ -334,7 +335,7 @@ def parse_classification_response(
     *,
     sample_id: str,
     latency_ms: float,
-    probability_tolerance: float = 1e-4,
+    probability_tolerance: float = PROBABILITY_SUM_TOLERANCE,
 ) -> Prediction:
     """Convert a raw Emissary response into the shared ``Prediction`` contract."""
 
@@ -376,7 +377,7 @@ def parse_classification_response(
     if not math.isclose(
         probability_sum,
         1.0,
-        rel_tol=probability_tolerance,
+        rel_tol=0.0,
         abs_tol=probability_tolerance,
     ):
         raise EmissaryResponseError(
@@ -796,7 +797,7 @@ class EmissaryClassifier:
         try:
             self._fit_project(selected)
             self._status = "ready"
-        except Exception as exc:
+        except BaseException as exc:
             self._status = "failed"
             self._last_error = {
                 "type": type(exc).__name__,
