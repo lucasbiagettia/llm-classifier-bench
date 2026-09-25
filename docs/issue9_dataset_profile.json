@@ -1,0 +1,95 @@
+{
+  "date": "2026-09-21",
+  "repository": "https://github.com/fabiancpl/senlp-benchmark",
+  "revision": "e68fdc77c2a6ec301586fb9cb5bb5dd790832929",
+  "scope": "Decision brief only; no integration or model runs",
+  "profile_partition": "Rows with fold_1 != 2 (published train/validation pool); no test-text profiling",
+  "text_preprocessing": "Published preprocessed Parquet; no additional normalization",
+  "duplicate_count_definition": "Repeated rows after the first occurrence, using pandas duplicated()",
+  "length_unit": "Unicode characters, not tokens",
+  "cross_split_duplicate_audit": "pending",
+  "statistics": {
+    "issue_intention": {
+      "rows_total": 6375,
+      "train_available": 5100,
+      "test_reserved": 1275,
+      "columns": [
+        "id",
+        "text",
+        "label"
+      ],
+      "train_class_counts": {
+        "0": 682,
+        "1": 578,
+        "2": 1196,
+        "3": 981,
+        "4": 318,
+        "5": 746,
+        "6": 599
+      },
+      "train_characters": {
+        "0.5": 83.0,
+        "0.95": 197.0,
+        "1": 441.0
+      },
+      "train_duplicate_text_rows": 187,
+      "train_duplicate_ids": 0,
+      "train_empty_text": 0,
+      "preprocessed_parquet_sha256": "8ab3dddae665a5b6f7fea12ed0daae6059f7a451e681da44d6335d33a2a91e6c",
+      "split_csv_sha256": "895c82660450d37dba5fc2362575210eb573e9e9f0b144deed33af04e0e3c509",
+      "training_text_groups_with_conflicting_labels": 4
+    },
+    "review_type": {
+      "rows_total": 1390,
+      "train_available": 1112,
+      "test_reserved": 278,
+      "columns": [
+        "id",
+        "text",
+        "label"
+      ],
+      "train_class_counts": {
+        "0": 81,
+        "1": 482,
+        "2": 154,
+        "3": 395
+      },
+      "train_characters": {
+        "0.5": 65.0,
+        "0.95": 153.0,
+        "1": 518.0
+      },
+      "train_duplicate_text_rows": 19,
+      "train_duplicate_ids": 141,
+      "train_empty_text": 0,
+      "preprocessed_parquet_sha256": "83b65451c4e4af787ab72ebb641468ec45fa218514912908645ea5943303e1c2",
+      "split_csv_sha256": "8d4a5bfab9250c71625995c9d3f08841b3b17f3e268b9aabeeed4bb6f767df37",
+      "training_text_groups_with_conflicting_labels": 1
+    },
+    "incivility": {
+      "rows_total": 1546,
+      "train_available": 1236,
+      "test_reserved": 310,
+      "columns": [
+        "id",
+        "text",
+        "label"
+      ],
+      "train_class_counts": {
+        "0": 863,
+        "1": 373
+      },
+      "train_characters": {
+        "0.5": 89.0,
+        "0.95": 223.0,
+        "1": 856.0
+      },
+      "train_duplicate_text_rows": 54,
+      "train_duplicate_ids": 512,
+      "train_empty_text": 0,
+      "preprocessed_parquet_sha256": "2de89f2f500a903a4db7c7a334fb987816817e2fc1008847830e69d6a6b3a391",
+      "split_csv_sha256": "4f800eb7b13a8f312f96de58ab625f5b5805340d4e81bb5676689e711282a730",
+      "training_text_groups_with_conflicting_labels": 1
+    }
+  }
+}
