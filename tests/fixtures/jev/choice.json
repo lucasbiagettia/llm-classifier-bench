@@ -1,0 +1,20 @@
+{
+  "evidence": "synthetic offline fixture; not a provider observation",
+  "request": {
+    "model": "jev-1.13.0",
+    "state": "the striker scored a goal",
+    "questions": {"classification": {
+      "type": "choice",
+      "instructions": "Which of the configured classes best describes this text?",
+      "criteria": {"World": "World news.", "Sports": "Sports news."}
+    }}
+  },
+  "response": {
+    "model": "jev-1.13.0",
+    "answers": {"classification": {
+      "type": "choice", "choice": "Sports", "confidence": 0.42,
+      "probabilities": {"Sports": 0.75, "World": 0.25}
+    }},
+    "usage": {"input_tokens": 300, "output_tokens": 28}
+  }
+}

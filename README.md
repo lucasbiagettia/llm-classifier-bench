@@ -2,10 +2,11 @@
 
 Reproducible benchmark infrastructure for comparing closed-set text-classification approaches across predictive quality, probabilistic calibration, latency, and cost.
 
-The current implementation supports five classifier families:
+The current implementation supports six classifier families:
 
 - **Emissary zero-shot and Projects fine-tuning** — routing experiments plus an
   explicit supervised classification mechanism.
+- **Jev zero-shot** — TypeSafe Choice probabilities with separate native confidence.
 - **OpenAI zero-shot** — generative closed-set classification with structured output.
 - **BERT fine-tuned** — supervised Hugging Face sequence classification.
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
@@ -14,6 +15,7 @@ The current implementation supports five classifier families:
 ## Documentation
 
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
+- [Jev setup, capped pilot and result interpretation](docs/jev.md)
 - [Frozen class definitions](docs/class_definitions.md)
 - [Matched labeled-example budgets](docs/matched_label_budgets.md)
 - [Emissary configuration](docs/emissary_few_shot.md) and [adapter contract](docs/emissary_contract.md)
@@ -56,7 +58,7 @@ Zero-shot classifiers ignore the fit/validation examples. Supervised classifiers
 
 ## Default models
 
-Defaults live in:
+Most defaults live in:
 
 ```text
 src/llm_classifier_bench/config.py
@@ -65,6 +67,7 @@ src/llm_classifier_bench/config.py
 Current defaults:
 
 ```text
+Jev:                jev-1.13.0 (classifiers/jev.py)
 OpenAI:             gpt-5-nano
 OpenAI reasoning:   minimal
 BERT:               google-bert/bert-base-uncased
@@ -82,6 +85,7 @@ The classifiers are not all methodologically equivalent:
 ```text
 Emissary routing     zero-shot
 Emissary Projects    supervised fine-tuning
+Jev                  zero-shot (nonzero matched budgets unsupported)
 OpenAI               zero-shot
 BERT                  supervised fine-tuning
 SentenceTransformer   supervised embeddings + Logistic Regression

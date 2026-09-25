@@ -6,3 +6,6 @@ __pycache__/
 .env
 /artifacts/
 CLAUDE.md
+
+# Local handoffs, working notes and temporary review material
+/.local/

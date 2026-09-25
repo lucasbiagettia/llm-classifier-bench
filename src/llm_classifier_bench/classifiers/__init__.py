@@ -19,6 +19,7 @@ from .emissary import (
     parse_classification_response,
     serialize_classification_dataset,
 )
+from .jev import JevClassifier
 from .openai import OpenAIClassifier
 from .sentence_transformer import SentenceTransformerLogisticClassifier
 from .tfidf import TfidfLogisticClassifier
@@ -37,6 +38,7 @@ __all__ = [
     "EmissaryPreparationTimeout",
     "EmissaryResponseError",
     "Experiment",
+    "JevClassifier",
     "OpenAIClassifier",
     "SentenceTransformerLogisticClassifier",
     "TfidfLogisticClassifier",

@@ -1,4 +1,4 @@
-# Experimental protocol and interpreting results
+# Experimental protocol and interpreting results (v1.3)
 
 The benchmark compares classification quality, calibration, latency and cost.
 A result describes a particular dataset, label set, supervision budget, model and
@@ -9,7 +9,7 @@ execution environment. It is not a general ranking of model families.
 Use one regime per campaign and retain it in every table or plot:
 
 - **Full-training reference:** local supervised methods use the sampled training
-  data; OpenAI is zero-shot; Emissary uses its configured shot budget. These
+  data; OpenAI and Jev are zero-shot; Emissary uses its configured shot budget. These
   methods do not necessarily consume equal amounts of labeled information.
 - **Matched labeled budget:** each method receives the same selected fit/context
   pool. Training examples and in-context demonstrations are different uses of
@@ -19,7 +19,8 @@ For matched runs, compare the same dataset, class count, seed, pool hash, test I
 and frozen class definitions. Report both allocated labels and actual consumption.
 At nonzero validation budgets, local supervised methods consume validation labels
 that OpenAI and Emissary do not; equal fit budgets do not imply equal total label
-consumption. See [matched budgets](matched_label_budgets.md) for the supported matrix.
+consumption. Jev supports zero fit and validation budgets only; other matched
+cells are explicitly unsupported. See [matched budgets](matched_label_budgets.md) for the supported matrix.
 
 Emissary routing and Projects SFT use different mechanisms and potentially different
 base models. Changing shots between those products does not isolate the effect of
@@ -92,10 +93,20 @@ policy; do not mix it silently with results calculated using a different policy.
 Bin-based ECE is sensitive to sample size and binning. Accuracy and calibration
 measure different properties; report both.
 
-Emissary, runner validation and default metrics accept probability sums within an
+Jev, Emissary, runner validation and default metrics accept probability sums within an
 absolute `1e-4` of one without renormalizing the values. Probabilities must be
 finite and in [0,1], and consistent with the predicted label and confidence.
 Duplicate evaluation IDs are rejected.
+
+Jev's benchmark confidence is the probability assigned to its selected label.
+Its native distribution-concentration score is stored separately and is never used
+as top-label confidence. Exact probability ties accept the provider's selected
+maximum regardless of mapping order; no random tie breaking is introduced. The
+pinned Jev configuration is `jev-1.13.0`, one Choice per text, at most 255 classes,
+with a conservative preflight against a 32,000-token single-question budget. Limits,
+requested/resolved versions, retries and request hashes are retained; changing an
+alias or the operator's context limit requires documenting that change. See
+[Jev configuration and limits](jev.md) for the dated provider sources.
 
 OpenAI returns labels without probabilities or confidence, so its calibration
 metrics are unavailable. Missing metrics and unknown costs are not zero. Check
@@ -116,7 +127,9 @@ No complete-run quality metrics are written for failed runs. Reevaluation of a
 runner artifact with a usage ledger requires a completed measurement and full
 recorded test coverage. Automatic resume and aggregate quality metrics that count
 failed predictions as errors are not implemented. Partial timings and costs remain
-useful operational evidence, with their coverage reported explicitly.
+useful operational evidence, with their coverage reported explicitly. Jev checks
+label/context limits and matched-budget support before network access, preserving
+unsupported conditions in campaign summaries.
 
 ## Latency, cost and uncertainty
 
@@ -136,7 +149,12 @@ The campaign saves per-run results; it does not calculate cross-seed confidence
 intervals or bootstrap estimates. Publish seed-level results and prediction
 coverage. For statistical comparisons, predeclare the aggregation and uncertainty
 method and pair observations by test ID; repeated or overlapping test cohorts are
-not independent datasets. Small smoke runs only verify execution.
+not independent datasets. Small smoke runs only verify execution. The Jev pilot caps paid attempts at four,
+uses a fresh local baseline on the same held-out IDs, and must be labeled live
+smoke evidence; synthetic transport fixtures are separate offline evidence. Reuse
+older baselines only after verifying source/text identity, frozen definitions,
+label order, splits, budgets and measurement configuration. Otherwise record the
+mismatch and rerun the affected baseline under an explicitly chosen budget.
 
 ## Inspect and recalculate your results
 

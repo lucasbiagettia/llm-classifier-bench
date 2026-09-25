@@ -170,6 +170,17 @@ def run_benchmark(
 
         stage = "validating_partitions"
         validate_partition_disjointness(fit_train, validation, bundle.test)
+        preflight = getattr(classifier, "preflight", None)
+        if callable(preflight):
+            stage = "checking_inference_support"
+            plan = preflight(
+                bundle.classes,
+                [e.as_input() for e in (*fit_train[:resolved_config.measurement.warmup_examples], *bundle.test)],
+                matched_budget=resolved_config.matched_budget,
+            )
+            _write_json(run_dir / "inference_plan.json", plan)
+            if not plan["supported"]:
+                raise UnsupportedConfiguration(plan["reason"])
         if budget_metadata is not None:
             stage = "checking_matched_support"
             if resolved_config.measurement.warmup_examples > len(fit_train):
@@ -512,8 +523,7 @@ def _validate_predictions(
             raise ValueError(
                 f"Prediction probabilities for {prediction.sample_id!r} do not sum to 1"
             )
-        argmax_label = max(normalized, key=normalized.__getitem__)
-        if argmax_label != prediction.predicted_label:
+        if normalized[prediction.predicted_label] != max(normalized.values()):
             raise ValueError(
                 f"Prediction for {prediction.sample_id!r} is not the argmax of its "
                 "probability distribution"

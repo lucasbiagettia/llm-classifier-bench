@@ -144,7 +144,7 @@ def classifier_conditions(args: Namespace) -> Iterator[tuple[str, EmissaryTraini
         if key == "emissary":
             for config in emissary_configs(args):
                 yield key, config
-        elif not args.dry_run:
+        elif not args.dry_run or key == "jev":
             yield key, None
 
 

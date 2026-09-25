@@ -17,7 +17,7 @@ class Prediction:
     """Normalized prediction returned by every classifier implementation.
 
     ``probabilities`` is optional because not every classification API exposes a
-    full distribution. Emissary and the supervised local classifiers do; the OpenAI
+    full distribution. Jev, Emissary and the supervised local classifiers do; the OpenAI
     generative baseline intentionally does not fabricate one.
 
     ``latency_ms`` is the adapter's internal observation. The runner preserves it
@@ -54,6 +54,10 @@ class Classifier(Protocol):
 
     ``prepare`` communicates the closed label space without leaking labeled
     examples. ``fit`` may be a no-op for zero-shot classifiers.
+
+    Optional ``preflight(classes, inputs, matched_budget=...)`` validates provider
+    limits locally before prepare; the runner saves its plan and records an
+    unsupported cell when ``supported`` is false.
 
     Optional ``inference_metadata()`` returns JSON-compatible backend, device,
     batching, timeout and retry settings without making provider requests. Unknown
