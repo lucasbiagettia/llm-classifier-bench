@@ -304,9 +304,9 @@ def _mean_validation_loss(
                 dtype=torch.long,
                 device=device,
             )
-            losses.append(float(model(**encoded).loss.detach().cpu().item()))
+            losses.append(float(model(**encoded).loss.detach().cpu().item()) * len(batch))
     model.train()
-    return sum(losses) / len(losses)
+    return sum(losses) / len(examples)
 
 
 __all__ = ["BertClassifier"]

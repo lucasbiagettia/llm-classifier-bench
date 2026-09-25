@@ -6,6 +6,10 @@ from dataclasses import dataclass, field
 from typing import Any, Mapping
 
 
+# Shared absolute tolerance for rounded distributions; values are not renormalized.
+PROBABILITY_SUM_TOLERANCE = 1e-4
+
+
 @dataclass(frozen=True, slots=True)
 class ClassDefinition:
     """One class in a closed-set classification task."""
@@ -53,10 +57,11 @@ class LabeledExample:
             raise ValueError("LabeledExample.label cannot be empty")
 
     def as_input(self) -> ClassificationInput:
-        """Drop the gold label before sending the example to a classifier."""
+        """Expose only input provenance, never target-bearing dataset metadata."""
 
         return ClassificationInput(
             sample_id=self.sample_id,
             text=self.text,
-            metadata=self.metadata,
+            metadata={key: self.metadata[key] for key in
+                      ("dataset", "source", "split", "row_index") if key in self.metadata},
         )

@@ -164,6 +164,11 @@ def evaluate_jsonl(
     # have costs too. A copied/subset artifact must not borrow another run's total.
     from llm_classifier_bench.costs import recalculate_costs
     report = recalculate_costs(artifact.parent)
+    measurement = json.loads((artifact.parent / "measurement.json").read_text())
+    if (report["run_status"] != "completed"
+            or len(records) != measurement["planned_test_examples"]):
+        raise ValueError("Cannot evaluate incomplete benchmark: prediction sample IDs "
+                         "must cover the completed test run; partial predictions are retained")
     if {r.sample_id for r in records} != set(report["per_successful_sample"]):
         raise ValueError("Prediction sample IDs do not match the inference usage ledger")
     values = {"total_cost_usd": report["total_cost_usd"],

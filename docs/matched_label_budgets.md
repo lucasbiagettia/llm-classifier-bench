@@ -1,4 +1,4 @@
-# Matched labeled-example budgets — issue #14
+# Matched labeled-example budgets
 
 Both maintained Banking77 campaign scripts support a separate matched-budget
 comparison. A budget is a pool of **distinct labeled examples**, supplied as
@@ -141,11 +141,6 @@ Each run retains:
   `unsupported` (with reason), and `failed`. Unsupported cells carry no quality
   metrics and must not be silently omitted when reporting matrix coverage.
 
-Offline tests use real sklearn training, deterministic fixture embeddings,
-recorded mock OpenAI requests, and Emissary preparation plans. They exercise both
-campaign entry points, nested/shared pools, validation exposure, partial coverage,
-context preflight/provider rejection, source shortages and whole-campaign job
-bounds. The saved smoke in `artifacts/matched_budget_validation/issue14` is
-reproduced by `scripts/probe_matched_budgets.py`; it is implementation evidence,
-not comparative model-quality or provider-performance evidence. See the
-[validation note](matched_budget_validation.md) for recorded results.
+To check pool selection locally without provider calls, run
+`PYTHONPATH=src python scripts/probe_matched_budgets.py`. It uses real TF-IDF and
+simulated OpenAI responses; its outputs validate execution, not model quality.

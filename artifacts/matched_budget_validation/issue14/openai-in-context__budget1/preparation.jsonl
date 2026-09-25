@@ -1,2 +1,0 @@
-{"event_id": "prep-000000", "parent_id": null, "name": "prepare", "category": "parent", "details": {}, "status": "success", "start_ns": 166727, "end_ns": 171378, "elapsed_ms": 0.004651}
-{"event_id": "prep-000001", "parent_id": null, "name": "fit", "category": "parent", "details": {}, "status": "success", "start_ns": 465556, "end_ns": 502061, "elapsed_ms": 0.036505}

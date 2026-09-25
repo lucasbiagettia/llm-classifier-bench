@@ -18,7 +18,7 @@ from llm_classifier_bench.runner import BenchmarkRunConfig, run_benchmark
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output-root',type=Path,default=Path('artifacts/preparation_validation/issue12'))
+    parser.add_argument('--output-root',type=Path,default=Path('artifacts/preparation_checks'))
     args=parser.parse_args()
     pricing=Path(__file__).resolve().parents[1]/'pricing/self_hosted_reference.json'
     revision=subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip()

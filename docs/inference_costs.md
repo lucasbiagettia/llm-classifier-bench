@@ -1,4 +1,4 @@
-# Inference usage and cost — issue #10
+# Inference usage and cost
 
 ## Scope and outputs
 
@@ -30,8 +30,9 @@ evaluation examples. The runner still stops at the first failure. If a batch fai
 none of its outputs are accepted; the submitted batch counts as unsuccessful even
 if a sequential adapter processed only part of it. Only actual recorded API
 attempts are priced. Use batch size 1 for exact per-request failure attribution.
-Failed runs retain their usage/cost reports even though the final prediction file
-may never be written. Preparation is excluded and belongs to issue #12.
+Failed runs retain their usage/cost reports and previously validated prediction
+batches. Their per-prediction costs may remain unreconciled; use the ledger for
+accounting. Preparation is excluded; see [preparation costs](preparation_costs.md).
 
 ## Usage, retries and missing information
 
@@ -124,46 +125,22 @@ before classifier preparation or inference.
 
 ```bash
 # Regenerate from the exact saved pricing and usage; no inference/network.
-PYTHONPATH=src venv/bin/python scripts/report_costs.py artifacts/runs/RUN_ID
+PYTHONPATH=src python scripts/report_costs.py artifacts/runs/RUN_ID
 
 # Compare a different card without modifying the original run.
-PYTHONPATH=src venv/bin/python scripts/report_costs.py artifacts/runs/RUN_ID \
+PYTHONPATH=src python scripts/report_costs.py artifacts/runs/RUN_ID \
   --pricing path/to/alternative-pricing.json \
   --output artifacts/repricing/RUN_ID.md \
   --json-output artifacts/repricing/RUN_ID.json
 
 # Small offline validation: simulated API usage + real TF-IDF CPU inference.
-PYTHONPATH=src venv/bin/python scripts/probe_costs.py \
-  --output-root artifacts/cost_validation/issue10
+PYTHONPATH=src python scripts/probe_costs.py \
+  --output-root artifacts/cost_checks
 ```
 
 The replay command refuses to overwrite existing files inside the source run.
 Repricing produces an alternative report; it does not rewrite saved predictions
 or their original metrics. Reports include usage and selected-pricing hashes.
-
-## Known-usage validation
-
-The probe uses the real OpenAI adapter/runner with an injected deterministic client;
-**all API responses and token counts are simulated, with no provider requests or
-charges**. Its local TF-IDF run executes actual CPU inference. These checks validate
-accounting, not model quality, representative performance or provider invoices.
-
-| Case | Independent expectation |
-| --- | --- |
-| One simulated response: 1,000 input, 400 cached, 100 output including 20 reasoning | `(600×0.05 + 400×0.005 + 100×0.40)/1e6 = USD 0.000072` |
-| Three accepted predictions plus one warmup | USD 0.000288 total; USD 0.096 / 1,000 successes |
-| One accepted response plus invalid-label response using 200 uncached input / 10 output | USD 0.000086 total; USD 0.086 / 1,000 successes; failure fraction 0.5 |
-| Local TF-IDF including warmup | Sum saved inference durations × documented illustrative hourly rate |
-
-Evidence is saved under [`artifacts/cost_validation/issue10`](../artifacts/cost_validation/issue10).
-Tests additionally cover partial failed batches, unknown usage, hidden retries,
-explicit billed retry events, observed charges, wrong-device rates, invalid prices,
-independent repricing, legacy metrics compatibility and sample identity checks.
-
-Offline regression result: **192 passed, 3 integration tests deselected** with
-`PYTHONPATH=src venv/bin/pytest -q -m 'not integration'`. No paid API validation
-was performed. The evidence records the committed code revision and whether its
-working tree was clean when the probe started.
 
 ## Extension: self-hosted inference scenarios
 
@@ -175,4 +152,4 @@ rate additionally requires an exact recorded `--hardware-profile` match; the
 original `cloud_equivalent` interpretation remains supported.
 
 See [formulas, rate scope, commands and limitations](self_hosted_inference_costs.md).
-Preparation/amortization remains complementary scope in #12; FLOPs are optional.
+See [preparation investment and amortization](preparation_costs.md) for training costs.

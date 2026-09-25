@@ -46,13 +46,6 @@ def validate_budget_arguments(args):
         if args.emissary_mechanism is None:
             matched.dry_run = True
         validate_emissary_arguments(matched)
-        configs = emissary_configs(matched)
-        cells = len(set(args.seeds)) * len(set(args.class_counts))
-        if cells > 1 and any(c.dataset_id or c.training_job_id or c.deployment_id for c in configs):
-            raise ValueError("Continuation IDs require exactly one seed/class-count condition")
-        jobs = sum(c.uses_project_fine_tuning and c.training_job_id is None for c in configs) * cells
-        if not args.dry_run and jobs and jobs > (args.emissary_max_training_jobs or 0):
-            raise ValueError(f"Matched campaign requires a bound of at least {jobs} new training jobs")
 
 
 def budget_conditions(args, seed):

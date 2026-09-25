@@ -1,4 +1,4 @@
-# Preparation investment and amortization — issue #12
+# Preparation investment and amortization
 
 Inference remains the primary cost comparison. Preparation is now recorded as a
 separate incremental investment, with offline amortization over 1,000, 10,000 and
@@ -80,7 +80,7 @@ Default local estimate:
 preparation USD = (prepare wall ms + fit wall ms) / 3,600,000 × whole-allocation USD/hour
 ```
 
-Use the #10 rate-card conventions: USD currency, source, effective date, resource
+Use the [inference rate-card conventions](inference_costs.md): USD currency, source, effective date, resource
 description and assumptions. `measured_hardware` rates require a matching device
 and recorded hardware profile. `cloud_equivalent` rates are explicitly illustrative,
 not owned-machine bills or claims of equivalent cloud performance. The whole
@@ -123,7 +123,7 @@ are not independently verified by this offline reporter.
 
 Choose the inference scenario explicitly:
 
-- `continuous`: #10's volume projection, including one measured inference warmup.
+- `continuous`: the inference volume projection, including one measured inference warmup.
 - `deployed`: the declared allocation-hours price, including idle time; infeasible
   volumes remain unavailable. `--deployment-hours` is required.
 - `recorded_api`: recorded evaluation spend / valid outputs × volume, plus recorded
@@ -136,15 +136,15 @@ amortized USD/valid prediction = preparation USD / volume + inference scenario U
 ```bash
 # New local fixture: no model download, credentials or paid calls.
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src \
-  venv/bin/python scripts/probe_preparation.py --output-root /tmp/preparation-check
+  python scripts/probe_preparation.py --output-root /tmp/preparation-check
 
 # Offline continuous projection; optional --pricing selects another rate card.
-PYTHONPATH=src venv/bin/python scripts/report_preparation.py \
+PYTHONPATH=src python scripts/report_preparation.py \
   /tmp/preparation-check/local-tfidf --inference-scenario continuous \
   --output /tmp/preparation-continuous.md --json-output /tmp/preparation-continuous.json
 
 # Offline deployed projection; this command does not deploy anything.
-PYTHONPATH=src venv/bin/python scripts/report_preparation.py \
+PYTHONPATH=src python scripts/report_preparation.py \
   /tmp/preparation-check/local-tfidf --inference-scenario deployed \
   --deployment-hours 24 --volumes 1000 10000 100000 \
   --output /tmp/preparation-deployed.md --json-output /tmp/preparation-deployed.json
@@ -160,31 +160,3 @@ Historical runs without preparation stage records require new measurements for
 this metric. They still support their existing inference reports. No historical
 preparation cost is reconstructed from inference latency or current machine speed.
 Original evidence is never overwritten by the report CLI.
-
-## Validation
-
-The offline suite checks interval nesting/overlap, duplicate evidence, selected-fit
-identity, explicit bills, unknown provider costs, failure durability, source-file
-immutability and all amortization scenarios. It also verifies real TF-IDF outputs
-against an uninstrumented fit using the same split; checks real LR with a fixture
-encoder; and runs BERT's adapter lifecycle with a small local Torch model/tokenizer
-without downloading BERT. Existing mocked Emissary lifecycle tests verify remote
-stage capture and unavailable billing.
-
-Independent arithmetic fixture: four hours of parent preparation at USD 2/hour
-cost USD 8; the selected half-hour candidate contributes USD 1 **within** that USD 8.
-A documented five-hour allocation costs USD 10 instead; an observed USD 12 charge
-replaces either estimate. Preparation USD 10 plus inference USD 3 over 1,000 valid
-outputs gives USD 0.013/output. Hosted inference uses evaluation USD 2 per 100 outputs
-plus warmup USD 1: 1,000 outputs cost USD 21, not USD 30.
-
-Real CPU fixture evidence is in [`artifacts/preparation_validation/issue12`](../artifacts/preparation_validation/issue12).
-It includes committed-code identity, exact configuration, selected candidate,
-individual stage records, cost assumptions and both continuous/deployed amortization
-reports. Tiny repeated-domain fixtures validate accounting, not production
-performance, provider bills or GPU cost. No paid services or deployments are needed.
-
-Validation command: `PYTHONPATH=src venv/bin/pytest -q -m 'not integration'`:
-**223 passed, 3 external integration tests deselected**. No paid API validation
-was performed. The real fixture's `validation.json` records the exact committed
-code revision and working-tree state used to produce its evidence.

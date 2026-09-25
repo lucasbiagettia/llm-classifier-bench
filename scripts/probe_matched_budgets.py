@@ -37,7 +37,7 @@ def load(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--output-root", type=Path, default=Path("artifacts/matched_budget_validation/issue14"))
+    parser.add_argument("--output-root", type=Path, default=Path("artifacts/matched_budget_checks"))
     args = parser.parse_args()
     revision = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
     dirty = bool(subprocess.check_output(["git", "status", "--porcelain"], text=True))

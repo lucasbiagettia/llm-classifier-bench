@@ -11,6 +11,20 @@ The current implementation supports five classifier families:
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
 - **TF-IDF + Logistic Regression** — supervised sparse lexical baseline.
 
+## Documentation
+
+- [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
+- [Frozen class definitions](docs/class_definitions.md)
+- [Matched labeled-example budgets](docs/matched_label_budgets.md)
+- [Emissary configuration](docs/emissary_few_shot.md) and [adapter contract](docs/emissary_contract.md)
+- [Latency and throughput](docs/latency_measurement.md)
+- [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
+
+Generated runs and reports belong in `artifacts/`, which is ignored by Git.
+The repository ships code, frozen class definitions and example rate cards;
+it does not include pilot results or claim a published benchmark ranking.
+Keep complete run directories when sharing results so measurements can be audited.
+
 ## Experimental lifecycle
 
 Every classifier implements the same lifecycle:
@@ -51,13 +65,15 @@ src/llm_classifier_bench/config.py
 Current defaults:
 
 ```text
-OpenAI:             gpt-5-nano-2025-08-07
+OpenAI:             gpt-5-nano
 OpenAI reasoning:   minimal
 BERT:               google-bert/bert-base-uncased
 SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
 ```
 
-The OpenAI snapshot is intentionally pinned for reproducibility. Change the config deliberately when benchmarking another model.
+The OpenAI default is a model alias. For a reproducible campaign, select an
+available dated model identifier explicitly with `--openai-model` and retain the
+resolved model recorded in the artifacts.
 
 ## Supervision regimes
 
@@ -100,7 +116,7 @@ class Classifier(Protocol):
 
 `Prediction` remains the common output contract. Probabilities and confidence are optional.
 
-OpenAI uses strict JSON Schema Structured Outputs and explicitly sets GPT-5 reasoning effort to `minimal` for the latency-sensitive classification baseline. The requested model snapshot and reasoning effort are persisted in run configuration.
+OpenAI uses strict JSON Schema Structured Outputs and explicitly sets GPT-5 reasoning effort to `minimal` for the latency-sensitive classification baseline. The requested model identifier and reasoning effort are persisted in run configuration.
 
 OpenAI intentionally returns `confidence=None` and `probabilities=None`; the benchmark does not use model self-reported confidence as probabilistic evidence. Metrics that require probabilities therefore become unavailable for that classifier.
 
@@ -125,8 +141,8 @@ It:
 
 Accuracy ties retain the first configured C. The runner saves candidate scores,
 selected C, and probability label order in `fit_metadata.json`.
-See the [calibration audit](docs/calibration_audit_v2.md) for the verified
-five-class underconfidence result and its regularization explanation.
+Validation-accuracy ties can select a strongly regularized, underconfident model;
+accuracy and probability quality should be reported separately.
 
 This is intentionally different from BERT fine-tuning: it measures the strength of frozen semantic features plus a shallow supervised classifier.
 
@@ -149,7 +165,7 @@ Both maintained campaign entry points, `run_banking77_scaling_benchmark.py` and
 `run_banking77_scaling_benchmark_v2.py`, support `--classifiers tfidf`; existing
 default classifier lists are unchanged. They use the same condition sampling and
 runner split as other classifiers, and include TF-IDF in summary CSV/JSON quality,
-calibration, and latency results. The historical `_copy.py` script is not maintained.
+calibration, and latency results.
 TF-IDF-only selection creates no API clients, generates no definitions, and loads
 no transformer models. The campaigns reuse the checked-in definition profile.
 
@@ -166,7 +182,7 @@ PYTHONPATH=src python scripts/run_banking77_scaling_benchmark_v2.py \
   --classifiers tfidf --class-counts 5 --seeds 42 \
   --train-per-class 12 --test-per-class 2 \
   --min-train-per-class 12 --min-test-per-class 2 --strict-support \
-  --validation-fraction 0.25 --output-root artifacts/tfidf_validation_v2
+  --validation-fraction 0.25 --output-root artifacts/tfidf_campaign
 ```
 
 For the original campaign entry point, use the same command with its filename and
@@ -174,8 +190,8 @@ omit the three v2 support options (`--min-train-per-class`, `--min-test-per-clas
 `--strict-support`). Both expose `--tfidf-c-values`, `--tfidf-fallback-c`,
 `--tfidf-ngram-range`, `--[no-]tfidf-lowercase`, `--tfidf-min-df`,
 `--tfidf-max-features`, `--tfidf-sublinear-tf`, and `--tfidf-max-iter`.
-For cache-only validation, see [TFIDF_VALIDATION.md](TFIDF_VALIDATION.md) for the
-existing CSV loader limitation and the executed cached-Arrow command.
+The Banking77 CSV loader may resolve source URLs even when a dataset cache exists;
+the local fixture above is the supported smoke check without network access.
 Smoke results verify execution and are not publishable benchmark findings.
 
 #### Saved settings and reproduction
@@ -205,7 +221,7 @@ from llm_classifier_bench.config import TfidfTrainingConfig
 from llm_classifier_bench.core import ClassDefinition
 from llm_classifier_bench.datasets import get_dataset
 
-run = Path("artifacts/tfidf_validation_v2/<campaign>/runs/<run>")
+run = Path("artifacts/tfidf_campaign/<campaign>/runs/<run>")
 config = json.loads((run / "config.json").read_text())
 fit = json.loads((run / "fit_metadata.json").read_text())
 settings = config["classifier"]["training"]
@@ -241,9 +257,9 @@ load dataset
 -> prepare classifier
 -> fit classifier
 -> persist optional fit_metadata.json
--> predict untouched test
--> validate Prediction contract
--> write predictions.jsonl
+-> predict untouched test in batches
+-> validate and append each successful batch to predictions.jsonl
+-> atomically reconcile prediction costs after inference
 -> compute metrics.json
 ```
 
@@ -266,9 +282,9 @@ client uses no automatic retries and a 120-second timeout.
 
 ```bash
 OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 PYTHONPATH=src \
-  venv/bin/python scripts/probe_latency.py --run-id local-timing
+  python scripts/probe_latency.py --run-id local-timing
 
-PYTHONPATH=src venv/bin/python scripts/report_operational.py \
+PYTHONPATH=src python scripts/report_operational.py \
   artifacts/latency_smoke/local-timing --output /tmp/local-timing.md
 ```
 
@@ -387,7 +403,33 @@ artifacts/runs/<run_id>/
 
 `config.json` records the exact fit-train, validation, and final-test sample IDs plus split seed and classifier configuration where available. For zero-shot classifiers it also records `training_examples_used=0` and `validation_examples_used=0`, so the existence of dataset train partitions cannot be mistaken for labeled supervision actually consumed by the classifier.
 
-`predictions.jsonl` is the primary reproducibility artifact. Metrics can be recalculated from it without repeating model/API inference.
+`predictions.jsonl` is the primary reproducibility artifact. Each validated batch is
+saved before the next inference call. A later failure or Ctrl-C preserves earlier
+batches, and Ctrl-C is recorded as a failed call/run before being re-raised.
+Incomplete rows have `cost_reconciled=false` and unavailable per-prediction costs;
+the usage ledger remains the accounting source. Final cost enrichment replaces
+the file atomically, so a reporting failure cannot truncate saved predictions.
+This does not add automatic resume or recover results inside a failed batch.
+
+Metrics can be recalculated without repeating model/API inference. Duplicate
+sample IDs are rejected. For runner artifacts with a usage ledger, reevaluation
+requires a completed measurement and the full test population; retained partial
+predictions are not treated as a complete benchmark.
+
+Adaptive ECE keeps identical confidence values in one bin. Equal-frequency
+boundaries move to the end of a tie, possibly reducing the number of bins. Its
+metadata identifies this policy as `equal_frequency_preserve_ties_v2`. Historical
+metrics are not rewritten automatically; reevaluation may change Adaptive ECE
+when ties crossed old bin boundaries.
+
+The Emissary adapter, runner and default probability metrics share an absolute
+sum tolerance of `1e-4` (zero relative tolerance). Small rounding errors are
+accepted consistently without changing the reported probabilities; non-finite,
+out-of-range values and larger sum errors remain invalid.
+
+Classifier inputs retain only provenance metadata (`dataset`, `source`, `split`,
+`row_index`). Raw labels and arbitrary target-bearing dataset metadata stay on
+the labeled examples and are not forwarded by `as_input()`.
 
 ## Datasets
 
@@ -424,10 +466,8 @@ the routing experiment. Report that mechanism/model confound when comparing it
 with zero-shot. Live training additionally requires an explicit unknown-cost
 acknowledgement and a bound on newly created training jobs.
 
-See [configuration, exact commands and artifacts](docs/emissary_few_shot.md),
-[verified API contract and limitations](docs/emissary_contract.md), and
-[offline and live validation evidence](docs/emissary_validation.md). The 5/100
-smoke configuration uses total shots, as confirmed for the authorized live run.
+See [configuration, commands and artifacts](docs/emissary_few_shot.md) and
+[the adapter contract and limitations](docs/emissary_contract.md).
 
 ## Inference cost accounting
 
@@ -437,8 +477,8 @@ never mean free inference. Both maintained campaigns accept an optional
 `--pricing pricing/inference_2026-09-16.json` rate card. Reprice without new calls
 using `scripts/report_costs.py`.
 
-See [cost conventions, commands and validation](docs/inference_costs.md) and the
-[proposal for preparation costs (#12)](docs/preparation_costs_brief.md).
+See [inference cost conventions and commands](docs/inference_costs.md) and
+[preparation investment and amortization](docs/preparation_costs.md).
 
 For local classifiers, cost reports also show continuous-throughput projections
 and optional deployed-allocation costs including idle time. Use

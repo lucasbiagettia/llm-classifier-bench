@@ -1,7 +1,8 @@
 .venv/
+venv/
 __pycache__/
 *.py[cod]
 .pytest_cache/
 .env
-artifacts/probes/*.jsonl
+/artifacts/
 CLAUDE.md
