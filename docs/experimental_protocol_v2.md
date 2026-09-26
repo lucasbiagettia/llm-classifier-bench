@@ -1,13 +1,19 @@
 # Experimental protocol and interpreting results (v1.3)
 
-## Active v2 campaign: paused
+## Active v2 scope: small experiment, not running
 
-The [revised experiment design](../reports/v2/protocol.md) is the authoritative
-release scope. **OpenAI is zero-shot only**; prior 5/100-shot OpenAI runs are
-retained as historical evidence and excluded from the v2 comparison. All runs
-are stopped pending a new instruction. The design records remaining work, exact
-resume commands, uncertainty, and the [offline BERT review](../reports/v2/bert_review.md).
-The generic adapter capabilities described below do not expand this release scope.
+The [small experiment design](../reports/v2/protocol.md) supersedes the earlier
+large matrices: Banking77 with **5/10/15/20 classes, seed 42, 30 test examples per
+class**, or **1,500 predictions per method**. OpenAI is **zero-shot only**. The
+three local methods each use one 50-example/class recipe; BERT has two epochs
+and a 30-minute total wall-time budget. Emissary Quick Train and Projects SFT
+remain separately listed but blocked. There is no repeated-seed or budget sweep.
+
+This is a small exploratory experiment. One seed intentionally departs from the
+original #15 three-seed default; between-seed uncertainty is not estimated.
+Previous large-campaign evidence is retained separately, not silently pooled.
+Nothing is executing or scheduled. The generic capabilities below do not expand
+this scope; the new [manifest](../reports/v2/matrix_small.json) is authoritative.
 
 The benchmark compares classification quality, calibration, latency and cost.
 A result describes a particular dataset, label set, supervision budget, model and

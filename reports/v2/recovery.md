@@ -1,3 +1,5 @@
+> Retired by the 2026-09-26 [small design](protocol.md). Historical live recovery is disabled.
+
 # Recovery amendment 1 — historical scope
 
 **Current scope:** execution is paused; OpenAI recovery now permits budget 0 only.

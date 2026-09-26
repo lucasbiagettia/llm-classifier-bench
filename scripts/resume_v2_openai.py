@@ -48,6 +48,8 @@ def main():
     parser.add_argument('--budgets',type=int,nargs='+',choices=[0],default=[0], help='Release scope permits OpenAI zero-shot only')
     parser.add_argument('--manifest',type=Path,default=Path('reports/v2/matrix_next.json'))
     args=parser.parse_args(); root=args.root
+    if args.execute:
+        parser.error('Historical recovery is retired. Use the small-v2 plan in reports/v2/protocol.md.')
     manifest=json.loads(args.manifest.read_text())
     if any(c['method']=='openai' and c['budget']!=0 for c in manifest['cells']):
         raise ValueError('OpenAI must be zero-shot in the release plan')

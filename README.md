@@ -14,7 +14,7 @@ The current implementation supports six classifier families:
 
 ## Documentation
 
-- [V2 experiment design and paused execution state](reports/v2/protocol.md)
+- [Small v2 experiment design: 1,500 predictions per method](reports/v2/protocol.md)
 - [BERT environment and saved-results review](reports/v2/bert_review.md)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
@@ -26,8 +26,10 @@ The current implementation supports six classifier families:
 
 Raw runs and ledgers belong in `artifacts/`, which is ignored by Git. Versioned
 publication material belongs in `reports/v2/`; the extended report and English
-brief are still pending. The campaign is paused, and its revised scope uses
-**OpenAI zero-shot only**. No v2.0.0 release or final benchmark ranking is published.
+brief are still pending. The small campaign is prepared but not running:
+**5/10/15/20 classes, one seed, 1,500 predictions per method**, with **OpenAI zero-shot only**. BERT has four fits
+and a 30-minute total time budget. See the design for blocked Emissary techniques.
+No v2.0.0 release or final benchmark ranking is published.
 Keep complete run directories when sharing results so measurements can be audited.
 
 ## Experimental lifecycle
