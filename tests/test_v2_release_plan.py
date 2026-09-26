@@ -8,6 +8,7 @@ import sys
 import pytest
 
 ROOT = Path(__file__).parents[1]
+sys.path.insert(0, str(ROOT/'scripts'))
 spec = importlib.util.spec_from_file_location('release_plan', ROOT/'scripts/run_v2_release.py')
 release = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(release)
@@ -25,7 +26,7 @@ def test_small_matrix_bounds_and_openai_zero_shot():
     for method in release.METHODS:
         selected = [c for c in ready if c['method']==method]
         assert len(selected) == 4
-        assert sum(c['test_examples'] for c in selected) == 1500
+        assert sum(c['test_examples'] for c in selected) == 2000
     for cell in cells:
         if cell['availability'] != 'ready':
             with pytest.raises(ValueError, match='Blocked'):
@@ -34,10 +35,11 @@ def test_small_matrix_bounds_and_openai_zero_shot():
         command = release.command_for(cell, manifest, Path('/tmp/never-executed'))
         if cell['method']=='openai':
             assert cell['budget']==0
-            assert command[command.index('--matched-budgets')+1]=='0'
+            assert command[command.index('--cell')+1]==cell['id']
+            assert command[command.index('--manifest')+1]=='reports/v2/matrix_small.json'
         if cell['method']=='bert':
-            assert command[command.index('--bert-epochs')+1]=='2'
-            assert command[command.index('--matched-budgets')+1]=='50'
+            assert manifest['common_arguments'][manifest['common_arguments'].index('--bert-epochs')+1]=='2'
+            assert cell['budget']==50
     assert manifest['limits']['bert_total_wall_seconds']==1800
     assert manifest['limits']['new_emissary_training_jobs']==0
 
@@ -74,7 +76,7 @@ def test_default_is_plan_only_and_creates_no_run_directory(tmp_path):
     result=subprocess.run([sys.executable,str(ROOT/'scripts/run_v2_release.py'),
                            '--only','openai','--root',str(output)],
                           cwd=ROOT,capture_output=True,text=True,check=True)
-    assert '4 executable conditions, 1500 maximum evaluation calls' in result.stdout
+    assert '4 executable conditions, 2000 evaluation examples; reused=700, maximum new prediction calls=1300' in result.stdout
     assert not output.exists()
 
 
@@ -89,7 +91,9 @@ def test_exhausted_bert_budget_cannot_launch_more_work(monkeypatch, tmp_path):
     def forbidden(*args,**kwargs):
         pytest.fail('Exhausted budget must never launch a condition')
     monkeypatch.setattr(release,'run_condition',forbidden)
-    release.main()
+    with pytest.raises(SystemExit) as error:
+        release.main()
+    assert error.value.code==2
     saved=json.loads((tmp_path/'execution.json').read_text())
     assert len(saved['cells'])==4
     assert all(c['status']=='not_run' for c in saved['cells'].values())

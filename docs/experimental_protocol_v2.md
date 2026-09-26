@@ -3,8 +3,8 @@
 ## Active v2 scope: small experiment, not running
 
 The [small experiment design](../reports/v2/protocol.md) supersedes the earlier
-large matrices: Banking77 with **5/10/15/20 classes, seed 42, 30 test examples per
-class**, or **1,500 predictions per method**. OpenAI is **zero-shot only**. The
+large matrices: Banking77 with **5/10/15/20 classes, seed 42, 40 test examples per
+class**, or **2,000 predictions per method**. OpenAI is **zero-shot only**. The
 three local methods each use one 50-example/class recipe; BERT has two epochs
 and a 30-minute total wall-time budget. Emissary Quick Train and Projects SFT
 remain separately listed but blocked. There is no repeated-seed or budget sweep.

@@ -14,7 +14,7 @@ The current implementation supports six classifier families:
 
 ## Documentation
 
-- [Small v2 experiment design: 1,500 predictions per method](reports/v2/protocol.md)
+- [Small v2 experiment design: 2,000 predictions per method](reports/v2/protocol.md)
 - [BERT environment and saved-results review](reports/v2/bert_review.md)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
@@ -27,8 +27,18 @@ The current implementation supports six classifier families:
 Raw runs and ledgers belong in `artifacts/`, which is ignored by Git. Versioned
 publication material belongs in `reports/v2/`; the extended report and English
 brief are still pending. The small campaign is prepared but not running:
-**5/10/15/20 classes, one seed, 1,500 predictions per method**, with **OpenAI zero-shot only**. BERT has four fits
-and a 30-minute total time budget. See the design for blocked Emissary techniques.
+**5/10/15/20 classes, one seed, 2,000 predictions per method**, with **OpenAI zero-shot only**. BERT has four fits
+and a 30-minute total time budget. See the design for blocked Emissary techniques. We retain 1,700 verified
+predictions, so OpenAI needs only 1,300 new zero-shot calls. To run the prepared
+matrix with progress logs (this starts the experiment):
+
+```bash
+bash scripts/run_small_experiment.sh
+```
+
+Follow `artifacts/v2_small/run.log`; completion details are in
+`artifacts/v2_small/summary.json`. Exit 2 indicates a failed/incomplete condition.
+The same command skips previous attempts without retrying them.
 No v2.0.0 release or final benchmark ranking is published.
 Keep complete run directories when sharing results so measurements can be audited.
 

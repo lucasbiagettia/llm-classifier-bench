@@ -2,24 +2,24 @@
 
 This **2026-09-26** design replaces the earlier large matrices at the user's
 request. No training, inference, recovery or scheduled execution is authorized
-by preparing this plan. Historical results stay in `artifacts/v2_release/`;
-new results belong in `artifacts/v2_small/` and must not be silently pooled with
-those exploratory runs. The former large-campaign recovery command is retired.
+by preparing this plan. Verified compatible evidence is retained in `artifacts/reusable/`; superseded
+run directories were moved to OS trash after an exhaustive inventory. New results
+belong in `artifacts/v2_small/`. See [the cleanup audit](cleanup.json). The former large-campaign recovery command is retired.
 
 ## Size and methods
 
 Banking77, seed **42 only**, nested cardinalities **5, 10, 15, 20**, with
-**30 held-out test examples per class**. Each method/technique has four conditions:
+**40 held-out test examples per class**. Each method/technique has four conditions:
 
 | Classes | Test predictions |
 | ---: | ---: |
-| 5 | 150 |
-| 10 | 300 |
-| 15 | 450 |
-| 20 | 600 |
-| **Total per method/technique** | **1,500** |
+| 5 | 200 |
+| 10 | 400 |
+| 15 | 600 |
+| 20 | 800 |
+| **Total per method/technique** | **2,000** |
 
-This is 1,500 evaluation calls across cardinalities, not 1,500 unique texts: shared
+This is 2,000 evaluated predictions across cardinalities, not 2,000 unique texts: shared
 classes have the same sampled test texts at each K. All methods use paired test
 IDs within each K. There is no repeated-seed or label-budget grid.
 
@@ -34,26 +34,29 @@ IDs within each K. There is no repeated-seed or label-budget grid.
 | Frozen MiniLM + logistic regression | 50/class, fixed C=1 | 4 | Ready |
 | TF-IDF + logistic regression | 50/class, fixed C=1 | 4 | Ready |
 
-**24 executable conditions**, up to **9,000 evaluation calls**: 4,500 hosted and
-4,500 local. Eight Emissary variant cells stay explicitly blocked and make **zero
+**24 executable conditions**, covering **12,000 predictions**: 6,000 hosted and
+6,000 local. Reuse supplies 1,700 hosted predictions, leaving at most **10,300 new
+prediction calls**: 4,300 hosted and 6,000 local. Eight Emissary variant cells stay explicitly blocked and make **zero
 calls and zero training jobs**. They are not replaced with another technique.
-If later enabled, each adds 1,500 predictions and Projects adds training work;
+If later enabled, each adds 2,000 predictions and Projects adds training work;
 that is an explicit scope extension. No 1,000-shot arm is included.
 
 ## Bounded execution
 
-- OpenAI: at most 1,500 prediction attempts for the default campaign directory,
+- OpenAI: at most **1,300 new** prediction attempts for the default campaign directory,
   all zero-shot. No demonstrations, warmup, automatic retries or paid pilots.
-- Emissary routing: at most 1,500 prediction attempts plus at most four routing
-  experiment creations. No Projects training or deployments in the executable plan.
-- Jev: at most 1,500 attempts, capped separately at 150/300/450/600 per condition.
+- Emissary routing: at most **1,300 new** prediction attempts plus **one** routing
+  experiment creation (K=15); reuse the pinned K=5/10/20 experiments. No Projects training or deployments in the executable plan.
+- Jev: at most **1,700 new** attempts, capped at 100/200/600/800 per condition.
   No retries or warmup; retain invalid responses as failures without renormalization.
 - BERT: **four fits**, two epochs each, batch 16; no C/epoch sweep or second
   reference campaign. Maximum **10 minutes per condition**, **30 minutes total**
   for BERT, including loading, fitting and inference. Timeouts are incomplete
   results, not shorter successful fits. A five-second interrupt grace period can
   precede forced termination. Runtime may exceed the budget slightly during cleanup.
-- All conditions have a ten-minute wall-time limit. The launcher is sequential,
+- Local conditions have a ten-minute wall-time limit; hosted conditions have
+  thirty minutes. The saved OpenAI latency averages roughly one second per
+  prediction, so K=15 needs more than ten minutes even without retries. The launcher is sequential,
   takes an execution lock and stops its active subprocess group on interrupt,
   termination or timeout. A conversational session interruption does not necessarily
   signal the launcher; its own wall-time limits remain necessary.
@@ -65,11 +68,28 @@ These are call/time limits, not a monetary ceiling. Unknown provider charges sta
 unknown. Use saved usage for cost reporting, including failed attempts. Prices
 come only from the recorded dated rate card, not an assertion about today's bill.
 
+## Reuse
+
+Eight complete zero-shot runs contribute **1,700 predictions**: OpenAI 700,
+Emissary 700 and Jev 300. Reuse requires exact source hashes, class definitions
+and order, test ID/text/gold identity, zero supervision and matching model/prompt
+settings. All retained artifact hashes are checked. No partial failed run or old
+local fit is reused. The old local training budgets/recipes differ from this plan.
+Missing examples alone are sent to providers. The same command never automatically
+repeats an attempted condition, even after failure or interruption.
+
+Consolidated `predictions.jsonl` and quality metrics cover the complete paired test
+set. Historical and new latency, usage, preparation and costs remain separate
+with pointers to their original evidence. A complete prediction file with failed
+finalization still counts as failed. Do not erase historical spending or count it
+again as new spending. Selected historical runs are complete-run survivors; disclose
+that reuse/availability selection when interpreting provider reliability.
+
 ## Data, training and reproducibility
 
 Use the existing immutable Banking77 CSV revision
 `57ec275d8078af65b7731c2a98be812d844a6d6b` and SHA-256 checks. Keep the existing
-support pool: at least 125 source-train and 30 source-test examples per label;
+support pool: at least 125 source-train and 40 source-test examples per label;
 42 labels qualify. Keeping 125 source candidates does **not** mean training each
 model on 125 examples/class. Reserve 25/class, then choose 50/class from the
 remaining pool, identically for BERT, MiniLM and TF-IDF. No validation labels are
@@ -122,15 +142,35 @@ PYTHONPATH=src venv/bin/python scripts/run_v2_release.py
 PYTHONPATH=src venv/bin/python scripts/run_v2_release.py --only openai
 ```
 
-After an explicit new instruction to run, execute one method or the small matrix:
+The user can launch the prepared small matrix with:
 
 ```bash
-PYTHONPATH=src venv/bin/python scripts/run_v2_release.py --execute --only openai
-PYTHONPATH=src venv/bin/python scripts/run_v2_release.py --execute
+bash scripts/run_small_experiment.sh
+# Optional: select just one method
+bash scripts/run_small_experiment.sh --only openai
 ```
 
-The same output directory skips already attempted cells. Do not run either live
-command as part of preparing this design. Nothing is scheduled.
+Credentials are read from the existing `.env`. The wrapper uses `venv`, forces
+CPU/offline cached local models and sets the repository working directory. No
+command was executed against providers during preparation; nothing is scheduled.
+
+Progress prints with timestamps every 15 seconds, including method, K, stage,
+new/reused counts and elapsed time. Evidence under `artifacts/v2_small/`:
+
+- `run.log`: overall progress, skips and errors.
+- `logs/<cell>.log`: detailed provider/training output and traceback.
+- `summary.json` and `execution.json`: per-condition completion/failure and counts.
+- `cells/<cell>/`: full consolidated predictions/quality; `runs/new/` holds fresh
+  usage, timings, costs, configuration and sample IDs.
+- `manifest.json` and `execution_provenance.json`: frozen plan and executed code hashes.
+
+Exit code **0** means all selected executable conditions completed; **2** means
+at least one failed, timed out or could not run. Blocked Emissary techniques remain
+visible but do not by themselves cause exit 2. Other methods continue after an
+individual failure. Ctrl-C terminates the active subprocess group. Reusing the
+same directory skips all previous attempts; do not change `--root` to recover a
+failure, since a new directory can spend again. Bring back `summary.json` and logs
+for diagnosis/reporting, including partial runs.
 
 ## Reports
 

@@ -14,7 +14,7 @@ import time
 METHODS = ('tfidf', 'sentence-transformer', 'openai', 'emissary', 'jev', 'bert')
 CLASS_COUNTS = (5, 10, 15, 20)
 SEED = 42
-TEST_PER_CLASS = 30
+TEST_PER_CLASS = 40
 
 
 def cells():
@@ -34,15 +34,11 @@ def cells():
                    'test_examples': TEST_PER_CLASS * k, 'availability': 'blocked', 'reason': reason}
 
 
-def command_for(cell, manifest, output):
+def command_for(cell, manifest, output, manifest_path=Path('reports/v2/matrix_small.json')):
     if cell['availability'] != 'ready':
         raise ValueError('Blocked techniques cannot be executed by this launcher')
-    return [sys.executable, 'scripts/run_banking77_scaling_benchmark_v2.py',
-            *manifest['common_arguments'], '--classifiers', cell['method'],
-            '--seeds', str(cell['seed']), '--class-counts', str(cell['class_count']),
-            '--matched-budgets', str(cell['budget']), '--budget-unit', 'per_class',
-            '--validation-budget', '0', '--output-root', str(output),
-            '--jev-max-requests', str(cell['test_examples'])]
+    return [sys.executable, '-u', 'scripts/run_small_condition.py', '--manifest', str(manifest_path),
+            '--cell', cell['id'], '--output', str(output)]
 
 
 def stop_process_group(process):
@@ -64,14 +60,21 @@ def stop_process_group(process):
         process.wait()
 
 
-def run_condition(command, *, env, log, timeout_s):
+def run_condition(command, *, env, log, timeout_s, on_progress=None):
     process = subprocess.Popen(command, env=env, stdout=log, stderr=subprocess.STDOUT,
                                start_new_session=True)
+    deadline = time.monotonic() + timeout_s
     try:
-        return process.wait(timeout=timeout_s), False
-    except subprocess.TimeoutExpired:
-        stop_process_group(process)
-        return process.returncode, True
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                stop_process_group(process)
+                return process.returncode, True
+            try:
+                return process.wait(timeout=min(15, remaining)), False
+            except subprocess.TimeoutExpired:
+                if on_progress is not None:
+                    on_progress()
     except BaseException:
         stop_process_group(process)
         raise
@@ -98,15 +101,26 @@ def main():
         raise ValueError('Preserve the historical campaign; use a separate small-campaign directory')
     selected = [c for c in manifest['cells'] if not args.only or c['method'] in args.only]
     ready = [c for c in selected if c['availability'] == 'ready']
-    print(f"PLAN: {len(ready)} executable conditions, {sum(c['test_examples'] for c in ready)} "
-          'maximum evaluation calls; retries=0, warmup=0', flush=True)
+    total = sum(c['test_examples'] for c in ready)
+    reused = sum(manifest.get('reuse', {}).get(c['id'], {}).get('examples', 0) for c in ready)
+    print(f'PLAN: {len(ready)} executable conditions, {total} evaluation examples; '
+          f'reused={reused}, maximum new prediction calls={total-reused}; retries=0, warmup=0', flush=True)
     if not args.execute:
         for cell in selected:
-            print(json.dumps({'cell': cell, 'command': command_for(cell, manifest, args.root/'cells'/cell['id'])
+            print(json.dumps({'cell': cell, 'command': command_for(cell, manifest, args.root/'cells'/cell['id'], args.manifest)
                               if cell['availability']=='ready' else None}))
         return
-    env = {**os.environ, **manifest['environment'], 'PYTHONPATH': 'src'}
+    env = {**os.environ, **manifest['environment'], 'PYTHONPATH': 'src', 'PYTHONUNBUFFERED':'1'}
     args.root.mkdir(parents=True, exist_ok=True)
+    def report(message):
+        from datetime import datetime
+        line=f'{datetime.now().astimezone().isoformat(timespec="seconds")} | {message}'
+        print(line,flush=True)
+        with (args.root/'run.log').open('a') as stream: stream.write(line+'\n')
+    def save_state(state):
+        from _small_experiment import write_json
+        write_json(args.root/'execution.json',state)
+        write_json(args.root/'summary.json',list({'cell':key,**value} for key,value in state['cells'].items()))
     # A locked campaign cannot be launched again while its first process is alive.
     with (args.root/'execution.lock').open('a') as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -120,52 +134,93 @@ def main():
         else:
             state = {'manifest_sha256': hashlib.sha256(args.manifest.read_bytes()).hexdigest(),
                      'bert_accounted_wall_seconds': 0., 'cells': {}}
+        from _small_experiment import write_json
+        if not (args.root/'manifest.json').exists():
+            write_json(args.root/'manifest.json', manifest)
+            from datetime import datetime, timezone
+            write_json(args.root/'execution_provenance.json', {
+                'started_at_utc': datetime.now(timezone.utc).isoformat(),
+                'python': sys.version, 'argv': sys.argv,
+                'git_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                'git_status': subprocess.check_output(['git', 'status', '--porcelain'], text=True),
+                'code_sha256': {str(p): hashlib.sha256(p.read_bytes()).hexdigest()
+                                for root in ('src', 'scripts') for p in Path(root).rglob('*.py')},
+            })
+        report(f'RUN started | selected={len(selected)} | manifest={args.manifest}')
         for cell in selected:
             key = cell['id']; output = args.root/'cells'/key
             if key in state['cells'] or output.exists():
-                print(f'SKIP {key}: previous attempt retained; no automatic repetition', flush=True)
+                report(f'SKIP {key}: previous attempt retained; no automatic repetition')
                 continue
             if cell['availability'] != 'ready':
                 state['cells'][key] = {'status':'blocked', 'reason':cell['reason']}
-                state_path.write_text(json.dumps(state, indent=2)+'\n')
+                report(f'BLOCKED {key}: {cell["reason"]}')
+                save_state(state)
                 continue
-            timeout_s = manifest['limits']['condition_wall_seconds']
+            timeout_s = manifest['limits']['hosted_condition_wall_seconds'] if cell['method'] in ('openai','emissary','jev') else manifest['limits']['condition_wall_seconds']
             if cell['method'] == 'bert':
                 remaining = manifest['limits']['bert_total_wall_seconds'] - state['bert_accounted_wall_seconds']
                 timeout_s = min(timeout_s, remaining)
                 if timeout_s <= 0:
                     state['cells'][key] = {'status':'not_run', 'reason':'BERT campaign time budget exhausted'}
-                    state_path.write_text(json.dumps(state, indent=2)+'\n')
-                    print(f'SKIP {key}: BERT campaign time budget exhausted', flush=True)
+                    save_state(state)
+                    report(f'SKIP {key}: BERT campaign time budget exhausted')
                     continue
             logs = args.root/'logs'; logs.mkdir(exist_ok=True)
             state['cells'][key] = {'status':'running'}
             if cell['method']=='bert':
                 # Reserve first: an uncatchable kill must not reset the time budget.
                 state['bert_accounted_wall_seconds'] += timeout_s
-            state_path.write_text(json.dumps(state, indent=2)+'\n')
+            save_state(state)
             started = time.monotonic()
             try:
                 with (logs/f'{key}.log').open('x') as log:
-                    print(f'START {key}; wall-time limit {timeout_s:.0f}s', flush=True)
-                    code, timed_out = run_condition(command_for(cell, manifest, output),
-                                                   env=env, log=log, timeout_s=timeout_s)
-                statuses = sorted(output.glob('*/runs/*/status.json'))
-                status = json.loads(statuses[-1].read_text())['status'] if statuses else 'failed'
-                state['cells'][key] = {'status':'failed' if timed_out else status,
-                                      'returncode':code, 'time_limit_exceeded':timed_out}
+                    reused=manifest.get('reuse',{}).get(key,{}).get('examples',0)
+                    report(f'START {key} | total={cell["test_examples"]} reused={reused} new={cell["test_examples"]-reused} | limit={timeout_s:.0f}s | log={log.name}')
+                    def progress():
+                        stage='loading'
+                        statuses=sorted(output.glob('runs/*/status.json'))
+                        if statuses:
+                            try:stage=json.loads(statuses[-1].read_text()).get('stage','unknown')
+                            except (ValueError,OSError):stage='updating status'
+                        count=sum(sum(1 for line in p.open() if line.strip()) for p in output.glob('runs/*/predictions.jsonl'))
+                        report(f'PROGRESS {key} | stage={stage} | new={count}/{cell["test_examples"]-reused} reused={reused} | elapsed={time.monotonic()-started:.0f}s')
+                    code, timed_out = run_condition(command_for(cell, manifest, output, args.manifest),
+                                                   env=env, log=log, timeout_s=timeout_s,on_progress=progress)
+                if (output/'condition.json').exists():
+                    from _small_experiment import consolidate
+                    try:
+                        result=consolidate(output)
+                    except (ValueError, OSError) as exc:
+                        report(f'ERROR {key}: cannot consolidate evidence: {type(exc).__name__}: {exc}')
+                        result={'status':'failed','valid_examples':None,'reused_examples':reused}
+                else:
+                    result={'status':'failed','valid_examples':0,'reused_examples':0}
+                state['cells'][key] = {'status':'failed' if timed_out or code else result['status'],
+                    'valid_examples':result['valid_examples'],'reused_examples':result['reused_examples'],
+                    'planned_examples':cell['test_examples'],'returncode':code,'time_limit_exceeded':timed_out,
+                    'result_path':str(output/'result.json'),'log':str(logs/f'{key}.log')}
+                if result['status']!='completed' or timed_out:
+                    detail=result.get('new_attempt_status',{})
+                    report(f'ERROR {key} | type={detail.get("error_type")} stage={detail.get("stage")} | time_limit={timed_out}; see {logs/key}.log')
             except BaseException:
                 state['cells'][key] = {'status':'interrupted'}
+                report(f'STOPPED {key}; child process group terminated')
                 raise
             finally:
                 elapsed = time.monotonic()-started
                 state['cells'][key]['wall_seconds'] = elapsed
                 if cell['method']=='bert':
                     state['bert_accounted_wall_seconds'] += elapsed - timeout_s
-                state_path.write_text(json.dumps(state, indent=2)+'\n')
-            print(f"END {key}: {state['cells'][key]['status']}", flush=True)
+                save_state(state)
+            report(f"END {key}: {state['cells'][key]['status']} | elapsed={elapsed:.1f}s")
             if code and not timed_out:
-                raise RuntimeError('Condition process failed; remaining conditions were not started')
+                report('Condition process exited with an error; evidence retained; continuing other conditions')
+        from collections import Counter
+        counts=dict(Counter(v['status'] for v in state['cells'].values()))
+        report(f'RUN FINISHED | {counts} | summary={args.root/"summary.json"}')
+        if any(state['cells'].get(c['id'],{}).get('status')!='completed' for c in ready):
+            raise SystemExit(2)
 
 
 if __name__ == '__main__':
