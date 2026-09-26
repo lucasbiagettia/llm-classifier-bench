@@ -10,6 +10,7 @@ from dataclasses import replace
 import hashlib
 import json
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import time
 
 from run_banking77_scaling_benchmark_v2 import build_condition, StaticDataset
@@ -44,9 +45,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=Path('artifacts/v2_release'))
     parser.add_argument('--execute',action='store_true')
-    parser.add_argument('--budgets',type=int,nargs='+',default=[0,5,100])
+    parser.add_argument('--budgets',type=int,nargs='+',choices=[0],default=[0], help='Release scope permits OpenAI zero-shot only')
+    parser.add_argument('--manifest',type=Path,default=Path('reports/v2/matrix_next.json'))
     args=parser.parse_args(); root=args.root
-    manifest=json.loads((root/'matrix.json').read_text())
+    manifest=json.loads(args.manifest.read_text())
+    if any(c['method']=='openai' and c['budget']!=0 for c in manifest['cells']):
+        raise ValueError('OpenAI must be zero-shot in the release plan')
     for path, digest in manifest['input_sha256'].items():
         if hashlib.sha256(Path(path).read_bytes()).hexdigest()!=digest:
             raise ValueError(f'Frozen input changed: {path}')
@@ -61,7 +65,9 @@ def main():
         run=original[0].parent; state=json.loads(original[0].read_text())
         if state['status']!='failed' or state.get('error_type')!='RateLimitError': continue
         config=json.loads((run/'config.json').read_text())
-        destination=root/'recovery'/cell['id']; definitions=destination/'definitions'; definitions.mkdir(parents=True,exist_ok=True)
+        destination=root/'recovery'/cell['id']
+        temporary = TemporaryDirectory(prefix='v2-recovery-definitions-')
+        definitions=Path(temporary.name)
         condition=build_condition(full_bundle=full,loaded_profile=profile,
             master_order=[c['name'] for c in config['dataset']['classes']],class_count=cell['class_count'],seed=cell['seed'],
             train_per_class=125,test_per_class=20,validation_fraction=.2,definitions_dir=definitions)
@@ -75,10 +81,13 @@ def main():
             raise ValueError('Recovery test IDs/order mismatch')
         artifacts=[run/'predictions.jsonl',*sorted(destination.glob('attempt-*/predictions.jsonl'))]
         pending, completed=pending_examples(condition.bundle.test,artifacts)
-        if not pending: print('COMPLETE',cell['id'],flush=True);continue
+        if not pending:
+            print('COMPLETE',cell['id'],flush=True)
+            temporary.cleanup()
+            continue
         model=config['classifier']; plan=json.loads((run/'context_plan.json').read_text())
-        # Estimate rate-limit reservation from prior observed provider usage when available.
-        # A conservative byte proxy divided by four is used when no usage was returned.
+        # Scheduling heuristic only: saved UTF-8 context estimate divided by four.
+        # This is not measured usage or a guarantee about provider quota accounting.
         interval=max(1.,max(r['estimated_total_tokens'] for r in plan['requests'])/4/160000*60)
         classifier=PacedOpenAI(interval_s=interval,model=model['model'],reasoning_effort=model['reasoning_effort'],
             classifier_name=model['name'],in_context=model['in_context'],
@@ -89,7 +98,18 @@ def main():
         if any(r!=oldrequests[r['sample_id']] for r in newplan['requests']):
             raise ValueError('Recovery prompt hash mismatch')
         print('PENDING',cell['id'],len(pending),'retained',len(completed),'interval_s',interval,flush=True)
-        if not args.execute: continue
+        if not args.execute:
+            temporary.cleanup()
+            continue
+        destination.mkdir(parents=True,exist_ok=True)
+        saved_definitions=destination/condition.definitions_path.name
+        if saved_definitions.exists():
+            if saved_definitions.read_bytes()!=condition.definitions_path.read_bytes():
+                raise ValueError('Saved recovery definitions differ from frozen profile')
+        else:
+            saved_definitions.write_bytes(condition.definitions_path.read_bytes())
+        condition=replace(condition,definitions_path=saved_definitions)
+        temporary.cleanup()
         number=len(list(destination.glob('attempt-*')))+1
         try:
             run_benchmark(StaticDataset(replace(condition.bundle,test=pending)),classifier,

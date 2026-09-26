@@ -1,77 +1,134 @@
-# Frozen v2 campaign protocol — 2026-09-25
+# V2 experiment design — paused, revised 2026-09-25
 
-Status: frozen before final evaluation. This supplements the repository's
-[measurement protocol](../../docs/experimental_protocol_v2.md).
+**Execution is stopped. No calls, training, automatic restart or scheduled run.**
+This is the plan to resume only on a new instruction. It supersedes the
+[original frozen scope](protocol_2026-09-25_original.md) by limiting OpenAI to
+zero-shot. Preserve the original artifacts and exclude OpenAI few-shot from the
+v2 comparison. The general adapter still supports in-context experiments, but the
+release launcher and recovery command prohibit them.
 
-Banking77, nested 5/10/20/25-label prefixes, seeds 42/43/44, 125 source-train and
-20 held-out test examples per class. Strict support: 42 of 77 labels qualify;
-results describe this support-filtered population. Reserve 20% (25/class) from
-source training. No test-driven description, hyperparameter or subset changes.
-The immutable CSV revision and hashes are in the campaign `source.json`.
+## Common data and measurement
 
-Six methods: TF-IDF LR, frozen MiniLM LR, BERT, GPT-5 nano, Emissary routing,
-and Jev. Matched budgets are 0/5/100 labeled examples **per class**, with zero
-consumed validation labels. The separate full-training reference uses 100 fit
-and 25 validation examples/class for the three local supervised methods.
-Zero-shot controls are reused in the reference view: the exact same test IDs,
-definitions and predictions, zero consumed labels, and no extra observations.
-The regimes are never pooled. There are 252 physical cells (216 matched, 36
-supervised reference), plus 36 reused reference controls.
+| Dimension | Frozen choice |
+| --- | --- |
+| Dataset | Banking77, immutable revision `57ec275d8078af65b7731c2a98be812d844a6d6b` |
+| Cardinalities | 5, 10, 20, 25 nested labels per seed |
+| Seeds | 42, 43, 44 |
+| Source training | 125 examples/class; strict support, no automatic reduction |
+| Eligible population | 42 of 77 labels have enough source training examples |
+| Reserved validation | 25 examples/class, drawn only from source training |
+| Final test | 20 original held-out examples/class; same IDs across methods/budgets |
+| Class definitions | Frozen `canonical_reviewed_v2`; assistant review, not independent human validation |
+| Inference | Batch 1, concurrency 1, zero warmup, no hidden retries |
+| Local compute | CPU, four numeric-library threads; cached pinned model snapshots |
+| Calibration | ECE, adaptive ECE, log loss, multiclass Brier where probabilities exist |
+| Quality uncertainty | Accuracy/macro-F1; 2,000 gold-class-stratified paired bootstrap draws, 95% percentile intervals |
+| Seed variation | Individual seeds, mean/sample SD/range; no pooling overlapping test IDs as independent observations |
+| Operations | Client-visible latency and failure coverage; p99 unavailable below 1,000 calls/cell |
+| Cost | Saved usage and dated rates; CPU estimates are illustrative, Emissary price remains unknown |
 
-Emissary 5-shot Quick Train is UI-only according to the handoff and cannot be
-substituted with Projects SFT. Projects SFT remains unavailable after the recorded
-training failure. No new grid of training jobs is submitted without a successful
-readiness check; nonzero Emissary cells remain explicitly unsupported with this
-limitation. Jev nonzero matched budgets and local zero-label fits are unsupported.
-OpenAI prompts must pass the existing conservative context preflight; do not
-truncate demonstrations to make a cell fit.
+## Method matrix
 
-Models: `jev-1.13.0`, `gpt-5-nano-2025-08-07` (minimal reasoning), and the recorded
-local MiniLM/BERT snapshots. BERT: three epochs, batch 16, LR 2e-5, weight decay
-.01, max length 128; validation selects the epoch only in the reference regime.
-LR methods retain their existing defaults and selection rules. BERT's tokenizer
-uses its existing truncation policy. All inference calls use batch 1, concurrency
-1, no warmup, no retries. This is unwarmed client-visible latency; p99 is
-unavailable below 1,000 observations per cell. Client location is unspecified;
-the workstation's timezone is not evidence of network location.
+All methods use the same cardinalities, seeds, test IDs and frozen definitions.
+Shots mean distinct labeled examples **per class**.
 
-The installed CUDA build cannot execute on the GTX 1050. All local models run
-on CPU, four numeric-library threads. Disk model caches are reused; provider
-cache state is uncontrolled. The model files are pinned to cache snapshots and
-recorded with retrieval revisions. The selected 2026-09-25 rate card supplies
-estimates, not invoices; CPU prices are illustrative cloud equivalents and
-Emissary prices remain unavailable. User instruction on 2026-09-25 authorizes
-the defined campaign without further price approval. No claim of an audited
-sub-USD-100 total can be made while Emissary charges are unavailable.
+| Method | Zero-shot | 5/class matched | 100/class matched | Supervised reference |
+| --- | --- | --- | --- | --- |
+| OpenAI `gpt-5-nano-2025-08-07`, minimal | Yes, **only OpenAI condition** | Excluded by user | Excluded by user | Reuse zero-shot control |
+| Jev `jev-1.13.0` | Yes | Unsupported | Unsupported | Reuse zero-shot control |
+| Emissary routing | Yes | Quick Train unavailable in API | Projects SFT blocked by failed provider training | Reuse zero-shot control |
+| TF-IDF + LR | Unsupported | Yes | Yes | 100 fit + 25 validation/class |
+| Frozen MiniLM + LR | Unsupported | Yes | Yes | 100 fit + 25 validation/class |
+| BERT fine-tuned | Unsupported | Yes | Yes | 100 fit + 25 validation/class |
 
-The `canonical_reviewed_v2` profile was reviewed by the Codex assistant against
-all 77 names before evaluation. Four overly narrow/ambiguous descriptions were
-corrected using names alone. No source examples were consulted for this review.
-This is not independent human ontology validation; overlapping labels remain a
-limitation. The prior enriched profile is preserved unchanged.
+Matched runs consume zero validation labels. The reserved validation partition is
+withheld. Reference runs use those validation labels to select C/epoch. Keep the
+regimes in separate tables. Zero-shot controls are reused between views, never
+counted as independent runs or rebilled. Do not call a zero-shot versus supervised
+comparison “equal labeled budget.”
 
-Primary outcomes: accuracy and macro-F1. Report every seed individually, plus
-mean, sample standard deviation and range across the three seeds. These seeds
-vary class selection, source example selection and stochastic training together;
-they do not isolate training randomness. Overlapping test cohorts must not be
-concatenated as independent samples.
+There are **228 requested cells**: 192 matched/support-accounting cells and 36
+supervised references. Of these, 144 are eligible to execute and 84 explicitly
+unsupported. Another 36 reference-table entries reuse the zero-shot controls.
+The 24 historical OpenAI 5/100-shot cells are excluded from the revised design;
+their artifacts and costs remain in the historical accounting.
 
-Test uncertainty: 2,000 bootstrap draws, seed 20260925, percentile 95% intervals,
-resample within gold class preserving class sizes and the frozen label inventory.
-Hold fitted model and campaign seed fixed. For within-condition method/budget
-contrasts use identical resampled test IDs; effects are first minus second.
-Intervals are pointwise/exploratory, without multiplicity correction. Report
-cross-seed variability separately, not as a three-seed estimate of population
-uncertainty. Calibration is descriptive ECE/adaptive ECE/log loss/Brier with the
-existing formulas and availability rules; no fabricated OpenAI probabilities.
+## State at stop and work remaining
 
-Cardinality curves change the evaluated label mixture. Additionally compare
-predictions on the shared low-cardinality test cohort where saved IDs/text agree;
-this fixes test examples but does not fix the supervised fit pool across K.
-A deterioration is an empirical result to test, not a required conclusion.
+- 115 completed, 78 unsupported, 9 failed/interrupted, 26 unstarted: 228 total.
+- Seven Jev cells failed probability-sum validation. Keep them failed under the
+  frozen criterion; do not silently renormalize or repeatedly sample until valid.
+- One OpenAI zero-shot cell remains: seed 44, K=20, 400 test inputs, no saved
+  predictions. Its original failure was a token rate limit during the former
+  few-shot campaign. Continuation is restricted to this zero-shot scope and
+  retains original failure/usage evidence.
+- BERT has 15 completed supported cells. One 5-shot cell (seed 43, K=10) was
+  interrupted during fitting, with zero predictions. Retain that attempt; an
+  explicit restart can refit it without duplicating any completed predictions.
+  Twenty other supported BERT cells and six unsupported accounting cells have
+  not started. See the [offline BERT review](bert_review.md).
+- The old OpenAI recovery did **not** submit calls: it stopped when the dry-run's
+  derived definition file already existed. The corrected planner uses temporary
+  derived definitions and is idempotent; it still needs live validation tomorrow.
 
-Retain each status, error, prediction, timing, cost/preparation ledger, configuration,
-source hash and code revision. Generate extended report, figures and English brief
-from saved evidence without new inference. Terminal cells are skipped on restart.
-Interrupted partial cells must preserve prior predictions and cannot be restarted
-from scratch. General partial-cell recovery is a release gate until validated.
+## Fixed training policy and limitations
+
+BERT keeps three epochs, batch 16, LR 2e-5, weight decay .01, max length 128.
+Matched budgets select the final epoch; reference selects minimum validation loss.
+MiniLM and TF-IDF retain existing C policies. Do not retune after seeing test scores.
+Five-shot BERT gets only 6/12/21/24 optimizer steps at K=5/10/20/25 under this
+fixed-epoch policy; this is a limitation of that training recipe, not proof of
+BERT's best attainable few-shot performance. Any alternative recipe is a separate,
+predeclared experiment and cannot replace these results post hoc.
+
+The installed CUDA build lacks GTX 1050 kernels. CPU execution is intentional and
+must remain fixed when reusing existing latency measurements. Do not install a new
+Torch build or switch hardware silently. The adapter's automatic device selection
+checks CUDA availability, which by itself does not establish kernel compatibility;
+this is a robustness gap, documented in the BERT review.
+
+Cardinality curves change label composition. A shared-test-cohort contrast can
+hold the low-cardinality examples fixed, but not the supervised fit pool across K.
+Intervals are pointwise/exploratory with no multiplicity correction. Seed effects
+combine class/example selection and training randomness; they are not pure training
+variance. Missing seed results must remain visible, without unqualified averages.
+
+## Tomorrow's commands
+
+Read [the handoff](../../.local/handoffs/v2-paused.md) locally for the stop inventory.
+The checked-in [revised manifest](matrix_next.json) contains the exact arguments,
+source/model hashes and cell identities. The original manifest remains historical.
+
+Plan only: no inference, training or provider clients:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_v2_release.py --only bert --restart-interrupted
+PYTHONPATH=src venv/bin/python scripts/resume_v2_openai.py
+```
+
+Only after a new instruction to run (these are **not** scheduled):
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_v2_release.py --execute --only bert --restart-interrupted
+PYTHONPATH=src venv/bin/python scripts/resume_v2_openai.py --execute
+```
+
+Run sequentially to avoid adding workload contention to latency measurements.
+Completed and unsupported cells are skipped. Other failed cells are retained;
+partial outputs must never be restarted from scratch. General trained-model
+checkpoint resume remains unimplemented; the interrupted BERT cell has no output
+predictions and must repeat its incomplete fitting work explicitly.
+
+## Publication and open issues
+
+Prepare `reports/v2/report.md` (extended English report) and `reports/v2/brief.md`
+(short English brief for Tanmay), plus tables, plots and reproducible retrieval
+instructions. These reports are **not yet generated**, and no release is published.
+All tables/plots must replay saved predictions and ledgers without inference.
+Include excluded historical spending, Jev failures, Emissary training limitations,
+review status, CPU conditions and uncertainty. Cost totals with unavailable
+provider charges must not be presented as audited complete spending.
+
+Issues #15 and #16 remain open. Verify their acceptance criteria before publishing
+`v2.0.0`; do not claim generic resume, a complete matrix, or a confirmed spending
+ceiling when the retained evidence does not establish them.

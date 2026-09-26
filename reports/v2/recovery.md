@@ -1,4 +1,10 @@
-# Recovery amendment 1
+# Recovery amendment 1 — historical scope
+
+**Current scope:** execution is paused; OpenAI recovery now permits budget 0 only.
+The original live recovery attempt stopped before any calls because dry-run
+definitions already existed. The planner was corrected and verified twice offline.
+See [the revised plan](protocol.md). The historical 16-cell discussion below does
+not authorize resuming few-shot runs.
 
 The first frozen execution encountered OpenAI token-per-minute rate limits in
 16 cells. Original attempts, usage, failures and validated prediction prefixes

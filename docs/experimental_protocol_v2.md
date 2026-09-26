@@ -1,5 +1,14 @@
 # Experimental protocol and interpreting results (v1.3)
 
+## Active v2 campaign: paused
+
+The [revised experiment design](../reports/v2/protocol.md) is the authoritative
+release scope. **OpenAI is zero-shot only**; prior 5/100-shot OpenAI runs are
+retained as historical evidence and excluded from the v2 comparison. All runs
+are stopped pending a new instruction. The design records remaining work, exact
+resume commands, uncertainty, and the [offline BERT review](../reports/v2/bert_review.md).
+The generic adapter capabilities described below do not expand this release scope.
+
 The benchmark compares classification quality, calibration, latency and cost.
 A result describes a particular dataset, label set, supervision budget, model and
 execution environment. It is not a general ranking of model families.
