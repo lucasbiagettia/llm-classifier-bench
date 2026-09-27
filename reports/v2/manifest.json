@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "status": "evaluated",
+  "dataset": "banking77",
+  "seed": 42,
+  "class_counts": [
+    5,
+    10,
+    15,
+    20
+  ],
+  "test_examples_per_class": 40,
+  "source": {
+    "revision": "57ec275d8078af65b7731c2a98be812d844a6d6b",
+    "files": {
+      "train.csv": {
+        "url": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/57ec275d8078af65b7731c2a98be812d844a6d6b/banking_data/train.csv",
+        "sha256": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+        "bytes": 839073
+      },
+      "test.csv": {
+        "url": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/57ec275d8078af65b7731c2a98be812d844a6d6b/banking_data/test.csv",
+        "sha256": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+        "bytes": 239961
+      },
+      "LICENSE": {
+        "url": "https://raw.githubusercontent.com/PolyAI-LDN/task-specific-datasets/57ec275d8078af65b7731c2a98be812d844a6d6b/LICENSE",
+        "sha256": "7e7170e3cebf88a9f60c7b8421418323c09304da1af4d5e90f4da1dc1c8a2661",
+        "bytes": 18650
+      }
+    }
+  },
+  "definitions": {
+    "path": "class_definitions_data/banking77/canonical_reviewed_v2.json",
+    "sha256": "4bb19fa6f6b8456c80f21a109a5b3cf70034d0a89ac79accd30fcf16f611a3d7",
+    "review": "assistant-reviewed, not independent human validation"
+  },
+  "models": {
+    "openai": {
+      "model": "gpt-5-nano-2025-08-07",
+      "reasoning_effort": "minimal",
+      "shots_per_class": 0
+    },
+    "jev": {
+      "model": "jev-1.13.0",
+      "shots_per_class": 0
+    },
+    "emissary-routing": {
+      "model": "provider-managed routing; versions retained in raw artifacts",
+      "shots_per_class": 0
+    },
+    "emissary-qwen": {
+      "model": "Qwen3-4B-Base",
+      "shots_per_class": 100,
+      "epochs": 1,
+      "mechanism": "Projects SFT"
+    },
+    "bert": {
+      "repository": "google-bert/bert-base-uncased",
+      "revision": "86b5e0934494bd15c9632b12f734a8a67f723594",
+      "shots_per_class": 50,
+      "epochs": 2,
+      "batch_size": 16,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "max_length": 128,
+      "device": "cpu"
+    },
+    "minilm-lr": {
+      "repository": "sentence-transformers/all-MiniLM-L6-v2",
+      "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
+      "shots_per_class": 50,
+      "C": 1.0,
+      "encoder": "frozen"
+    },
+    "tfidf-lr": {
+      "shots_per_class": 50,
+      "C": 1.0
+    }
+  },
+  "selection": {
+    "source_train_candidates_per_class": 125,
+    "reserved_validation_per_class": 25,
+    "validation_labels_consumed": 0,
+    "eligible_labels": 42,
+    "nested_class_subsets": true,
+    "same_test_ids_within_K": true
+  },
+  "measurement": {
+    "batch_size": 1,
+    "concurrency": 1,
+    "warmup_examples": 0,
+    "automatic_retries": 0,
+    "historical_and_new_latency_pooled": false
+  },
+  "uncertainty": {
+    "method": "gold-stratified percentile bootstrap",
+    "repetitions": 2000,
+    "confidence_level": 0.95,
+    "seed": 20260925,
+    "paired_reference": "openai",
+    "between_seed_variation": "not estimated"
+  },
+  "raw_evidence_roots": [
+    "artifacts/v2_small",
+    "artifacts/v2_completion",
+    "artifacts/reusable",
+    "artifacts/emissary_qwen_sft/20260927T152104Z",
+    "artifacts/v2_source"
+  ],
+  "rebuild_command": "PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py",
+  "release": "Reports only; no v2.0.0 tag or release",
+  "label_sets": {
+    "5": [
+      "wrong_amount_of_cash_received",
+      "extra_charge_on_statement",
+      "card_payment_fee_charged",
+      "transfer_timing",
+      "activate_my_card"
+    ],
+    "10": [
+      "wrong_amount_of_cash_received",
+      "extra_charge_on_statement",
+      "card_payment_fee_charged",
+      "transfer_timing",
+      "activate_my_card",
+      "declined_cash_withdrawal",
+      "card_about_to_expire",
+      "transaction_charged_twice",
+      "pending_cash_withdrawal",
+      "wrong_exchange_rate_for_cash_withdrawal"
+    ],
+    "15": [
+      "wrong_amount_of_cash_received",
+      "extra_charge_on_statement",
+      "card_payment_fee_charged",
+      "transfer_timing",
+      "activate_my_card",
+      "declined_cash_withdrawal",
+      "card_about_to_expire",
+      "transaction_charged_twice",
+      "pending_cash_withdrawal",
+      "wrong_exchange_rate_for_cash_withdrawal",
+      "Refund_not_showing_up",
+      "transfer_not_received_by_recipient",
+      "transfer_fee_charged",
+      "declined_transfer",
+      "supported_cards_and_currencies"
+    ],
+    "20": [
+      "wrong_amount_of_cash_received",
+      "extra_charge_on_statement",
+      "card_payment_fee_charged",
+      "transfer_timing",
+      "activate_my_card",
+      "declined_cash_withdrawal",
+      "card_about_to_expire",
+      "transaction_charged_twice",
+      "pending_cash_withdrawal",
+      "wrong_exchange_rate_for_cash_withdrawal",
+      "Refund_not_showing_up",
+      "transfer_not_received_by_recipient",
+      "transfer_fee_charged",
+      "declined_transfer",
+      "supported_cards_and_currencies",
+      "pending_transfer",
+      "balance_not_updated_after_bank_transfer",
+      "cash_withdrawal_not_recognised",
+      "getting_spare_card",
+      "top_up_reverted"
+    ]
+  }
+}

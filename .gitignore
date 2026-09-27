@@ -9,3 +9,6 @@ CLAUDE.md
 
 # Local handoffs, working notes and temporary review material
 /.local/
+
+# Machine-specific campaign launchers and retired operational plans
+/scripts/local/

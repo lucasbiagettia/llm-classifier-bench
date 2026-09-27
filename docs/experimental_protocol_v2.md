@@ -1,5 +1,19 @@
 # Experimental protocol and interpreting results (v1.3)
 
+## Published v2 scope
+
+The [completed study](../reports/v2/protocol.md) evaluates Banking77 with
+5/10/15/20 classes, seed 42 and40 test examples/class. All 28 quality conditions
+are complete. OpenAI, Jev and Emissary routing are zero-shot; the three local
+supervised baselines use 50 fit examples/class; Emissary Qwen SFT uses 100/class.
+Quick Train is excluded because its API workflow was unavailable.
+
+See the [report](../reports/v2/report.md) for uncertainty and probability-coverage
+limits and the [manifest](../reports/v2/manifest.json) for the final configuration.
+The earlier large matrices and execution notes have been retired. The generic
+capabilities below describe how to design future studies, not additional work
+included in this published experiment.
+
 The benchmark compares classification quality, calibration, latency and cost.
 A result describes a particular dataset, label set, supervision budget, model and
 execution environment. It is not a general ranking of model families.

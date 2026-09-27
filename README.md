@@ -14,6 +14,8 @@ The current implementation supports six classifier families:
 
 ## Documentation
 
+- [v2 results: extended report](reports/v2/report.md) and [English brief](reports/v2/brief.md)
+- [Completed experiment design](reports/v2/protocol.md) and [configuration manifest](reports/v2/manifest.json)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
 - [Frozen class definitions](docs/class_definitions.md)
@@ -22,10 +24,25 @@ The current implementation supports six classifier families:
 - [Latency and throughput](docs/latency_measurement.md)
 - [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
 
-Generated runs and reports belong in `artifacts/`, which is ignored by Git.
-The repository ships code, frozen class definitions and example rate cards;
-it does not include pilot results or claim a published benchmark ranking.
-Keep complete run directories when sharing results so measurements can be audited.
+The v2 experiment is complete: **28/28 quality conditions**, seven methods and
+5/10/15/20 classes, with 40 held-out test examples/class. Local supervised models
+used 50 labeled training examples/class; Emissary Qwen SFT used100/class. The
+[report](reports/v2/report.md) distinguishes these budgets, uncertainty and
+unavailable calibration metrics.
+
+Rebuild the published reports, tables and figure offline from the versioned
+summary (no API calls):
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py
+```
+
+To recalculate metrics and intervals from individual predictions, restore the
+original evidence bundle under `artifacts/` and add `--recompute`. Raw runs and
+logs remain there, outside Git. Machine-specific campaign launchers and discarded
+plans are archived under ignored `scripts/local/`; general benchmark, evaluation
+and report tools remain versioned. See the [reproduction details](reports/v2/protocol.md).
+The reports do not constitute a `v2.0.0` tag or GitHub release.
 
 ## Experimental lifecycle
 

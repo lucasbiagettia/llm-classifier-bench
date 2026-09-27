@@ -43,7 +43,7 @@ import csv
 import json
 import random
 from collections import Counter
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Iterable, Sequence
@@ -750,6 +750,7 @@ def parse_args() -> argparse.Namespace:
     )
 
     # Model overrides.
+    parser.add_argument("--source-dir", type=Path, help="Frozen Banking77 train.csv/test.csv; avoids mutable source URLs")
     parser.add_argument("--openai-model", default=DEFAULT_OPENAI_MODEL)
     parser.add_argument(
         "--openai-reasoning-effort",
@@ -826,7 +827,18 @@ def main() -> None:
     runs_root.mkdir()
     definitions_dir.mkdir()
 
-    full_bundle = get_dataset("banking77").load()
+    dataset = get_dataset("banking77")
+    if args.source_dir is not None:
+        import hashlib
+        from llm_classifier_bench.datasets.huggingface import HuggingFaceClassificationDataset
+        files = {split: str((args.source_dir / f"{split}.csv").resolve()) for split in ("train", "test")}
+        dataset = HuggingFaceClassificationDataset(replace(dataset.spec, data_files=files))
+        full_bundle = dataset.load()
+        full_bundle = replace(full_bundle, metadata={**full_bundle.metadata,
+            "source_sha256": {split: hashlib.sha256(Path(path).read_bytes()).hexdigest()
+                              for split, path in files.items()}})
+    else:
+        full_bundle = dataset.load()
     loaded_profile = load_class_definition_profile(args.definitions)
 
     # Validate the full frozen ontology before selecting any subset.
