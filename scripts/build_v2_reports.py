@@ -111,7 +111,7 @@ def render(payload):
     write_json(REPORT/'results.json',payload)
     with (REPORT/'results.csv').open('w') as f:
         keys=['method','k','fit_per_class','status','n','expected','probability_vectors',*[m.name for m in QUALITY]]
-        writer=csv.DictWriter(f,fieldnames=keys);writer.writeheader()
+        writer=csv.DictWriter(f,fieldnames=keys,lineterminator="\n");writer.writeheader()
         for r in results:writer.writerow({**{k:r[k] for k in keys if k in r},**{name:v['value'] for name,v in r.get('metrics',{}).items()}})
     lines=['# Banking77 v2 — extended report','',f'**{"Interim" if draft else "Evaluated"}: {completed}/{len(results)} quality conditions complete.** Missing conditions are not scored. This report is generated from saved evidence; it does not claim a v2.0.0 release.','',
         '## Design','',
