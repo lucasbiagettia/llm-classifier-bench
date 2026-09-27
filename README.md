@@ -14,8 +14,8 @@ The current implementation supports six classifier families:
 
 ## Documentation
 
-- [Small v2 experiment design: 2,000 predictions per method](reports/v2/protocol.md)
-- [BERT environment and saved-results review](reports/v2/bert_review.md)
+- [v2 results: extended report](reports/v2/report.md) and [English brief](reports/v2/brief.md)
+- [Completed experiment design](reports/v2/protocol.md) and [configuration manifest](reports/v2/manifest.json)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
 - [Frozen class definitions](docs/class_definitions.md)
@@ -24,23 +24,25 @@ The current implementation supports six classifier families:
 - [Latency and throughput](docs/latency_measurement.md)
 - [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
 
-Raw runs and ledgers belong in `artifacts/`, which is ignored by Git. Versioned
-publication material belongs in `reports/v2/`; the extended report and English
-brief are still pending. The small campaign is prepared but not running:
-**5/10/15/20 classes, one seed, 2,000 predictions per method**, with **OpenAI zero-shot only**. BERT has four fits
-and a 30-minute total time budget. See the design for blocked Emissary techniques. We retain 1,700 verified
-predictions, so OpenAI needs only 1,300 new zero-shot calls. To run the prepared
-matrix with progress logs (this starts the experiment):
+The v2 experiment is complete: **28/28 quality conditions**, seven methods and
+5/10/15/20 classes, with 40 held-out test examples/class. Local supervised models
+used 50 labeled training examples/class; Emissary Qwen SFT used100/class. The
+[report](reports/v2/report.md) distinguishes these budgets, uncertainty and
+unavailable calibration metrics.
+
+Rebuild the published reports, tables and figure offline from the versioned
+summary (no API calls):
 
 ```bash
-bash scripts/run_small_experiment.sh
+PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py
 ```
 
-Follow `artifacts/v2_small/run.log`; completion details are in
-`artifacts/v2_small/summary.json`. Exit 2 indicates a failed/incomplete condition.
-The same command skips previous attempts without retrying them.
-No v2.0.0 release or final benchmark ranking is published.
-Keep complete run directories when sharing results so measurements can be audited.
+To recalculate metrics and intervals from individual predictions, restore the
+original evidence bundle under `artifacts/` and add `--recompute`. Raw runs and
+logs remain there, outside Git. Machine-specific campaign launchers and discarded
+plans are archived under ignored `scripts/local/`; general benchmark, evaluation
+and report tools remain versioned. See the [reproduction details](reports/v2/protocol.md).
+The reports do not constitute a `v2.0.0` tag or GitHub release.
 
 ## Experimental lifecycle
 

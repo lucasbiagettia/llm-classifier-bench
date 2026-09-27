@@ -624,3 +624,27 @@ def test_documented_upload_size_limit_is_enforced_before_http():
             content=HugeContent(),  # type: ignore[arg-type]
         )
     assert session.post.call_count == 0
+
+
+@pytest.mark.parametrize("dataset", ["ds-fixture", {"id": "ds-fixture"}])
+def test_training_identity_accepts_live_string_and_documented_object(dataset):
+    classifier = EmissaryClassifier(training=fine_config(), experiment_name="fixture")
+    classifier._dataset_id = "ds-fixture"
+    details = training_detail()
+    details["train_dataset"] = dataset
+    classifier._validate_training_identity(details)
+    details["train_dataset"] = "ds-other"
+    with pytest.raises(EmissaryResponseError, match="dataset differs"):
+        classifier._validate_training_identity(details)
+
+
+def test_profile_null_task_list_waits_for_actual_compatibility():
+    classifier = EmissaryClassifier(training=fine_config(), experiment_name="fixture")
+    classifier.client = Mock()
+    ready = dataset_detail()
+    classifier.client.retrieve_dataset.side_effect = [
+        {**ready, "compatible_task_types": None}, ready,
+    ]
+    classifier._sleep = Mock()
+    assert classifier._wait_for_dataset("ms-fixture", "ds-fixture") == ready
+    classifier._sleep.assert_called_once()

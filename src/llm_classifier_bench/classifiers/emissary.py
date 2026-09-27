@@ -973,6 +973,9 @@ class EmissaryClassifier:
                 raise EmissaryResponseError("Dataset response ID changed while polling")
             if response.get("is_uploaded") is True and response.get("is_profiled") is True:
                 compatible = response.get("compatible_task_types")
+                if compatible is None:
+                    self._sleep_until_next_poll(deadline, resource="dataset")
+                    continue
                 if not isinstance(compatible, list) or "classification" not in compatible:
                     raise EmissaryPreparationError(
                         "Profiled dataset is not compatible with classification"
@@ -1065,10 +1068,8 @@ class EmissaryClassifier:
             raise EmissaryResponseError("Training job base model differs from configuration")
         train_dataset = response.get("train_dataset")
         if self._dataset_id is not None:
-            if (
-                not isinstance(train_dataset, Mapping)
-                or train_dataset.get("id") != self._dataset_id
-            ):
+            dataset_id = train_dataset.get("id") if isinstance(train_dataset, Mapping) else train_dataset
+            if dataset_id != self._dataset_id:
                 raise EmissaryResponseError("Training job dataset differs from configuration")
 
     def _validate_deployment_identity(self, response: Mapping[str, Any]) -> None:
