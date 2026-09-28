@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "status": "evaluated",
   "dataset": "banking77",
   "seed": 42,
@@ -51,31 +51,46 @@
     },
     "emissary-qwen": {
       "model": "Qwen3-4B-Base",
-      "shots_per_class": 100,
       "epochs": 1,
-      "mechanism": "Projects SFT"
+      "mechanism": "Projects SFT",
+      "training_budgets_per_class": [
+        20,
+        100
+      ]
     },
     "bert": {
       "repository": "google-bert/bert-base-uncased",
       "revision": "86b5e0934494bd15c9632b12f734a8a67f723594",
-      "shots_per_class": 50,
       "epochs": 2,
       "batch_size": 16,
       "learning_rate": 2e-05,
       "weight_decay": 0.01,
       "max_length": 128,
-      "device": "cpu"
+      "device": "cpu",
+      "training_budgets_per_class": [
+        20,
+        50,
+        100
+      ]
     },
     "minilm-lr": {
       "repository": "sentence-transformers/all-MiniLM-L6-v2",
       "revision": "1110a243fdf4706b3f48f1d95db1a4f5529b4d41",
-      "shots_per_class": 50,
       "C": 1.0,
-      "encoder": "frozen"
+      "encoder": "frozen",
+      "training_budgets_per_class": [
+        20,
+        50,
+        100
+      ]
     },
     "tfidf-lr": {
-      "shots_per_class": 50,
-      "C": 1.0
+      "C": 1.0,
+      "training_budgets_per_class": [
+        20,
+        50,
+        100
+      ]
     }
   },
   "selection": {
@@ -84,7 +99,9 @@
     "validation_labels_consumed": 0,
     "eligible_labels": 42,
     "nested_class_subsets": true,
-    "same_test_ids_within_K": true
+    "same_test_ids_within_K": true,
+    "nested_training_budgets_within_each_K": true,
+    "matched_pool_members_across_methods": true
   },
   "measurement": {
     "batch_size": 1,
@@ -99,17 +116,23 @@
     "confidence_level": 0.95,
     "seed": 20260925,
     "paired_reference": "openai",
-    "between_seed_variation": "not estimated"
+    "between_seed_variation": "not estimated",
+    "paired_comparisons": [
+      "each variant minus zero-shot OpenAI",
+      "supervised methods minus MiniLM at equal 20/100 budgets",
+      "within-method 100 minus 20 labels/class"
+    ]
   },
   "raw_evidence_roots": [
     "artifacts/v2_small",
     "artifacts/v2_completion",
     "artifacts/reusable",
     "artifacts/emissary_qwen_sft/20260927T152104Z",
-    "artifacts/v2_source"
+    "artifacts/v2_source",
+    "artifacts/v2_budget_extension"
   ],
   "rebuild_command": "PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py",
-  "release": "Reports only; no v2.0.0 tag or release",
+  "release": "v1.2 publication snapshot of the v2 experiment; pull request does not merge automatically",
   "label_sets": {
     "5": [
       "wrong_amount_of_cash_received",
@@ -169,5 +192,18 @@
       "getting_spare_card",
       "top_up_reverted"
     ]
+  },
+  "publication_version": "v1.2",
+  "quality_conditions": 56,
+  "original_conditions": 28,
+  "new_conditions": 28,
+  "data_integrity": "data_integrity.json: 16 historical and 28 new supervised conditions; IDs, exact/normalized texts and recorded SFT uploads checked offline",
+  "extension": {
+    "new_training_jobs": 4,
+    "new_deployments": 4,
+    "new_predictions": 14000,
+    "status": "28/28 completed",
+    "configuration": "Same models/hyperparameters; Qwen 1 epoch, BERT 2 epochs, LR C=1; no consumed validation labels",
+    "base_model_initialization": "Qwen 20/class starts from Qwen3-4B-Base, not from a 100-shot checkpoint"
   }
 }

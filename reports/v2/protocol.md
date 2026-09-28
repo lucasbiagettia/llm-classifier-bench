@@ -1,7 +1,7 @@
 # Banking77 v2: completed experimental design
 
-The [extended report](report.md) and [brief](brief.md) cover **28 completed
-conditions**: seven methods across 5, 10, 15 and 20 labels. The portable
+The [extended report](report.md) and [brief](brief.md) cover **56 completed
+conditions**: fourteen method/budget variants across 5, 10, 15 and 20 labels. The portable
 [manifest](manifest.json) records the final configuration and source revisions.
 Earlier pilot matrices and machine-specific launchers are local working material.
 
@@ -21,17 +21,29 @@ budget from the remaining 100. Reserved validation labels are not consumed.
 | OpenAI | 0 | GPT-5 nano snapshot, minimal reasoning, no demonstrations |
 | Emissary routing | 0 | Provider-managed routing with pinned experiment versions |
 | Jev | 0 | jev-1.13.0 |
-| TF-IDF + logistic regression | 50 | C=1, no validation search |
-| Frozen MiniLM + logistic regression | 50 | all-MiniLM-L6-v2, C=1 |
-| BERT | 50 | bert-base-uncased, two epochs, batch 16, LR 2e-5, max length 128 |
-| Emissary Qwen SFT | 100 | Qwen3-4B-Base, one epoch, last checkpoint |
+| TF-IDF + logistic regression | 20/50/100 | C=1, no validation search |
+| Frozen MiniLM + logistic regression | 20/50/100 | all-MiniLM-L6-v2, C=1 |
+| BERT | 20/50/100 | bert-base-uncased, two epochs, batch 16, LR 2e-5, max length 128 |
+| Emissary Qwen SFT | 20/100 | Qwen3-4B-Base, one epoch, last checkpoint |
 
 **100/class means 100 training shots/class.** SFT labels are not in-context
 prompt demonstrations. Zero-shot and supervised conditions do not have equal
-supervision; Qwen also has twice the labeled examples of the local baselines.
+supervision. The new 20/100 variants now permit equal-budget supervised comparisons.
+Within each K, pools are nested (20 ⊂ 50 ⊂ 100) and equal across methods. The
+20-shot Qwen jobs start from the pretrained base, not the 100-shot checkpoints.
+Epoch counts are fixed; more labels also mean more optimization steps.
 Changing from Emissary routing to Qwen SFT changes mechanism and base model.
 Quick Train was unavailable through the recorded API and is excluded, not
 substituted with SFT. Earlier Llama readiness probes are not reported as Qwen runs.
+
+## Offline data audit
+
+All 16 historical supervised conditions and all 28 extension conditions passed
+ID, exact-text and normalized-text checks against the entire official test split.
+Normalization uses NFKC, casefold and collapsed whitespace. Exact training pools,
+consumed validation counts (zero), model/settings identity and the new Qwen uploads
+were verified from saved artifacts. The [audit](data_integrity.json) is portable.
+This does not audit base pretraining, semantic duplicates or provider internals.
 
 ## Measurement and recovery
 
@@ -44,7 +56,8 @@ Compatible historical zero-shot outputs supplied 1700 initial predictions.
 The first small matrix completed 21/24 conditions; Jev K=10/15/20 stopped on
 invalid probability sums. The continuation retained 830 validated outputs and
 requested 970 missing predictions. Four successful Qwen jobs supplied 2000 new
-test predictions. Costs/timings remain in their original attempt ledgers;
+test predictions. The budget extension completed 28/28 additional conditions,
+14,000 predictions, four fresh Qwen training jobs and four deployments. Costs/timings remain in their original attempt ledgers;
 historical and new phases are not silently pooled.
 
 Jev initially required probabilities to sum to 1 within 0.0001. The follow-up
@@ -64,7 +77,8 @@ from only the successful probability subset of an incomplete cohort.
 
 Quality intervals use 2000 gold-stratified bootstrap resamples, seed 20260925,
 95% percentile intervals. Paired differences against OpenAI share the same
-resampled IDs within each K. These are pointwise exploratory intervals, conditional
+resampled IDs within each K. The update also includes matched-budget contrasts
+against MiniLM and within-method 100-minus-20 effects. These are pointwise exploratory intervals, conditional
 on fixed labels, one fitted model and one seed, without multiplicity correction.
 They do not estimate between-seed uncertainty or isolate a causal cardinality effect.
 
@@ -83,7 +97,7 @@ PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py
 ```
 
 For a full metric/interval recomputation, restore the original `artifacts/`
-evidence directories listed in `manifest.json`, then run:
+evidence directories listed in `manifest.json`, including the budget extension, then run:
 
 ```bash
 PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py --recompute
@@ -99,4 +113,5 @@ different outputs; re-rendering saved results does not.
 For a new independently budgeted campaign, use the maintained
 `scripts/run_banking77_scaling_benchmark_v2.py --help` and the general experimental
 protocol. Retired one-off launchers live in ignored `scripts/local/`; they are not
-the public reproduction interface. This publication does not create v2.0.0.
+the public reproduction interface. Publication version `v1.2` names this report
+update; the experiment continues to use the `reports/v2` directory.
