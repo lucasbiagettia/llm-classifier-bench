@@ -24,11 +24,13 @@ The current implementation supports six classifier families:
 - [Latency and throughput](docs/latency_measurement.md)
 - [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
 
-The v2 experiment is complete: **28/28 quality conditions**, seven methods and
-5/10/15/20 classes, with 40 held-out test examples/class. Local supervised models
-used 50 labeled training examples/class; Emissary Qwen SFT used100/class. The
-[report](reports/v2/report.md) distinguishes these budgets, uncertainty and
-unavailable calibration metrics.
+The v1.2 report update covers **56/56 quality conditions** in the v2 experiment:
+14 method/budget variants across 5/10/15/20 classes, with 40 held-out test examples
+per class. Local supervised models use 20/50/100 training examples/class; Emissary
+Qwen SFT uses 20/100. Equal budgets share the same training examples. The
+[report](reports/v2/report.md) includes paired comparisons and a
+[data integrity audit](reports/v2/data_integrity.json). See the
+[budget extension instructions](docs/budget_extension.md) for the execution script.
 
 Rebuild the published reports, tables and figure offline from the versioned
 summary (no API calls):
@@ -42,7 +44,7 @@ original evidence bundle under `artifacts/` and add `--recompute`. Raw runs and
 logs remain there, outside Git. Machine-specific campaign launchers and discarded
 plans are archived under ignored `scripts/local/`; general benchmark, evaluation
 and report tools remain versioned. See the [reproduction details](reports/v2/protocol.md).
-The reports do not constitute a `v2.0.0` tag or GitHub release.
+The publication version `v1.2` is distinct from the experiment directory name `v2`.
 
 ## Experimental lifecycle
 
