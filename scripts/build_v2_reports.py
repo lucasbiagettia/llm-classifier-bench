@@ -1,4 +1,4 @@
-"""Render the v1.2 Banking77 reports offline; optionally recompute saved evidence."""
+"""Render the Banking77 reports with the Llama supplement offline; optionally recompute saved evidence."""
 from pathlib import Path
 import csv
 import hashlib
@@ -17,9 +17,10 @@ METHODS = {
     'tfidf': 'TF-IDF + LR', 'sentence-transformer': 'MiniLM + LR', 'bert': 'BERT',
     'openai': 'OpenAI zero-shot', 'emissary': 'Emissary routing zero-shot',
     'jev': 'Jev zero-shot', 'emissary-qwen': 'Emissary Qwen SFT',
+    'emissary-llama': 'Emissary Llama SFT',
 }
 BUDGETS = {m: (20, 50, 100) if m in ('tfidf', 'sentence-transformer', 'bert')
-           else (20, 100) if m == 'emissary-qwen' else (0,) for m in METHODS}
+           else (20, 100) if m in ('emissary-qwen', 'emissary-llama') else (0,) for m in METHODS}
 QUALITY = [m for m in DEFAULT_METRICS if m.name in (
     'accuracy', 'macro_f1', 'top_label_ece', 'adaptive_ece', 'multiclass_log_loss', 'multiclass_brier_score')]
 CALIBRATION = ('top_label_ece', 'adaptive_ece', 'multiclass_log_loss', 'multiclass_brier_score')
@@ -127,11 +128,60 @@ def audit_extension_run(root, cell, plan, source):
             'consumed_validation': 0, 'pool_sha256': pool['pool_sha256']}
 
 
-def collect(completion_root, extension_root=Path('artifacts/v2_budget_extension')):
+def audit_llama_run(root, cell, plan, source, state):
+    """Check saved Llama evidence without constructing a provider client."""
+    from run_budget_extension import (build_bundle, pools, audit_partitions, verify_selection,
+        provider_payload, ClassDefinition, ids, require)
+    ref = plan['references'][cell['id']]
+    bundle = build_bundle(source, [ClassDefinition(**c) for c in ref['classes']])
+    selected, reserved, _ = pools(bundle, cell['budget'])
+    overlap = audit_partitions(selected, reserved, source['test'])
+    config, fit, pool = [read_json(root/f'{n}.json') for n in ('config', 'fit_metadata', 'labeled_budget')]
+    require(config['dataset']['classes'] == ref['classes'], 'Llama definitions differ')
+    require(config['dataset']['fit_train_sample_ids'] == ids(selected) == ref['fit_sample_ids'], 'Llama fit IDs differ')
+    require(config['dataset']['test_sample_ids'] == ids(bundle.test) == ref['test_sample_ids'], 'Llama test IDs differ')
+    require(ids(reserved) == ref['reserved_validation_sample_ids'], 'Llama reserved pool differs')
+    require(not config['dataset']['validation_sample_ids'], 'Llama consumed validation labels')
+    require(fit['training_examples_used'] == cell['budget']*cell['k'] and fit['validation_examples_used'] == 0,
+            'Llama budget differs')
+    verify_selection(pool, selected)
+    require({e['sample_id'] for e in fit['selection']['selected_examples']} == set(ids(selected)), 'Llama actual fit pool differs')
+    digest = hashlib.sha256(provider_payload(selected, bundle.classes, cell['budget'])).hexdigest()
+    require(digest == fit['dataset_payload_sha256'] == ref['payload_sha256'] == sha256(root.parent/'remote/train.jsonl'),
+            'Llama uploaded bytes differ from Qwen')
+    require(sha256(root/'predictions.jsonl') == state['prediction_sha256'], 'Llama predictions changed')
+    remote = fit['training_response']
+    require(remote['status'] == 'Success' and remote['base_model'] == 'Llama-3.2-1B-Instruct'
+            and not remote.get('base_fine_tuned_model') and not remote.get('test_dataset'), 'Unexpected Llama training inputs')
+    intent = read_json(root.parent/'remote/training_intent.json')
+    require(intent['parameters'] == ref['training_parameters'], 'Llama submitted parameters differ')
+    require(all(remote['hyper_parameters'].get(k) == v for k, v in ref['training_parameters'].items()),
+            'Llama reported parameters differ from requested values')
+    require(config['measurement'] == ref['measurement'], 'Llama measurement policy differs')
+    for field in ('dataset_id', 'training_job_id', 'deployment_id'):
+        require(config['classifier']['training'][field] is None and fit[field], 'Llama reused or lacks remote resources')
+    return {'cell_id': cell['id'], 'k': cell['k'], 'fit_per_class': cell['budget'], 'status': 'passed',
+            **overlap, 'test_scope': 'entire official test split', 'consumed_validation': 0,
+            'pool_sha256': pool['pool_sha256'], 'same_upload_as_qwen': True,
+            'requested_parameters': intent['parameters'], 'provider_reported_parameters': remote['hyper_parameters'],
+            'omitted_qwen_parameters': ref['omitted_qwen_parameters'],
+            'reported_parameters_match_qwen': remote['hyper_parameters'] == ref['parameters']}
+
+
+def collect(completion_root, extension_root=Path('artifacts/v2_budget_extension'),
+            llama_root=Path('artifacts/emissary_llama_comparison')):
     from run_budget_extension import load_source
     plan = read_json(extension_root/'manifest.json')
     source = load_source(Path(plan['source_dir']), plan)
     extension = read_json(extension_root/'summary.json')
+    llama_plan = read_json(llama_root/'manifest.json')
+    llama_state = read_json(llama_root/'summary.json')
+    # Publication summaries evolve; all frozen raw reference inputs must still match.
+    for path, digest in llama_plan['input_sha256'].items():
+        if Path(path).as_posix() not in ('reports/v2/manifest.json', 'reports/v2/results.json'):
+            if sha256(path) != digest:
+                raise ValueError(f'Frozen Llama reference changed: {path}')
+    llama_audits = []
     expected = {}
     for k in COUNTS:
         rows = records(Path(f'artifacts/v2_small/cells/openai__s42__k{k}__b0/predictions.jsonl'))
@@ -143,7 +193,15 @@ def collect(completion_root, extension_root=Path('artifacts/v2_budget_extension'
         name = key(method, budget, k)
         new = budget in (20, 100) and method in ('tfidf', 'sentence-transformer', 'bert') or (
             method == 'emissary-qwen' and budget == 20)
-        if new:
+        if method == 'emissary-llama':
+            root = llama_root/'cells'/name/'run'
+            saved = read_json(root/'status.json') if (root/'status.json').exists() else {}
+            state = llama_state.get(name, {})
+            saved_complete = saved.get('status') == 'completed' and state.get('status') == 'completed'
+            phases = [{'phase': 'llama_extension', 'run_dir': str(root)}]
+            if saved_complete:
+                llama_audits.append(audit_llama_run(root, state['cell'], llama_plan, source, state))
+        elif new:
             root = extension_root/'cells'/name/'run'
             saved = read_json(root/'status.json') if (root/'status.json').exists() else {}
             state = extension.get(name, {})
@@ -166,7 +224,7 @@ def collect(completion_root, extension_root=Path('artifacts/v2_budget_extension'
         item = {'method': method, 'title': title(method, budget), 'k': k, 'fit_per_class': budget,
                 'n': len(rows), 'expected': 40*k, 'status': 'completed' if valid else 'incomplete' if rows else 'pending',
                 'evidence': str(root), 'probability_vectors': sum(bool(r.get('probabilities')) for r in rows),
-                'phase': 'budget_extension' if new else 'original'}
+                'phase': 'llama_extension' if method == 'emissary-llama' else 'budget_extension' if new else 'original'}
         if path.exists():
             fingerprints[str(path)] = sha256(path)
         if valid:
@@ -211,17 +269,22 @@ def collect(completion_root, extension_root=Path('artifacts/v2_budget_extension'
     for method, budget, k in conditions():
         if method != 'openai':
             pair((method, budget, k), ('openai', 0, k), 'versus_zero_shot_openai')
-        if budget in (20, 100) and method in ('tfidf', 'bert', 'emissary-qwen'):
+        if budget in (20, 100) and method in ('tfidf', 'bert', 'emissary-qwen', 'emissary-llama'):
             pair((method, budget, k), ('sentence-transformer', budget, k), 'matched_budget_vs_minilm')
+        if method == 'emissary-llama':
+            pair((method, budget, k), ('emissary-qwen', budget, k), 'matched_budget_llama_vs_qwen')
+        if method in ('emissary-qwen', 'emissary-llama', 'emissary'):
+            pair((method, budget, k), ('jev', 0, k), 'emissary_vs_jev')
         if budget == 100:
             pair((method, 100, k), (method, 20, k), 'within_method_100_minus_20')
     complete = sum(r['status'] == 'completed' for r in results)
-    return {'schema_version': 2, 'report_version': 'v1.2', 'status': 'evaluated' if complete == 56 else 'interim',
+    return {'schema_version': 3, 'report_version': 'v1.2+llama', 'status': 'evaluated' if complete == 64 else 'interim',
             'conditions': results, 'paired_effects': paired, 'measurement_phases': measurements,
             'evidence_sha256': fingerprints,
-            'data_integrity': {'historical': plan['audit'], 'extension': audits,
+            'data_integrity': {'historical': plan['audit'], 'extension': audits, 'llama_extension': llama_audits,
                                'limits': 'No audit of base pretraining, semantic duplicates or provider internals'},
-            'extension_manifest_sha256': sha256(extension_root/'manifest.json')}
+            'extension_manifest_sha256': sha256(extension_root/'manifest.json'),
+            'llama_manifest_sha256': sha256(llama_root/'manifest.json')}
 
 
 def value(row, metric='accuracy'):
@@ -257,7 +320,7 @@ def render(payload):
     expected = set(conditions())
     actual = {(r['method'], r['fit_per_class'], r['k']) for r in results}
     if len(results) != len(expected) or actual != expected:
-        raise ValueError('Summary must account for all 56 method/budget/cardinality conditions')
+        raise ValueError('Summary must account for all 64 method/budget/cardinality conditions')
     REPORT.mkdir(exist_ok=True, parents=True)
     completed = sum(r['status'] == 'completed' for r in results)
     write_json(REPORT/'results.json', payload)
@@ -272,21 +335,31 @@ def render(payload):
     design = (
         'Seed 42; nested label sets of 5/10/15/20 classes; 40 official held-out test examples/class '
         '(200/400/600/800 predictions per condition). The 28 new budget conditions add 14,000 predictions '
-        'to the 28 earlier conditions. All methods within each K share identical test IDs, text and labels. '
+        'to the 28 earlier conditions; eight Llama conditions add a further 4,000 predictions (32,000 total). All methods within each K share identical test IDs, text and labels. '
         'The eligible pool contains 42 labels. See the [protocol](protocol.md) and [manifest](manifest.json).')
     budgets = (
         'TF-IDF+LR, frozen MiniLM+LR and BERT use 20/50/100 fit examples per class. Emissary Qwen3-4B-Base SFT '
-        'uses 20/100 per class. OpenAI, Jev and Emissary routing remain zero-shot. Within each K, '
+        'and Llama-3.2-1B-Instruct SFT use 20/100 per class. OpenAI, Jev and Emissary routing remain zero-shot. Within each K, '
         '20 ⊂ 50 ⊂ 100 training pools, with identical members across methods at equal budgets. '
         'Twenty-five additional examples/class remain reserved and unused for validation. Both regressions '
         'retain C=1; BERT retains two CPU epochs; Qwen retains one epoch and selects the last checkpoint. '
         'Hyperparameters are fixed rather than tuned independently for each budget. Qwen 20 starts from the '
-        'pretrained base, not from the 100-shot model. These are training labels, not prompt demonstrations.')
+        'pretrained base, not from the 100-shot model. Llama also starts fresh for each budget, using one epoch '
+        'and the last checkpoint. These are training labels, not prompt demonstrations.')
+    llama_recipe = (
+        'Llama uses byte-identical uploads and test cohorts to the paired Qwen condition. The request omitted '
+        '`max_grad_norm` and `warmup_ratio`, which the Llama parameter template did not expose. All eight '
+        'successful training responses nevertheless report 0.3 and 0.03, respectively, and their complete '
+        'reported hyperparameters match Qwen. This is provider-reported configuration, not an inspection of '
+        'training internals. Llama is an instruction-tuned 1B base; Qwen is a 4B pretrained base, so this '
+        'comparison does not isolate model size or instruction tuning. The earlier blocked preflight is '
+        'retained separately and produced no training job or predictions.')
     integrity = (
-        'Offline checks passed for 16 historical supervised conditions and all 28 new conditions. '
+        'Offline checks passed for 16 historical supervised conditions, 28 budget-extension conditions and '
+        'eight Llama conditions (52 supervised conditions total). '
         'There is no overlap of IDs, exact text, or text normalized with NFKC/casefold/collapsed whitespace '
         'between fit, reserved validation and test. Checks include the entire official test split and '
-        'the recorded Qwen training uploads. [Audit evidence](data_integrity.json). This does not audit '
+        'the recorded Qwen and Llama training uploads. [Audit evidence](data_integrity.json). This does not audit '
         'base-model pretraining, semantic duplicates or the provider’s internal processing.')
     limitations = (
         'One seed and previously observed test results make this an exploratory extension. Bootstrap intervals '
@@ -303,31 +376,41 @@ def render(payload):
         'were renormalized. Recovery requested 970 missing IDs; historical and recovered timings remain separate.')
     # Statements are scoped to the completed published extension, never inferred for partial runs.
     findings = []
-    if completed == 56:
+    if completed == 64:
         findings = [
-            'At equal 20/class budgets, MiniLM+LR has the highest accuracy and macro-F1 among the four supervised '
-            'methods at every K. At equal 100/class budgets, MiniLM leads accuracy at K=10/15/20 and ties Qwen '
-            'at K=5 (98.00%); Qwen has the slightly higher macro-F1 at K=5. These are point estimates; paired '
-            'intervals below quantify uncertainty.',
-            'Qwen 100/class no longer has the highest accuracy at K=20 after adding MiniLM 100/class: '
-            '92.25% versus 92.38%. The difference is one prediction out of 800. At K=10/15, MiniLM 100/class '
-            'scores 96.50%/95.83%, versus Qwen 93.25%/93.83%.',
-            'Qwen 20/class scores 84.00%, 91.50%, 89.50% and 84.50% accuracy. More labels improve Qwen in '
-            'every K under this fixed one-epoch recipe. The low-budget K=5 result shows that quality is not '
-            'monotonic in class cardinality.',
+            'At equal 20/class budgets, MiniLM+LR retains the highest accuracy and macro-F1 among all five '
+            'supervised methods at every K. At 100/class, MiniLM leads accuracy at K=10/15; MiniLM, Qwen '
+            'and Llama tie at K=5 (98.00%). Llama now leads at K=20 (93.375%, versus MiniLM 92.375% and '
+            'Qwen 92.25%). These are point estimates; the paired intervals in the extended report quantify uncertainty.',
+            'Llama 100/class scores 98.00%, 95.25%, 95.00% and 93.375% accuracy. It ties Qwen at K=5 '
+            'and exceeds it by 2.00, 1.17 and 1.13 percentage points at K=10/15/20. The eight equal-budget '
+            'Llama-minus-Qwen accuracy intervals include zero except the 20/class K=5 and K=20 comparisons. '
+            'The 100/class K=20 lead over MiniLM is also not resolved by its 95% paired interval.',
+            'Against Jev zero-shot, Llama 100/class improves accuracy by 4.00, 3.00, 5.17 and 7.25 '
+            'percentage points; all four pointwise 95% paired accuracy intervals exclude zero. At K=20, '
+            'that is 93.375% versus 86.125%, or 58 more correct predictions out of 800. This comparison '
+            'uses different amounts of supervision and is not an equal-label-budget provider ranking.',
+            'Llama 20/class scores 91.00%, 91.75%, 88.00% and 87.25% accuracy. More labels improve '
+            'Llama at every K. Its 20/class result exceeds Jev only at K=20, where the paired accuracy '
+            'interval includes zero. Qwen 20/class remains at 84.00%, 91.50%, 89.50% and 84.50%.',
+            'Probability-quality leadership is now shared by Emissary SFT variants: Qwen 100/class has '
+            'the lowest log loss at K=5/10 and Brier at K=5; Llama 100/class has the lowest log loss at '
+            'K=15/20 and Brier at K=10/15/20 among variants with complete probabilities. ECE rankings '
+            'vary; low ECE alone does not imply high accuracy. These are point rankings, without '
+            'uncertainty tests for calibration or proper scoring rules. The regressions were not recalibrated.',
             'BERT at 20/class scores 56.00%, 21.25%, 17.67% and 16.25% accuracy, while its 100/class variants '
             'score 96.00%, 92.50%, 87.67% and 85.12%. This characterizes the fixed two-epoch recipe; it does '
             'not establish the best achievable performance of a separately tuned BERT model.',
         ]
-    lines = ['# Banking77 v2 experiment — v1.2 extended report', '',
-             f'**{completed}/56 quality conditions complete.** Fourteen method/budget variants across four label sets.',
-             '', '## Design and data integrity', '', design, '', budgets, '', integrity,
+    lines = ['# Banking77 v2 experiment — v1.2 with Llama supplement', '',
+             f'**{completed}/64 quality conditions complete.** Sixteen method/budget variants across four label sets.',
+             '', '## Design and data integrity', '', design, '', budgets, '', llama_recipe, '', integrity,
              '', '## Accuracy by label budget', '', *accuracy_table(results), '',
              '![Accuracy by cardinality and training budget](accuracy.png)', '',
              '## Interpretation', '']
     for finding in findings:
         lines += [finding, '']
-    lines += ['Qwen SFT and Emissary routing are different models/mechanisms. Equal training budgets improve '
+    lines += ['Qwen SFT, Llama SFT and Emissary routing are different models/mechanisms. Equal training budgets improve '
               'comparability among supervised methods; comparisons against zero-shot services still differ '
               'in supervision. Quick Train is not part of this benchmark.', '',
               '## Full quality and calibration', '', availability, '',
@@ -342,6 +425,13 @@ def render(payload):
               'Differences are method minus MiniLM+LR using the same training budget and test IDs. Positive '
               'values favor the named method. These exploratory comparisons do not adjust for multiplicity.', '',
               *paired_table(payload, 'matched_budget_vs_minilm'), '',
+              '## Llama versus Qwen at equal budgets', '',
+              'Differences are Llama minus Qwen, with identical fit uploads and test IDs at each budget.', '',
+              *paired_table(payload, 'matched_budget_llama_vs_qwen'), '',
+              '## Emissary variants versus Jev zero-shot', '',
+              'Differences are Emissary minus Jev. SFT consumes training labels; Jev consumes none. '
+              'These are exploratory performance contrasts, not equal-supervision comparisons.', '',
+              *paired_table(payload, 'emissary_vs_jev'), '',
               '## Effect of increasing training labels', '',
               'Differences are 100/class minus 20/class within a method, on the same test IDs. Epoch counts '
               'are fixed, so increasing the budget also increases optimization steps; this is not a '
@@ -357,19 +447,20 @@ def render(payload):
               '## Limitations and reproducibility', '', limitations, '',
               'All new measurements were executed by the user. Report generation only reads saved evidence '
               'and makes no provider calls. Original predictions remain unchanged. The publication version '
-              '`v1.2` is distinct from the experiment directory name `v2`.', '',
+              '`v1.2` snapshot remains unchanged in Git; this supplement adds Llama in the same `v2` experiment directory.', '',
               'Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. '
               'Add `--recompute` to recalculate from the local evidence bundle, including '
-              '`artifacts/v2_budget_extension`. [Extension instructions](../../docs/budget_extension.md). '
+              '`artifacts/v2_budget_extension` and `artifacts/emissary_llama_comparison`. '
+              '[Budget instructions](../../docs/budget_extension.md); [Llama instructions](../../docs/llama_budget_extension.md). '
               'The committed summary supports clean-clone rendering without raw datasets or credentials. '
               'Paired OpenAI comparisons are retained in `results.json`; source/model revisions and '
               'cohort identity are in the manifest. Report generation does not create tags or releases.']
     (REPORT/'report.md').write_text('\n'.join(lines) + '\n')
-    brief = ['# Banking77 — v1.2 brief', '', f'**{completed}/56 quality conditions complete.** '
-             'The extension adds equal training budgets for four supervised methods, retaining three '
+    brief = ['# Banking77 — v1.2 with Llama supplement: brief', '', f'**{completed}/64 quality conditions complete.** '
+             'The extension includes equal training budgets for five supervised methods, retaining three '
              'zero-shot references and all original results.', '', *accuracy_table(results), '']
     brief += [text for finding in findings for text in (finding, '')]
-    brief += [integrity, '', availability, '', limitations, '',
+    brief += [llama_recipe, '', integrity, '', availability, '', limitations, '',
               'Emissary pricing remains unknown. This brief makes no cross-provider cost or latency claim. '
               'See the [extended report](report.md) for full calibration results, paired uncertainty, '
               'measurement scope and reproduction.']
@@ -391,13 +482,13 @@ def render(payload):
         ax.set(xlabel='Number of classes', xticks=COUNTS, ylim=(0, 1.02), title=f'{budget} training examples/class')
         ax.grid(alpha=.2)
     axes[0].set_ylabel('Accuracy')
-    fig.suptitle(f'Banking77 v1.2 — {completed}/56 conditions; dashed lines are zero-shot references')
+    fig.suptitle(f'Banking77 + Llama — {completed}/64 conditions; dashed lines are zero-shot references')
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol=4, fontsize=9, frameon=False)
     fig.tight_layout(rect=(0, .13, 1, .96))
     fig.savefig(REPORT/'accuracy.png', dpi=180)
     plt.close(fig)
-    print(f'Reports rebuilt offline: {completed}/56 complete; report.md, brief.md, results.csv/json and accuracy.png')
+    print(f'Reports rebuilt offline: {completed}/64 complete; report.md, brief.md, results.csv/json and accuracy.png')
 
 
 if __name__ == '__main__':
@@ -405,9 +496,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--completion-root', type=Path, default=Path('artifacts/v2_completion'))
     parser.add_argument('--extension-root', type=Path, default=Path('artifacts/v2_budget_extension'))
+    parser.add_argument('--llama-root', type=Path, default=Path('artifacts/emissary_llama_comparison'))
     parser.add_argument('--summary', type=Path, default=Path('reports/v2/results.json'))
     parser.add_argument('--output-dir', type=Path, default=REPORT)
     parser.add_argument('--recompute', action='store_true')
     args = parser.parse_args()
     REPORT = args.output_dir
-    render(collect(args.completion_root, args.extension_root) if args.recompute else read_json(args.summary))
+    render(collect(args.completion_root, args.extension_root, args.llama_root) if args.recompute else read_json(args.summary))
