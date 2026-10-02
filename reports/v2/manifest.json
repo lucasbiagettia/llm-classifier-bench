@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "status": "evaluated",
   "dataset": "banking77",
   "seed": 42,
@@ -91,6 +91,17 @@
         50,
         100
       ]
+    },
+    "emissary-llama": {
+      "model": "Llama-3.2-1B-Instruct",
+      "epochs": 1,
+      "mechanism": "Projects SFT",
+      "training_budgets_per_class": [
+        20,
+        100
+      ],
+      "checkpoint_selection": "last",
+      "initialization": "fresh instruction-tuned base for each condition"
     }
   },
   "selection": {
@@ -120,7 +131,9 @@
     "paired_comparisons": [
       "each variant minus zero-shot OpenAI",
       "supervised methods minus MiniLM at equal 20/100 budgets",
-      "within-method 100 minus 20 labels/class"
+      "within-method 100 minus 20 labels/class",
+      "Llama minus Qwen at equal 20/100 budgets",
+      "each Emissary variant minus Jev zero-shot (unequal supervision for SFT)"
     ]
   },
   "raw_evidence_roots": [
@@ -129,10 +142,11 @@
     "artifacts/reusable",
     "artifacts/emissary_qwen_sft/20260927T152104Z",
     "artifacts/v2_source",
-    "artifacts/v2_budget_extension"
+    "artifacts/v2_budget_extension",
+    "artifacts/emissary_llama_comparison"
   ],
   "rebuild_command": "PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py",
-  "release": "v1.2 publication snapshot of the v2 experiment; pull request does not merge automatically",
+  "release": "Llama supplement to the immutable v1.2 snapshot; no tag moved and no automatic merge",
   "label_sets": {
     "5": [
       "wrong_amount_of_cash_received",
@@ -193,11 +207,11 @@
       "top_up_reverted"
     ]
   },
-  "publication_version": "v1.2",
-  "quality_conditions": 56,
+  "publication_version": "v1.2+llama",
+  "quality_conditions": 64,
   "original_conditions": 28,
   "new_conditions": 28,
-  "data_integrity": "data_integrity.json: 16 historical and 28 new supervised conditions; IDs, exact/normalized texts and recorded SFT uploads checked offline",
+  "data_integrity": "data_integrity.json: 16 historical, 28 budget-extension and 8 Llama supervised conditions; IDs, exact/normalized texts and recorded SFT uploads checked offline",
   "extension": {
     "new_training_jobs": 4,
     "new_deployments": 4,
@@ -205,5 +219,21 @@
     "status": "28/28 completed",
     "configuration": "Same models/hyperparameters; Qwen 1 epoch, BERT 2 epochs, LR C=1; no consumed validation labels",
     "base_model_initialization": "Qwen 20/class starts from Qwen3-4B-Base, not from a 100-shot checkpoint"
+  },
+  "llama_conditions": 8,
+  "llama_extension": {
+    "status": "8/8 completed",
+    "new_training_jobs": 8,
+    "new_deployments": 8,
+    "new_predictions": 4000,
+    "same_fit_uploads_and_test_as_qwen": true,
+    "requested_parameter_omissions": {
+      "max_grad_norm": 0.3,
+      "warmup_ratio": 0.03
+    },
+    "reported_hyperparameters_match_qwen_all_eight": true,
+    "configuration_note": "The Llama template did not expose the omitted request fields. All successful responses report the same full hyperparameter values as Qwen; provider internals were not audited.",
+    "base_model_note": "Llama is instruction-tuned; Qwen is a pretrained base. Model size and instruction tuning are not isolated.",
+    "previous_preflight": "Retained locally in artifacts/emissary_llama_comparison_preflight_v1; no training submitted, no predictions."
   }
 }

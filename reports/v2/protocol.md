@@ -1,7 +1,7 @@
 # Banking77 v2: completed experimental design
 
-The [extended report](report.md) and [brief](brief.md) cover **56 completed
-conditions**: fourteen method/budget variants across 5, 10, 15 and 20 labels. The portable
+The [extended report](report.md) and [brief](brief.md) cover **64 completed
+conditions**: sixteen method/budget variants across 5, 10, 15 and 20 labels. The portable
 [manifest](manifest.json) records the final configuration and source revisions.
 Earlier pilot matrices and machine-specific launchers are local working material.
 
@@ -25,6 +25,7 @@ budget from the remaining 100. Reserved validation labels are not consumed.
 | Frozen MiniLM + logistic regression | 20/50/100 | all-MiniLM-L6-v2, C=1 |
 | BERT | 20/50/100 | bert-base-uncased, two epochs, batch 16, LR 2e-5, max length 128 |
 | Emissary Qwen SFT | 20/100 | Qwen3-4B-Base, one epoch, last checkpoint |
+| Emissary Llama SFT | 20/100 | Llama-3.2-1B-Instruct, one epoch, last checkpoint |
 
 **100/class means 100 training shots/class.** SFT labels are not in-context
 prompt demonstrations. Zero-shot and supervised conditions do not have equal
@@ -38,11 +39,11 @@ substituted with SFT. Earlier Llama readiness probes are not reported as Qwen ru
 
 ## Offline data audit
 
-All 16 historical supervised conditions and all 28 extension conditions passed
+All 16 historical supervised conditions, 28 budget-extension conditions and eight Llama conditions passed
 ID, exact-text and normalized-text checks against the entire official test split.
 Normalization uses NFKC, casefold and collapsed whitespace. Exact training pools,
 consumed validation counts (zero), model/settings identity and the new Qwen uploads
-were verified from saved artifacts. The [audit](data_integrity.json) is portable.
+and byte-identical Llama uploads were verified from saved artifacts. The [audit](data_integrity.json) is portable.
 This does not audit base pretraining, semantic duplicates or provider internals.
 
 ## Measurement and recovery
@@ -58,7 +59,11 @@ invalid probability sums. The continuation retained 830 validated outputs and
 requested 970 missing predictions. Four successful Qwen jobs supplied 2000 new
 test predictions. The budget extension completed 28/28 additional conditions,
 14,000 predictions, four fresh Qwen training jobs and four deployments. Costs/timings remain in their original attempt ledgers;
-historical and new phases are not silently pooled.
+historical and new phases are not silently pooled. The Llama supplement adds eight successful
+fresh jobs/deployments and 4,000 predictions; the complete report has 64 conditions
+and 32,000 predictions. Its first local preflight stopped before any upload or
+training and is retained separately. The earlier September readiness probes remain
+separate from these eight successful jobs.
 
 Jev initially required probabilities to sum to 1 within 0.0001. The follow-up
 kept that tolerance, but retained the class label if only the sum check failed
@@ -78,7 +83,8 @@ from only the successful probability subset of an incomplete cohort.
 Quality intervals use 2000 gold-stratified bootstrap resamples, seed 20260925,
 95% percentile intervals. Paired differences against OpenAI share the same
 resampled IDs within each K. The update also includes matched-budget contrasts
-against MiniLM and within-method 100-minus-20 effects. These are pointwise exploratory intervals, conditional
+against MiniLM, within-method 100-minus-20 effects, Llama-minus-Qwen at equal
+budgets, and Emissary-minus-Jev contrasts (unequal supervision for SFT). These are pointwise exploratory intervals, conditional
 on fixed labels, one fitted model and one seed, without multiplicity correction.
 They do not estimate between-seed uncertainty or isolate a causal cardinality effect.
 
@@ -115,3 +121,17 @@ For a new independently budgeted campaign, use the maintained
 protocol. Retired one-off launchers live in ignored `scripts/local/`; they are not
 the public reproduction interface. Publication version `v1.2` names this report
 update; the experiment continues to use the `reports/v2` directory.
+
+## Llama supplement configuration
+
+The Llama requests use the same fit pools, upload bytes and shared parameters
+as Qwen. `max_grad_norm` and `warmup_ratio` were omitted because the Llama
+parameter template did not expose them. Every successful training response
+reports 0.3 and 0.03, respectively, and the full reported hyperparameters match
+Qwen in all eight conditions. This checks saved provider responses, not internal
+training implementation. Llama is instruction-tuned and Qwen is a pretrained
+base; this does not isolate model size or instruction tuning.
+
+The immutable `v1.2` Git tag keeps the preceding 56-condition publication.
+This supplement extends its reports without changing any previous metrics or
+predictions. See [Llama execution instructions](../../docs/llama_budget_extension.md).

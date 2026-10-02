@@ -1,14 +1,16 @@
-# Banking77 v2 experiment — v1.2 extended report
+# Banking77 v2 experiment — v1.2 with Llama supplement
 
-**56/56 quality conditions complete.** Fourteen method/budget variants across four label sets.
+**64/64 quality conditions complete.** Sixteen method/budget variants across four label sets.
 
 ## Design and data integrity
 
-Seed 42; nested label sets of 5/10/15/20 classes; 40 official held-out test examples/class (200/400/600/800 predictions per condition). The 28 new budget conditions add 14,000 predictions to the 28 earlier conditions. All methods within each K share identical test IDs, text and labels. The eligible pool contains 42 labels. See the [protocol](protocol.md) and [manifest](manifest.json).
+Seed 42; nested label sets of 5/10/15/20 classes; 40 official held-out test examples/class (200/400/600/800 predictions per condition). The 28 new budget conditions add 14,000 predictions to the 28 earlier conditions; eight Llama conditions add a further 4,000 predictions (32,000 total). All methods within each K share identical test IDs, text and labels. The eligible pool contains 42 labels. See the [protocol](protocol.md) and [manifest](manifest.json).
 
-TF-IDF+LR, frozen MiniLM+LR and BERT use 20/50/100 fit examples per class. Emissary Qwen3-4B-Base SFT uses 20/100 per class. OpenAI, Jev and Emissary routing remain zero-shot. Within each K, 20 ⊂ 50 ⊂ 100 training pools, with identical members across methods at equal budgets. Twenty-five additional examples/class remain reserved and unused for validation. Both regressions retain C=1; BERT retains two CPU epochs; Qwen retains one epoch and selects the last checkpoint. Hyperparameters are fixed rather than tuned independently for each budget. Qwen 20 starts from the pretrained base, not from the 100-shot model. These are training labels, not prompt demonstrations.
+TF-IDF+LR, frozen MiniLM+LR and BERT use 20/50/100 fit examples per class. Emissary Qwen3-4B-Base SFT and Llama-3.2-1B-Instruct SFT use 20/100 per class. OpenAI, Jev and Emissary routing remain zero-shot. Within each K, 20 ⊂ 50 ⊂ 100 training pools, with identical members across methods at equal budgets. Twenty-five additional examples/class remain reserved and unused for validation. Both regressions retain C=1; BERT retains two CPU epochs; Qwen retains one epoch and selects the last checkpoint. Hyperparameters are fixed rather than tuned independently for each budget. Qwen 20 starts from the pretrained base, not from the 100-shot model. Llama also starts fresh for each budget, using one epoch and the last checkpoint. These are training labels, not prompt demonstrations.
 
-Offline checks passed for 16 historical supervised conditions and all 28 new conditions. There is no overlap of IDs, exact text, or text normalized with NFKC/casefold/collapsed whitespace between fit, reserved validation and test. Checks include the entire official test split and the recorded Qwen training uploads. [Audit evidence](data_integrity.json). This does not audit base-model pretraining, semantic duplicates or the provider’s internal processing.
+Llama uses byte-identical uploads and test cohorts to the paired Qwen condition. The request omitted `max_grad_norm` and `warmup_ratio`, which the Llama parameter template did not expose. All eight successful training responses nevertheless report 0.3 and 0.03, respectively, and their complete reported hyperparameters match Qwen. This is provider-reported configuration, not an inspection of training internals. Llama is an instruction-tuned 1B base; Qwen is a 4B pretrained base, so this comparison does not isolate model size or instruction tuning. The earlier blocked preflight is retained separately and produced no training job or predictions.
+
+Offline checks passed for 16 historical supervised conditions, 28 budget-extension conditions and eight Llama conditions (52 supervised conditions total). There is no overlap of IDs, exact text, or text normalized with NFKC/casefold/collapsed whitespace between fit, reserved validation and test. Checks include the entire official test split and the recorded Qwen and Llama training uploads. [Audit evidence](data_integrity.json). This does not audit base-model pretraining, semantic duplicates or the provider’s internal processing.
 
 ## Accuracy by label budget
 
@@ -28,20 +30,26 @@ Offline checks passed for 16 historical supervised conditions and all 28 new con
 | Jev zero-shot | 0 | 94.00% | 92.25% | 89.83% | 86.12% |
 | Emissary Qwen SFT | 20 | 84.00% | 91.50% | 89.50% | 84.50% |
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
+| Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
+| Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
 
 ![Accuracy by cardinality and training budget](accuracy.png)
 
 ## Interpretation
 
-At equal 20/class budgets, MiniLM+LR has the highest accuracy and macro-F1 among the four supervised methods at every K. At equal 100/class budgets, MiniLM leads accuracy at K=10/15/20 and ties Qwen at K=5 (98.00%); Qwen has the slightly higher macro-F1 at K=5. These are point estimates; paired intervals below quantify uncertainty.
+At equal 20/class budgets, MiniLM+LR retains the highest accuracy and macro-F1 among all five supervised methods at every K. At 100/class, MiniLM leads accuracy at K=10/15; MiniLM, Qwen and Llama tie at K=5 (98.00%). Llama now leads at K=20 (93.375%, versus MiniLM 92.375% and Qwen 92.25%). These are point estimates; the paired intervals in the extended report quantify uncertainty.
 
-Qwen 100/class no longer has the highest accuracy at K=20 after adding MiniLM 100/class: 92.25% versus 92.38%. The difference is one prediction out of 800. At K=10/15, MiniLM 100/class scores 96.50%/95.83%, versus Qwen 93.25%/93.83%.
+Llama 100/class scores 98.00%, 95.25%, 95.00% and 93.375% accuracy. It ties Qwen at K=5 and exceeds it by 2.00, 1.17 and 1.13 percentage points at K=10/15/20. The eight equal-budget Llama-minus-Qwen accuracy intervals include zero except the 20/class K=5 and K=20 comparisons. The 100/class K=20 lead over MiniLM is also not resolved by its 95% paired interval.
 
-Qwen 20/class scores 84.00%, 91.50%, 89.50% and 84.50% accuracy. More labels improve Qwen in every K under this fixed one-epoch recipe. The low-budget K=5 result shows that quality is not monotonic in class cardinality.
+Against Jev zero-shot, Llama 100/class improves accuracy by 4.00, 3.00, 5.17 and 7.25 percentage points; all four pointwise 95% paired accuracy intervals exclude zero. At K=20, that is 93.375% versus 86.125%, or 58 more correct predictions out of 800. This comparison uses different amounts of supervision and is not an equal-label-budget provider ranking.
+
+Llama 20/class scores 91.00%, 91.75%, 88.00% and 87.25% accuracy. More labels improve Llama at every K. Its 20/class result exceeds Jev only at K=20, where the paired accuracy interval includes zero. Qwen 20/class remains at 84.00%, 91.50%, 89.50% and 84.50%.
+
+Probability-quality leadership is now shared by Emissary SFT variants: Qwen 100/class has the lowest log loss at K=5/10 and Brier at K=5; Llama 100/class has the lowest log loss at K=15/20 and Brier at K=10/15/20 among variants with complete probabilities. ECE rankings vary; low ECE alone does not imply high accuracy. These are point rankings, without uncertainty tests for calibration or proper scoring rules. The regressions were not recalibrated.
 
 BERT at 20/class scores 56.00%, 21.25%, 17.67% and 16.25% accuracy, while its 100/class variants score 96.00%, 92.50%, 87.67% and 85.12%. This characterizes the fixed two-epoch recipe; it does not establish the best achievable performance of a separately tuned BERT model.
 
-Qwen SFT and Emissary routing are different models/mechanisms. Equal training budgets improve comparability among supervised methods; comparisons against zero-shot services still differ in supervision. Quick Train is not part of this benchmark.
+Qwen SFT, Llama SFT and Emissary routing are different models/mechanisms. Equal training budgets improve comparability among supervised methods; comparisons against zero-shot services still differ in supervision. Quick Train is not part of this benchmark.
 
 ## Full quality and calibration
 
@@ -105,6 +113,14 @@ OpenAI has no probabilities. Jev retains complete accuracy/F1 coverage but has 1
 | Emissary Qwen SFT (100/class) | 10 | 400/400 (completed) | 93.25% [90.50%, 95.50%] | 0.933 | 0.026 | 0.024 | 0.208 | 0.099 |
 | Emissary Qwen SFT (100/class) | 15 | 600/600 (completed) | 93.83% [92.00%, 95.67%] | 0.938 | 0.038 | 0.031 | 0.241 | 0.098 |
 | Emissary Qwen SFT (100/class) | 20 | 800/800 (completed) | 92.25% [90.50%, 93.88%] | 0.922 | 0.027 | 0.025 | 0.288 | 0.115 |
+| Emissary Llama SFT (20/class) | 5 | 200/200 (completed) | 91.00% [87.00%, 94.50%] | 0.910 | 0.054 | 0.028 | 0.249 | 0.121 |
+| Emissary Llama SFT (20/class) | 10 | 400/400 (completed) | 91.75% [89.00%, 94.25%] | 0.917 | 0.031 | 0.025 | 0.261 | 0.121 |
+| Emissary Llama SFT (20/class) | 15 | 600/600 (completed) | 88.00% [85.50%, 90.33%] | 0.879 | 0.026 | 0.024 | 0.388 | 0.168 |
+| Emissary Llama SFT (20/class) | 20 | 800/800 (completed) | 87.25% [85.12%, 89.38%] | 0.875 | 0.019 | 0.028 | 0.460 | 0.189 |
+| Emissary Llama SFT (100/class) | 5 | 200/200 (completed) | 98.00% [96.00%, 99.50%] | 0.980 | 0.019 | 0.003 | 0.078 | 0.041 |
+| Emissary Llama SFT (100/class) | 10 | 400/400 (completed) | 95.25% [93.25%, 97.00%] | 0.952 | 0.036 | 0.031 | 0.243 | 0.081 |
+| Emissary Llama SFT (100/class) | 15 | 600/600 (completed) | 95.00% [93.17%, 96.67%] | 0.950 | 0.029 | 0.024 | 0.168 | 0.076 |
+| Emissary Llama SFT (100/class) | 20 | 800/800 (completed) | 93.38% [91.75%, 94.75%] | 0.933 | 0.035 | 0.034 | 0.264 | 0.106 |
 
 ## Paired effects at equal budgets
 
@@ -136,6 +152,56 @@ Differences are method minus MiniLM+LR using the same training budget and test I
 | Emissary Qwen SFT | 100 | 10 | -3.25 [-5.75, -1.00] | -3.31 [-5.69, -1.16] |
 | Emissary Qwen SFT | 100 | 15 | -2.00 [-3.83, -0.33] | -2.02 [-3.84, -0.28] |
 | Emissary Qwen SFT | 100 | 20 | -0.12 [-2.13, +1.75] | -0.13 [-2.23, +1.76] |
+| Emissary Llama SFT | 20 | 5 | -2.50 [-7.00, +1.50] | -2.45 [-6.87, +1.58] |
+| Emissary Llama SFT | 20 | 10 | -1.50 [-4.25, +1.25] | -1.58 [-4.45, +1.18] |
+| Emissary Llama SFT | 20 | 15 | -4.83 [-7.50, -2.17] | -4.84 [-7.54, -2.19] |
+| Emissary Llama SFT | 20 | 20 | -1.25 [-3.63, +1.25] | -1.14 [-3.48, +1.38] |
+| Emissary Llama SFT | 100 | 5 | +0.00 [-1.50, +1.50] | +0.00 [-1.50, +1.50] |
+| Emissary Llama SFT | 100 | 10 | -1.25 [-3.25, +0.75] | -1.34 [-3.37, +0.63] |
+| Emissary Llama SFT | 100 | 15 | -0.83 [-2.50, +1.00] | -0.84 [-2.53, +0.94] |
+| Emissary Llama SFT | 100 | 20 | +1.00 [-0.75, +2.62] | +0.97 [-0.85, +2.60] |
+
+## Llama versus Qwen at equal budgets
+
+Differences are Llama minus Qwen, with identical fit uploads and test IDs at each budget.
+
+| Method | Fit/class | K | Δ accuracy [95% CI], pp | Δ macro-F1 [95% CI], pp |
+| --- | ---: | ---: | --- | --- |
+| Emissary Llama SFT | 20 | 5 | +7.00 [+2.49, +12.00] | +9.02 [+3.65, +14.75] |
+| Emissary Llama SFT | 20 | 10 | +0.25 [-2.00, +2.50] | +0.10 [-2.14, +2.40] |
+| Emissary Llama SFT | 20 | 15 | -1.50 [-4.00, +1.00] | -1.58 [-4.26, +0.95] |
+| Emissary Llama SFT | 20 | 20 | +2.75 [+0.75, +4.75] | +2.87 [+0.88, +4.94] |
+| Emissary Llama SFT | 100 | 5 | +0.00 [-1.50, +1.50] | -0.00 [-1.50, +1.50] |
+| Emissary Llama SFT | 100 | 10 | +2.00 [+0.00, +4.25] | +1.97 [-0.09, +4.27] |
+| Emissary Llama SFT | 100 | 15 | +1.17 [-0.33, +2.67] | +1.17 [-0.34, +2.72] |
+| Emissary Llama SFT | 100 | 20 | +1.12 [-0.38, +2.50] | +1.10 [-0.37, +2.48] |
+
+## Emissary variants versus Jev zero-shot
+
+Differences are Emissary minus Jev. SFT consumes training labels; Jev consumes none. These are exploratory performance contrasts, not equal-supervision comparisons.
+
+| Method | Fit/class | K | Δ accuracy [95% CI], pp | Δ macro-F1 [95% CI], pp |
+| --- | ---: | ---: | --- | --- |
+| Emissary routing zero-shot | 0 | 5 | -4.00 [-6.50, -1.99] | -4.28 [-7.44, -2.02] |
+| Emissary routing zero-shot | 0 | 10 | -5.50 [-8.00, -3.00] | -5.70 [-8.38, -3.22] |
+| Emissary routing zero-shot | 0 | 15 | -7.67 [-10.00, -5.50] | -7.30 [-9.54, -5.28] |
+| Emissary routing zero-shot | 0 | 20 | -8.62 [-10.88, -6.37] | -8.43 [-10.83, -6.18] |
+| Emissary Qwen SFT | 20 | 5 | -10.00 [-14.50, -5.50] | -12.00 [-17.45, -6.80] |
+| Emissary Qwen SFT | 20 | 10 | -0.75 [-3.75, +2.00] | -0.70 [-3.70, +2.08] |
+| Emissary Qwen SFT | 20 | 15 | -0.33 [-3.00, +2.33] | -0.35 [-3.01, +2.34] |
+| Emissary Qwen SFT | 20 | 20 | -1.62 [-4.13, +1.00] | -1.37 [-3.99, +1.34] |
+| Emissary Qwen SFT | 100 | 5 | +4.00 [+1.50, +7.00] | +4.01 [+1.47, +7.14] |
+| Emissary Qwen SFT | 100 | 10 | +1.00 [-1.75, +3.50] | +0.92 [-1.72, +3.49] |
+| Emissary Qwen SFT | 100 | 15 | +4.00 [+2.00, +6.00] | +3.97 [+1.91, +6.10] |
+| Emissary Qwen SFT | 100 | 20 | +6.13 [+4.00, +8.25] | +6.29 [+4.20, +8.51] |
+| Emissary Llama SFT | 20 | 5 | -3.00 [-6.50, +0.00] | -2.98 [-6.47, +0.09] |
+| Emissary Llama SFT | 20 | 10 | -0.50 [-3.50, +2.50] | -0.60 [-3.67, +2.38] |
+| Emissary Llama SFT | 20 | 15 | -1.83 [-4.50, +0.83] | -1.93 [-4.79, +0.89] |
+| Emissary Llama SFT | 20 | 20 | +1.13 [-1.50, +3.63] | +1.50 [-1.14, +3.97] |
+| Emissary Llama SFT | 100 | 5 | +4.00 [+1.00, +7.50] | +4.01 [+0.98, +7.52] |
+| Emissary Llama SFT | 100 | 10 | +3.00 [+0.75, +5.25] | +2.89 [+0.56, +5.27] |
+| Emissary Llama SFT | 100 | 15 | +5.17 [+3.00, +7.33] | +5.14 [+2.91, +7.38] |
+| Emissary Llama SFT | 100 | 20 | +7.25 [+5.25, +9.25] | +7.39 [+5.42, +9.53] |
 
 ## Effect of increasing training labels
 
@@ -159,6 +225,10 @@ Differences are 100/class minus 20/class within a method, on the same test IDs. 
 | Emissary Qwen SFT | 100 | 10 | +1.75 [-1.00, +4.75] | +1.62 [-1.10, +4.48] |
 | Emissary Qwen SFT | 100 | 15 | +4.33 [+2.00, +6.50] | +4.32 [+2.00, +6.57] |
 | Emissary Qwen SFT | 100 | 20 | +7.75 [+5.50, +10.00] | +7.65 [+5.41, +9.95] |
+| Emissary Llama SFT | 100 | 5 | +7.00 [+3.50, +11.00] | +6.99 [+3.48, +10.99] |
+| Emissary Llama SFT | 100 | 10 | +3.50 [+1.25, +5.75] | +3.49 [+1.22, +5.85] |
+| Emissary Llama SFT | 100 | 15 | +7.00 [+4.67, +9.34] | +7.07 [+4.69, +9.58] |
+| Emissary Llama SFT | 100 | 20 | +6.12 [+4.12, +8.12] | +5.89 [+3.83, +7.84] |
 
 ## Operational measurements and costs
 
@@ -168,6 +238,6 @@ Inference uses batch size 1, concurrency 1, no warmup and no automatic retries. 
 
 One seed and previously observed test results make this an exploratory extension. Bootstrap intervals condition on fitted models, labels, class balance and campaign seed; they do not estimate training-seed variability. The 2,000 gold-stratified resamples use seed 20260925 and pointwise 95% percentile intervals without multiplicity adjustment. Test cohorts overlap across K and must not be pooled as independent observations. Definitions were assistant-reviewed, not independently human-validated. Changing K adds classes and examples, so trends do not isolate a causal cardinality effect.
 
-All new measurements were executed by the user. Report generation only reads saved evidence and makes no provider calls. Original predictions remain unchanged. The publication version `v1.2` is distinct from the experiment directory name `v2`.
+All new measurements were executed by the user. Report generation only reads saved evidence and makes no provider calls. Original predictions remain unchanged. The publication version `v1.2` snapshot remains unchanged in Git; this supplement adds Llama in the same `v2` experiment directory.
 
-Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. Add `--recompute` to recalculate from the local evidence bundle, including `artifacts/v2_budget_extension`. [Extension instructions](../../docs/budget_extension.md). The committed summary supports clean-clone rendering without raw datasets or credentials. Paired OpenAI comparisons are retained in `results.json`; source/model revisions and cohort identity are in the manifest. Report generation does not create tags or releases.
+Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. Add `--recompute` to recalculate from the local evidence bundle, including `artifacts/v2_budget_extension` and `artifacts/emissary_llama_comparison`. [Budget instructions](../../docs/budget_extension.md); [Llama instructions](../../docs/llama_budget_extension.md). The committed summary supports clean-clone rendering without raw datasets or credentials. Paired OpenAI comparisons are retained in `results.json`; source/model revisions and cohort identity are in the manifest. Report generation does not create tags or releases.

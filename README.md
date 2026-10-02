@@ -24,13 +24,14 @@ The current implementation supports six classifier families:
 - [Latency and throughput](docs/latency_measurement.md)
 - [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
 
-The v1.2 report update covers **56/56 quality conditions** in the v2 experiment:
-14 method/budget variants across 5/10/15/20 classes, with 40 held-out test examples
+The v1.2 report with its Llama supplement covers **64/64 quality conditions** in the v2 experiment:
+16 method/budget variants across 5/10/15/20 classes, with 40 held-out test examples
 per class. Local supervised models use 20/50/100 training examples/class; Emissary
-Qwen SFT uses 20/100. Equal budgets share the same training examples. The
+Qwen and Llama SFT use 20/100. Equal budgets share the same training examples. The
 [report](reports/v2/report.md) includes paired comparisons and a
 [data integrity audit](reports/v2/data_integrity.json). See the
-[budget extension instructions](docs/budget_extension.md) for the execution script.
+[budget extension instructions](docs/budget_extension.md) and
+[Llama instructions](docs/llama_budget_extension.md) for the execution scripts.
 
 Rebuild the published reports, tables and figure offline from the versioned
 summary (no API calls):
