@@ -2,6 +2,31 @@
 
 Reproducible benchmark infrastructure for comparing closed-set text-classification approaches across predictive quality, probabilistic calibration, latency, and cost.
 
+## V2 benchmark results
+
+V2 benchmark accuracy results on Banking77, copied from the [brief](reports/v2/brief.md).
+
+| Method | Fit/class | K=5 | K=10 | K=15 | K=20 |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| TF-IDF + LR | 20 | 90.50% | 86.75% | 81.50% | 82.62% |
+| TF-IDF + LR | 50 | 94.50% | 93.25% | 89.83% | 88.25% |
+| TF-IDF + LR | 100 | 96.50% | 94.25% | 93.00% | 90.00% |
+| MiniLM + LR | 20 | 93.50% | 93.25% | 92.83% | 88.50% |
+| MiniLM + LR | 50 | 96.50% | 96.50% | 94.33% | 90.88% |
+| MiniLM + LR | 100 | 98.00% | 96.50% | 95.83% | 92.38% |
+| BERT | 20 | 56.00% | 21.25% | 17.67% | 16.25% |
+| BERT | 50 | 72.50% | 58.75% | 51.33% | 67.88% |
+| BERT | 100 | 96.00% | 92.50% | 87.67% | 85.12% |
+| OpenAI zero-shot | 0 | 92.00% | 88.25% | 87.33% | 85.00% |
+| Emissary routing zero-shot | 0 | 90.00% | 86.75% | 82.17% | 77.50% |
+| Jev zero-shot | 0 | 94.00% | 92.25% | 89.83% | 86.12% |
+| Emissary Qwen SFT | 20 | 84.00% | 91.50% | 89.50% | 84.50% |
+| Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
+| Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
+| Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
+
+[Read the full V2 benchmark report](reports/v2/report.md).
+
 The current implementation supports six classifier families:
 
 - **Emissary zero-shot and Projects fine-tuning** — routing experiments plus an
