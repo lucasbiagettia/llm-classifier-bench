@@ -1,0 +1,1014 @@
+{
+  "schema_version": 1,
+  "campaign_root": "artifacts/benchmark_runs/20261007T182643602204Z",
+  "campaign_id": "20261007T182643602204Z",
+  "model": "gpt-6-luna",
+  "seed": 42,
+  "scope": "One resumed campaign; earlier abandoned campaign excluded. Refusals were not retried.",
+  "audit": {
+    "status": "passed",
+    "conditions": [
+      {
+        "k": 5,
+        "comparable_conditions_checked": 16,
+        "test_examples": 200,
+        "test_identity": "IDs, order, text and gold labels matched",
+        "fit": 500,
+        "reserved_validation": 125,
+        "test": 200,
+        "overlapping_ids": 0,
+        "overlapping_exact_texts": 0,
+        "overlapping_normalized_texts": 0
+      },
+      {
+        "k": 10,
+        "comparable_conditions_checked": 16,
+        "test_examples": 400,
+        "test_identity": "IDs, order, text and gold labels matched",
+        "fit": 1000,
+        "reserved_validation": 250,
+        "test": 400,
+        "overlapping_ids": 0,
+        "overlapping_exact_texts": 0,
+        "overlapping_normalized_texts": 0
+      },
+      {
+        "k": 15,
+        "comparable_conditions_checked": 16,
+        "test_examples": 600,
+        "test_identity": "IDs, order, text and gold labels matched",
+        "fit": 1500,
+        "reserved_validation": 375,
+        "test": 600,
+        "overlapping_ids": 0,
+        "overlapping_exact_texts": 0,
+        "overlapping_normalized_texts": 0
+      },
+      {
+        "k": 20,
+        "comparable_conditions_checked": 16,
+        "test_examples": 800,
+        "test_identity": "IDs, order, text and gold labels matched",
+        "fit": 2000,
+        "reserved_validation": 500,
+        "test": 800,
+        "overlapping_ids": 0,
+        "overlapping_exact_texts": 0,
+        "overlapping_normalized_texts": 0
+      }
+    ]
+  },
+  "conditions": [
+    {
+      "method": "openai-decisions",
+      "title": "GPT-6 Decisions zero-shot",
+      "k": 5,
+      "fit_per_class": 0,
+      "n": 200,
+      "expected": 200,
+      "probability_vectors": 200,
+      "status": "completed",
+      "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0",
+      "refused_examples": 0,
+      "pending_examples": 0,
+      "coverage": 1.0,
+      "refused_sample_ids": [],
+      "metrics": {
+        "accuracy": {
+          "name": "accuracy",
+          "value": 0.93,
+          "available": true,
+          "metadata": {
+            "n_samples": 200
+          }
+        },
+        "macro_f1": {
+          "name": "macro_f1",
+          "value": 0.9296825396825396,
+          "available": true,
+          "metadata": {
+            "n_samples": 200,
+            "labels": [
+              "activate_my_card",
+              "card_payment_fee_charged",
+              "extra_charge_on_statement",
+              "transfer_timing",
+              "wrong_amount_of_cash_received"
+            ],
+            "per_class_f1": {
+              "activate_my_card": 1.0,
+              "card_payment_fee_charged": 0.8888888888888888,
+              "extra_charge_on_statement": 0.8571428571428571,
+              "transfer_timing": 0.9523809523809523,
+              "wrong_amount_of_cash_received": 0.95
+            }
+          }
+        },
+        "top_label_ece": {
+          "name": "top_label_ece",
+          "value": 0.043849999999999986,
+          "available": true,
+          "metadata": {
+            "n_samples": 200,
+            "n_bins": 10,
+            "binning": "fixed_width",
+            "bins": [
+              {
+                "bin_index": 5,
+                "lower": 0.5,
+                "upper": 0.6,
+                "count": 5,
+                "accuracy": 0.8,
+                "mean_confidence": 0.558,
+                "absolute_gap": 0.242
+              },
+              {
+                "bin_index": 6,
+                "lower": 0.6,
+                "upper": 0.7,
+                "count": 5,
+                "accuracy": 0.6,
+                "mean_confidence": 0.664,
+                "absolute_gap": 0.06400000000000006
+              },
+              {
+                "bin_index": 7,
+                "lower": 0.7,
+                "upper": 0.8,
+                "count": 10,
+                "accuracy": 0.5,
+                "mean_confidence": 0.764,
+                "absolute_gap": 0.264
+              },
+              {
+                "bin_index": 8,
+                "lower": 0.8,
+                "upper": 0.9,
+                "count": 12,
+                "accuracy": 0.6666666666666666,
+                "mean_confidence": 0.8591666666666667,
+                "absolute_gap": 0.19250000000000012
+              },
+              {
+                "bin_index": 9,
+                "lower": 0.9,
+                "upper": 1.0,
+                "count": 168,
+                "accuracy": 0.9880952380952381,
+                "mean_confidence": 0.9744642857142858,
+                "absolute_gap": 0.013630952380952355
+              }
+            ]
+          }
+        },
+        "adaptive_ece": {
+          "name": "adaptive_ece",
+          "value": 0.04255000000000001,
+          "available": true,
+          "metadata": {
+            "n_samples": 200,
+            "requested_bins": 10,
+            "effective_bins": 7,
+            "binning": "equal_frequency_preserve_ties_v2",
+            "bins": [
+              {
+                "bin_index": 0,
+                "min_confidence": 0.54,
+                "max_confidence": 0.79,
+                "count": 20,
+                "accuracy": 0.6,
+                "mean_confidence": 0.6875,
+                "absolute_gap": 0.08750000000000002
+              },
+              {
+                "bin_index": 1,
+                "min_confidence": 0.8,
+                "max_confidence": 0.92,
+                "count": 22,
+                "accuracy": 0.7272727272727273,
+                "mean_confidence": 0.8813636363636363,
+                "absolute_gap": 0.15409090909090906
+              },
+              {
+                "bin_index": 2,
+                "min_confidence": 0.93,
+                "max_confidence": 0.95,
+                "count": 18,
+                "accuracy": 1.0,
+                "mean_confidence": 0.9427777777777777,
+                "absolute_gap": 0.057222222222222285
+              },
+              {
+                "bin_index": 3,
+                "min_confidence": 0.96,
+                "max_confidence": 0.97,
+                "count": 27,
+                "accuracy": 1.0,
+                "mean_confidence": 0.9681481481481482,
+                "absolute_gap": 0.0318518518518518
+              },
+              {
+                "bin_index": 4,
+                "min_confidence": 0.98,
+                "max_confidence": 0.98,
+                "count": 51,
+                "accuracy": 1.0,
+                "mean_confidence": 0.98,
+                "absolute_gap": 0.020000000000000018
+              },
+              {
+                "bin_index": 5,
+                "min_confidence": 0.99,
+                "max_confidence": 0.99,
+                "count": 46,
+                "accuracy": 1.0,
+                "mean_confidence": 0.99,
+                "absolute_gap": 0.010000000000000009
+              },
+              {
+                "bin_index": 6,
+                "min_confidence": 1.0,
+                "max_confidence": 1.0,
+                "count": 16,
+                "accuracy": 1.0,
+                "mean_confidence": 1.0,
+                "absolute_gap": 0.0
+              }
+            ]
+          }
+        },
+        "multiclass_log_loss": {
+          "name": "multiclass_log_loss",
+          "value": 0.22485209254704494,
+          "available": true,
+          "metadata": {
+            "n_samples": 200,
+            "epsilon": 1e-15,
+            "natural_log": true
+          }
+        },
+        "multiclass_brier_score": {
+          "name": "multiclass_brier_score",
+          "value": 0.11071699999999977,
+          "available": true,
+          "metadata": {
+            "n_samples": 200,
+            "classwise_reduction": "sum",
+            "sample_reduction": "mean",
+            "range": [
+              0.0,
+              2.0
+            ]
+          }
+        }
+      },
+      "uncertainty": {
+        "method": "gold_stratified_percentile_bootstrap_v1",
+        "confidence_level": 0.95,
+        "repetitions": 2000,
+        "bootstrap_seed": 20260925,
+        "n_samples": 200,
+        "paired_difference": false,
+        "conditioning": "fixed fitted models, label set, class balance and campaign seed",
+        "multiplicity_adjustment": "none; pointwise exploratory intervals",
+        "metrics": {
+          "accuracy": {
+            "estimate": 0.93,
+            "lower": 0.895,
+            "upper": 0.96
+          },
+          "macro_f1": {
+            "estimate": 0.9296825396825398,
+            "lower": 0.8936467681504716,
+            "upper": 0.9600397170013865
+          }
+        }
+      },
+      "operations": {
+        "api_attempts": 200,
+        "http_503_attempts": 0,
+        "total_cost_usd": 0.004255,
+        "known_cost_subtotal_usd": 0.004255,
+        "cost_per_1000_successful_usd": 0.021275,
+        "latency_p50_ms": 204.057707,
+        "latency_p95_ms": 566.7828492499991,
+        "measurement_phases": [
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class",
+            "successful_examples": 200,
+            "latency_p50_ms": 204.057707,
+            "latency_p95_ms": 566.7828492499991
+          }
+        ]
+      }
+    },
+    {
+      "method": "openai-decisions",
+      "title": "GPT-6 Decisions zero-shot",
+      "k": 10,
+      "fit_per_class": 0,
+      "n": 398,
+      "expected": 400,
+      "probability_vectors": 398,
+      "status": "completed_with_refusals",
+      "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0",
+      "refused_examples": 2,
+      "pending_examples": 0,
+      "coverage": 0.995,
+      "refused_sample_ids": [
+        "banking77:test:786",
+        "banking77:test:2921"
+      ],
+      "metrics": {
+        "accuracy": {
+          "name": "accuracy",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "macro_f1": {
+          "name": "macro_f1",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "top_label_ece": {
+          "name": "top_label_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "adaptive_ece": {
+          "name": "adaptive_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_log_loss": {
+          "name": "multiclass_log_loss",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_brier_score": {
+          "name": "multiclass_brier_score",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        }
+      },
+      "operations": {
+        "api_attempts": 400,
+        "http_503_attempts": 0,
+        "total_cost_usd": 0.0121262,
+        "known_cost_subtotal_usd": 0.0121262,
+        "cost_per_1000_successful_usd": 0.030467839195979902,
+        "latency_p50_ms": null,
+        "latency_p95_ms": null,
+        "measurement_phases": [
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class",
+            "successful_examples": 26,
+            "latency_p50_ms": 187.80573149999998,
+            "latency_p95_ms": 296.06929675
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001",
+            "successful_examples": 214,
+            "latency_p50_ms": 198.3259055,
+            "latency_p95_ms": 598.6567135499998
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002",
+            "successful_examples": 158,
+            "latency_p50_ms": 193.3499995,
+            "latency_p95_ms": 605.0669030500001
+          }
+        ]
+      }
+    },
+    {
+      "method": "openai-decisions",
+      "title": "GPT-6 Decisions zero-shot",
+      "k": 15,
+      "fit_per_class": 0,
+      "n": 595,
+      "expected": 600,
+      "probability_vectors": 595,
+      "status": "completed_with_refusals",
+      "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0",
+      "refused_examples": 5,
+      "pending_examples": 0,
+      "coverage": 0.9916666666666667,
+      "refused_sample_ids": [
+        "banking77:test:1721",
+        "banking77:test:1730",
+        "banking77:test:1739",
+        "banking77:test:1756",
+        "banking77:test:1758"
+      ],
+      "metrics": {
+        "accuracy": {
+          "name": "accuracy",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "macro_f1": {
+          "name": "macro_f1",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "top_label_ece": {
+          "name": "top_label_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "adaptive_ece": {
+          "name": "adaptive_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_log_loss": {
+          "name": "multiclass_log_loss",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_brier_score": {
+          "name": "multiclass_brier_score",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        }
+      },
+      "operations": {
+        "api_attempts": 600,
+        "http_503_attempts": 0,
+        "total_cost_usd": 0.0232347,
+        "known_cost_subtotal_usd": 0.0232347,
+        "cost_per_1000_successful_usd": 0.03904991596638655,
+        "latency_p50_ms": null,
+        "latency_p95_ms": null,
+        "measurement_phases": [
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class",
+            "successful_examples": 521,
+            "latency_p50_ms": 193.866457,
+            "latency_p95_ms": 623.189824
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001",
+            "successful_examples": 8,
+            "latency_p50_ms": 154.53876400000001,
+            "latency_p95_ms": 174.70599359999997
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002",
+            "successful_examples": 8,
+            "latency_p50_ms": 165.7412225,
+            "latency_p95_ms": 195.44798154999998
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003",
+            "successful_examples": 16,
+            "latency_p50_ms": 153.7902295,
+            "latency_p95_ms": 170.02478425
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004",
+            "successful_examples": 1,
+            "latency_p50_ms": 150.603866,
+            "latency_p95_ms": 150.603866
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005",
+            "successful_examples": 41,
+            "latency_p50_ms": 161.708639,
+            "latency_p95_ms": 246.115423
+          }
+        ]
+      }
+    },
+    {
+      "method": "openai-decisions",
+      "title": "GPT-6 Decisions zero-shot",
+      "k": 20,
+      "fit_per_class": 0,
+      "n": 797,
+      "expected": 800,
+      "probability_vectors": 797,
+      "status": "completed_with_refusals",
+      "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0",
+      "refused_examples": 3,
+      "pending_examples": 0,
+      "coverage": 0.99625,
+      "refused_sample_ids": [
+        "banking77:test:786",
+        "banking77:test:1756",
+        "banking77:test:1758"
+      ],
+      "metrics": {
+        "accuracy": {
+          "name": "accuracy",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "macro_f1": {
+          "name": "macro_f1",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "top_label_ece": {
+          "name": "top_label_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "adaptive_ece": {
+          "name": "adaptive_ece",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_log_loss": {
+          "name": "multiclass_log_loss",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        },
+        "multiclass_brier_score": {
+          "name": "multiclass_brier_score",
+          "value": null,
+          "available": false,
+          "metadata": {
+            "reason": "Full-cohort predictions unavailable due to refusals"
+          }
+        }
+      },
+      "operations": {
+        "api_attempts": 801,
+        "http_503_attempts": 1,
+        "total_cost_usd": null,
+        "known_cost_subtotal_usd": 0.0376573,
+        "cost_per_1000_successful_usd": null,
+        "latency_p50_ms": null,
+        "latency_p95_ms": null,
+        "measurement_phases": [
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class",
+            "successful_examples": 26,
+            "latency_p50_ms": 160.220697,
+            "latency_p95_ms": 197.44273199999998
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001",
+            "successful_examples": 527,
+            "latency_p50_ms": 189.20333,
+            "latency_p95_ms": 475.48579169999994
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002",
+            "successful_examples": 2,
+            "latency_p50_ms": 293.784591,
+            "latency_p95_ms": 369.9013881
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003",
+            "successful_examples": 1,
+            "latency_p50_ms": 193.650457,
+            "latency_p95_ms": 193.650457
+          },
+          {
+            "evidence": "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004",
+            "successful_examples": 241,
+            "latency_p50_ms": 176.558458,
+            "latency_p95_ms": 340.970987
+          }
+        ]
+      }
+    }
+  ],
+  "paired_effects": [
+    {
+      "reference": "openai",
+      "k": 5,
+      "uncertainty": {
+        "method": "gold_stratified_percentile_bootstrap_v1",
+        "confidence_level": 0.95,
+        "repetitions": 2000,
+        "bootstrap_seed": 20260925,
+        "n_samples": 200,
+        "paired_difference": true,
+        "conditioning": "fixed fitted models, label set, class balance and campaign seed",
+        "multiplicity_adjustment": "none; pointwise exploratory intervals",
+        "metrics": {
+          "accuracy": {
+            "estimate": 0.010000000000000009,
+            "lower": -0.02499999999999991,
+            "upper": 0.04499999999999993
+          },
+          "macro_f1": {
+            "estimate": 0.010256073867391913,
+            "lower": -0.02545946385245864,
+            "upper": 0.04558789532882979
+          }
+        }
+      }
+    },
+    {
+      "reference": "jev",
+      "k": 5,
+      "uncertainty": {
+        "method": "gold_stratified_percentile_bootstrap_v1",
+        "confidence_level": 0.95,
+        "repetitions": 2000,
+        "bootstrap_seed": 20260925,
+        "n_samples": 200,
+        "paired_difference": true,
+        "conditioning": "fixed fitted models, label set, class balance and campaign seed",
+        "multiplicity_adjustment": "none; pointwise exploratory intervals",
+        "metrics": {
+          "accuracy": {
+            "estimate": -0.009999999999999898,
+            "lower": -0.02499999999999991,
+            "upper": 0.0
+          },
+          "macro_f1": {
+            "estimate": -0.010187409489735066,
+            "lower": -0.025358173395046646,
+            "upper": 0.0
+          }
+        }
+      }
+    }
+  ],
+  "input_sha256": {
+    "reports/v2/manifest.json": "cb6c210992dc3dbd40878e47b60b3ae31294ffce1b5c3d4ea353faa5a75430bb",
+    "reports/v2/results.json": "1085dc8237f7dd10767f229008a170015499fb9fbd0c2c3d1feda0948c7754e9",
+    "artifacts/v2_source/train.csv": "b06e26ac675513959a63135f11b94ea7786ed02da65db93a5650d8838cbc664b",
+    "artifacts/v2_source/test.csv": "d12d6e3bc4c3103966ae786dc435913c0c563dfa328f5a3646d0e62cfeeb474d",
+    "class_definitions_data/banking77/canonical_reviewed_v2.json": "4bb19fa6f6b8456c80f21a109a5b3cf70034d0a89ac79accd30fcf16f611a3d7",
+    "pricing/decisions_2026-10-07.json": "3f72ce7f5127c340767b201e2edfd1afce6aeba7e1f4a51dc2152480af8bd89e",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k5__b20/run/predictions.jsonl": "eff1183e4cae3fd8b8d6bcb1d8a309328c6974d307c6251c32049d71aed560c6",
+    "artifacts/v2_small/cells/tfidf__s42__k5__b50/predictions.jsonl": "9fee37e971e98ae2147ba880b74046d5ec351dd0994a575c9f59d5506f9a8a3a",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k5__b100/run/predictions.jsonl": "454589a27980f8eba59660d0b80ffb4c506f5cc052050cffb6593ec993cce403",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k5__b20/run/predictions.jsonl": "13093dbd6022124764be3887dde4088474718fb0e14a4fb26156c0043d02de0d",
+    "artifacts/v2_small/cells/sentence-transformer__s42__k5__b50/predictions.jsonl": "0ac6e234989a576902070f579fa25bac5e454b11c4090357a97ee69f2ef1eaec",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k5__b100/run/predictions.jsonl": "8a39cda8941287013f032ce0fdc749a919fe7ec2734c3ededc9b0cd0a53ab114",
+    "artifacts/v2_budget_extension/cells/bert__s42__k5__b20/run/predictions.jsonl": "9180761ed875c646783bc5eea6dc501e4c82973f350d7014ab3f3b50f76aa521",
+    "artifacts/v2_small/cells/bert__s42__k5__b50/predictions.jsonl": "250baa213cd427710b5c6a1c6ba08747beb479617d7d3c55f38c488f60268448",
+    "artifacts/v2_budget_extension/cells/bert__s42__k5__b100/run/predictions.jsonl": "bf2fcf997c0e2b0dfef38fe72d25a144f457b63b6c6c252c9a5e7079742e2fe5",
+    "artifacts/v2_small/cells/openai__s42__k5__b0/predictions.jsonl": "6803529667eb3faf01ab25e3b246316c68480bd558e13d80e504efaaad7fc099",
+    "artifacts/v2_small/cells/emissary__s42__k5__b0/predictions.jsonl": "45d2f39e83c9f9e0339ce096c05cb9dc475200316f354776a6d4c7974c7a3020",
+    "artifacts/v2_small/cells/jev__s42__k5__b0/predictions.jsonl": "60018402d90096c0fbd8fab944e50cb1f2ca99530533a78c07be81382a1d5eb3",
+    "artifacts/v2_budget_extension/cells/emissary-qwen__s42__k5__b20/run/predictions.jsonl": "74e7a09ff27ef64c679d36f723eb52510e1bf61a29f71b81353343c78a433b95",
+    "artifacts/v2_completion/cells/emissary-qwen__s42__k5__b100/predictions.jsonl": "7c3dfd7ddcae0756520778ee6e4b03e3b56ce49fffecb87cbc08b634326b0e7c",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k5__b20/run/predictions.jsonl": "ddc1114cefd559555431ca7e05130486b09224f493d5edd943e71847fa40083e",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k5__b100/run/predictions.jsonl": "ac9bc5d2dc7a4e734c18a1af1aa26dbffe92f2bb9f0f42edf1658083f58c60e3",
+    "artifacts/v2_small/cells/openai__s42__k5__b0/runs/new/config.json": "9ac626100df87c962550e4c3b8416251932692a1ed72502a84453210efc70312",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k10__b20/run/predictions.jsonl": "8759470ed51bc4dae19009c3c25df802655bbffcdfdfda043b092d75813ffe5a",
+    "artifacts/v2_small/cells/tfidf__s42__k10__b50/predictions.jsonl": "e6e26f2fa996bc650296eac4ee1f6b3e28b175fb3d5b9d44c9d3844ba23a5012",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k10__b100/run/predictions.jsonl": "d3eef391160f47e437a6331ec5e5c88a4f31b785da50e358bdbaf5c41f356dbb",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k10__b20/run/predictions.jsonl": "35845132434cbab6960e08006af12b69c20e798c99640017d8489b2b3d099fea",
+    "artifacts/v2_small/cells/sentence-transformer__s42__k10__b50/predictions.jsonl": "fba5c92b3800ee8bcb6504b4e1ce04b7f840586bec99ec9cdcadecfe98191983",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k10__b100/run/predictions.jsonl": "03a6ca243d25a9521a5ad7b0ed94912a8dafe9628acd2d49860674e67857f14e",
+    "artifacts/v2_budget_extension/cells/bert__s42__k10__b20/run/predictions.jsonl": "b43444ba45e651422434cbb563479b1db8d6be32b307e6f61557e3c143c60269",
+    "artifacts/v2_small/cells/bert__s42__k10__b50/predictions.jsonl": "77994a72d21ac36f88fb30f482369a62633c81525bb6c22fa74f6b258dc6abaa",
+    "artifacts/v2_budget_extension/cells/bert__s42__k10__b100/run/predictions.jsonl": "c5b35544b77323d522671c22b1efa264da6100162db96f20c0f5529f018362d5",
+    "artifacts/v2_small/cells/openai__s42__k10__b0/predictions.jsonl": "2211bf07776ef03aa412d53fcd57edc180cdfd34018fef76fae89bbe9a64c7a1",
+    "artifacts/v2_small/cells/emissary__s42__k10__b0/predictions.jsonl": "6c7acfad9ecb318a27765c0d83a151442294517c68e3bb268db703436c2fa4f5",
+    "artifacts/v2_completion/cells/jev__s42__k10__b0/predictions.jsonl": "aa8faf04b198964fe3383f5c3332d0cb1fdb747a6766c00f5d9898f11272688b",
+    "artifacts/v2_budget_extension/cells/emissary-qwen__s42__k10__b20/run/predictions.jsonl": "c2ceda2f01c229940d5bb5c1a78d83d81c770a5866dd18ac0b956f7babeb678d",
+    "artifacts/v2_completion/cells/emissary-qwen__s42__k10__b100/predictions.jsonl": "f8f420161e6cbfa95f50429c661795387b2020c023fbd97f9ff408d1aaf76580",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k10__b20/run/predictions.jsonl": "d5cf1bd4199ee784cb0944a51d951b78e723d64bb877da013a88df5dab43251b",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k10__b100/run/predictions.jsonl": "e331072af160cecddd7db33b662ffcdbe54ce32dbce49d8c5947bb163cf7a956",
+    "artifacts/v2_small/cells/openai__s42__k10__b0/runs/new/config.json": "a67ce6f52248aad97bc9f4e3e3543d08653dcf1383cc97663aebfd7bce223373",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k15__b20/run/predictions.jsonl": "def0e0d01853f003a8bad39211029f9ce6b3e32bdb3694f3c203e62f73133889",
+    "artifacts/v2_small/cells/tfidf__s42__k15__b50/predictions.jsonl": "e3f183c57f9889bcc67f8a97c8751f9da6e7ba961fd46487f097eab8ae8fe553",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k15__b100/run/predictions.jsonl": "7519c6423387c8fb1a738368b702aaf12f709f07eca564314071552aa9735b47",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k15__b20/run/predictions.jsonl": "f7b762035e35ffcea42f29a5e633af4165b3d9f0c16e2b24ca467bb475d2f2e7",
+    "artifacts/v2_small/cells/sentence-transformer__s42__k15__b50/predictions.jsonl": "cfb7ade0ecb35260c317acccdc4206c5f5a5f0a7f7b31bf7e94d9a37cd88f057",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k15__b100/run/predictions.jsonl": "fc26a3500fac3483846417510010ef840cffbe2b43ee0915524569f395d3e432",
+    "artifacts/v2_budget_extension/cells/bert__s42__k15__b20/run/predictions.jsonl": "3cd8c7ea348220cb984ed158e3c6ac705b7b3bd18191207dbf21f650637424d7",
+    "artifacts/v2_small/cells/bert__s42__k15__b50/predictions.jsonl": "4a9e464c9d9865ea82e7f46c46435f733e5334d1f5529aff192b7acc4004c030",
+    "artifacts/v2_budget_extension/cells/bert__s42__k15__b100/run/predictions.jsonl": "c7a8de4c82a635de5153ab2b62db7fc04efc253b1823142de592522a07d480b0",
+    "artifacts/v2_small/cells/openai__s42__k15__b0/predictions.jsonl": "9caa10d3c2fcde9b398d391872ffaf4bba3c1bf8fc73ed8741f94c1ac5d66004",
+    "artifacts/v2_small/cells/emissary__s42__k15__b0/predictions.jsonl": "b030bbe07db2061cbe50ab041f5a4dd61b8238fa1f41df885a91fdad790b19b0",
+    "artifacts/v2_completion/cells/jev__s42__k15__b0/predictions.jsonl": "72e73a4fd8a2a8575141e5d7b8dd45037b6a527a69dee5687ef28e56fd8a18af",
+    "artifacts/v2_budget_extension/cells/emissary-qwen__s42__k15__b20/run/predictions.jsonl": "77bf56586326ba674659b43c46b1a433f0947025b8962b5d3a022dfa7e89b43c",
+    "artifacts/v2_completion/cells/emissary-qwen__s42__k15__b100/predictions.jsonl": "4bb2f4c228bf7e0db1b69ed7467d9d27eef722256c11a033abd752d6589cfe29",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k15__b20/run/predictions.jsonl": "090191d751049d7ab72a6f3f75b78579449629b01f3e1136bf0802449dec6842",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k15__b100/run/predictions.jsonl": "6504c4c6509b29aa56418bd5624444aa8a3b6e55bf3325c5d6ff9f1d6eed4b8b",
+    "artifacts/v2_small/cells/openai__s42__k15__b0/runs/new/config.json": "b0a62fe83ba062dd1eaf012d831155d5548eeded98d5b605515d2431f8586ec2",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k20__b20/run/predictions.jsonl": "533a4876d76a2bd2badc8f125ed1b1cb6b0c19475e25fc9d82217dab449fc04e",
+    "artifacts/v2_small/cells/tfidf__s42__k20__b50/predictions.jsonl": "5eb226e90a0a77e0c5519ffd4d37be5a21b7b49f20c1e0baee003f5b0da9de18",
+    "artifacts/v2_budget_extension/cells/tfidf__s42__k20__b100/run/predictions.jsonl": "e0fd6877f1afa5c2617e8275d9eefbfb6188aac380f9821a3a8a1e6ff2766e5d",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k20__b20/run/predictions.jsonl": "7619e4067a8119787c5b46312c8c98fd8c24ae111d14f89563b587daf51b6f34",
+    "artifacts/v2_small/cells/sentence-transformer__s42__k20__b50/predictions.jsonl": "3a84bf5f07bffaa0932c711ce10bae39d1cea21126a4f3f65aa21ffc95ff6613",
+    "artifacts/v2_budget_extension/cells/sentence-transformer__s42__k20__b100/run/predictions.jsonl": "b45df4f9e59d8734bccb14b20d70e724709a709064883b633a4717d48ed1d780",
+    "artifacts/v2_budget_extension/cells/bert__s42__k20__b20/run/predictions.jsonl": "6d9865dfc29a0d69b19a1cac92c38e107da7647ee87f9f7cb7b91ce0342aea99",
+    "artifacts/v2_small/cells/bert__s42__k20__b50/predictions.jsonl": "841084cf21be15b1f446c6c57f34f5cc62336dceb619a83791ec4150cebc1f76",
+    "artifacts/v2_budget_extension/cells/bert__s42__k20__b100/run/predictions.jsonl": "7e4847773e044e25fe0a7215e4ce30429846a2571f8e793d8ba2ed52abb4936d",
+    "artifacts/v2_small/cells/openai__s42__k20__b0/predictions.jsonl": "e713f6cea773d7d87423725992fb31340aef1cf531eee4e02e1e67e767d8bdd3",
+    "artifacts/v2_small/cells/emissary__s42__k20__b0/predictions.jsonl": "a21591feb01a94be9b66828a699d33bbea762d08615e3efacf46fc6fa2740c08",
+    "artifacts/v2_completion/cells/jev__s42__k20__b0/predictions.jsonl": "a5cbfae2a0a657b5ebbc3c74713bf3c8860204981ad4e061630689c36f8c554c",
+    "artifacts/v2_budget_extension/cells/emissary-qwen__s42__k20__b20/run/predictions.jsonl": "ef2edf875d65fe5be437e1df50669d77fb12043401190b2b3fce63b2d5f72c44",
+    "artifacts/v2_completion/cells/emissary-qwen__s42__k20__b100/predictions.jsonl": "ab7cd94d64bc20cb540281134f43aa1613b6db3be9493df47772ec5efde5b9c4",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k20__b20/run/predictions.jsonl": "360165909fe412e0f9bb60f491f6983e24fc0d5e62e70a77d464f7be59c83dc0",
+    "artifacts/emissary_llama_comparison/cells/emissary-llama__s42__k20__b100/run/predictions.jsonl": "2d22d17c4d196b60fa10ca960bfe171d88ec98b370c6c4ebc8e6958c3ad01c90",
+    "artifacts/v2_small/cells/openai__s42__k20__b0/runs/new/config.json": "0831013811afdb8aad2a375d9b00635c5d84bec738d24822b740174e791dbae4"
+  },
+  "evidence_sha256": {
+    "artifacts/benchmark_runs/20261007T182643602204Z/campaign.json": "1dfd8b0fdc20df4afc989a00fe059963af0fb98808515d9979cf8525c739e6f1",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/preparation.jsonl": "cf6d8f58f526eb066289b355546ce2906adb081f1681a66d4736c938880d60b0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/status.json": "f21637104bae0a73f7b6b1fa3d1293fee3b54a98b9137383e668b5ca1425fcb4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/predictions.jsonl": "11e724a703e7379a82a8ee77e068336a93c9b23a4ba464c8f7cfd50d00b4f7ae",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/inference_plan.json": "8809efd4fbdd53876b409534dbacfd2721c43a561a639698810705a84c7a831a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/operational_report.json": "65f8c8c7a4811a4985fddae9bf013c28a8476ce1684ad5f59d990105c364e5e3",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/measurement.json": "b566885efe0c34a484f50651ee3cdc8030297a6f39cf820509b9fb081e74056e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/metrics.json": "873afa70d3815df3c07a255d7ac97b044463a540984f5dbf1d613916f643d8e0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/timings.jsonl": "d04533214614204c538ee6aacb4164f04cf13ede73c6ddf5a13c70f7253f125e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/cost_report.json": "97d25fa7585916100864268711a54604004bcd12a062e3d084516998792902ab",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/config.json": "5820a72da1bc242b5119cf0d7835612405e429c440732d3ca0c44a2cc291ca8c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/preparation_report.json": "9185c5a2c15f730b26e643d106b26aaf34e3e85afd63488f0f91a9fb75ef1b90",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/labeled_budget.json": "e9c67371e2769460239c2f52aa948eb540df6bd31f549fb49045a74eb329357d",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n05__openai-decisions-zero-shot__budget0-per_class/usage.jsonl": "4878ccc0d747812a70697de1476f25c4422af746d235cd8d7d843c9a231091fe",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/coverage.json": "7f138b689b151a7a2f65762d7334310ccc1f8423e0590c9f17bdabe74fb46f08",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/outcomes.jsonl": "d5f166634e217debc190c59bd6961ddbeb5fdc8d16041c2b22f365682508708c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/predictions.jsonl": "e2d3c317e4c17026deed9e716fdd25cdec5e24ca8b9fdabff412679909eef3ad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/refusals.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/metrics.json": "850536d29e6e35457a4bd93e96ae47a0b4953bd23f0f3a1b43fe655472fd6731",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k5__b0/cost_report.json": "de42e2518e08a94ac1e4433e8dba8d3c4e3699a6aa3fa568e1ca762399c2a62a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/preparation.jsonl": "3182444e48647b1f772f001ec03d40906f33794d7f149ba7e41d5086563f22ec",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/status.json": "60a45d60d0954f211eb202875aab4792ca8487475337d6ca778d5f34423ac9e2",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/predictions.jsonl": "1cbc01d58b1bf2addbe88f22a1a738c72eb12cf38cf65a5e95ee69fa0eba5de6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/inference_plan.json": "22b68a7948d70a5eb104572627f3acf55e4d8e591f460826a39899cb09435e6e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/operational_report.json": "def627037538f061f7148c2e26df4045caa33781dfacb03f85d861298bac3335",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/measurement.json": "2d6deb6538e1e8f458a19437e848907d5680bab6b1f7d2bbf2bf6a51bf0c5547",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/timings.jsonl": "0da83dfbfdcdeb2813e54c32eda0438c053ef78b28f2b79c4ce2b6fe6b049ddd",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/cost_report.json": "dc1cec27bbffafc58c63451a0075c24d000f114a98850cc1502ab03c24330793",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/config.json": "caafed9541248900b4c714dbf06ca996dccd6fe7c937d5f2acb38d65701353db",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/preparation_report.json": "f38e8e8492fcb9d4057e3176aeddf2b6783fd5029b427b91fd2162947c500256",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/labeled_budget.json": "a2fcdbd41e61eaa6ae1fbfb6025edc39520ebd8590e4452cb2564e07c183ea68",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class/usage.jsonl": "3f43e28f0354c2106f4ad283a217222b9ee94ba6b137b621edda943a362ccc01",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/preparation.jsonl": "2f6d6dcd07cde020f023eaa5d26057632994ecd18cd4242e2193c4c54b981699",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/status.json": "c4b83638ab7a9e1d42dc5887fd2e2cf6f4b16958ebce5a303cd18b598d2944aa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/predictions.jsonl": "4d6fc90878150c47365eacf43539d4bee66df21040a0b58a046dd69648d44e13",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/inference_plan.json": "ffeb64cba1e897e3a65ecac819855e31b6e9d38d04e7af25504a273786642014",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/operational_report.json": "7e110299e95bd1dc4790c2363dd15504d13597d9bee7d3f48272b4d496b45aed",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/measurement.json": "c6ff0f734fcfee76bb7e10b5cf3d1e561420a2a479b1bf33b4363ba667448bb5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/timings.jsonl": "f6e3faccb9ae2d3dd772602b8d0c56511fc08e4ac15a15483e0180086308c0b2",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/cost_report.json": "d43c5c35b9991b503fedd8b3e690aa0baabd6c80a111f479963b5cfdf770c24e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/config.json": "1787a514cb021933ac09a19f5707ec64c771c79121cefd1a8b1c40068d248d9d",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_report.json": "7f7a53330c40a29ee760b817c302986cda9609de841352b40b709e07580f1f57",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/labeled_budget.json": "a2fcdbd41e61eaa6ae1fbfb6025edc39520ebd8590e4452cb2564e07c183ea68",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0001/usage.jsonl": "3a79ba498cd2c4f67b960eaa4c81d973a0ad3af768c577f3cbc0be44189051ec",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/preparation.jsonl": "5e369db085913091b78aff1dc64b08bff15386d7551f750b06cb13b4d2439a83",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/status.json": "e991ecdaaa27878472b072c2300ac66ffdbf6d88e7b31701774d3091b2d3725c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/predictions.jsonl": "0957c1dade0903b1feb24ee4a57f2372407e6ca92bb40af02f5b43bdc6637144",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/inference_plan.json": "3f7ccbe702f1e73c8631ee10eb9b8abb56671a3719916b7dec7c0a7d4946d477",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/operational_report.json": "21ed22c7dd1f48eeca226a1ff54c3c1f104249f56bf0b6f92a658cb182409daa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/measurement.json": "2c7d13c053ba0b20ecd69c64f174f71aea24f30f12ca886b390e64ade3fb980b",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/timings.jsonl": "58e92fd6074474e47da9f35b97c1765a93a9742d35bf1b7681fcfffcb5fcec0f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/cost_report.json": "48e1fe09b8874f79b766e09446b30b11fa443d8a8cd0803fc8f7a6d6498b933f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/config.json": "f9c979103acf91a90cb8aa2b33cdf75011be1bffe906e9bdedd1b605a7f5461a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_report.json": "fda98c99643801b0d17274f2b658aba1c45a006c1ffe4482cb7a8dbc7e05e59c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/labeled_budget.json": "a2fcdbd41e61eaa6ae1fbfb6025edc39520ebd8590e4452cb2564e07c183ea68",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n10__openai-decisions-zero-shot__budget0-per_class__part0002/usage.jsonl": "a1029e8b5f1fded205b608986aca366628d1deb7f0b1f82669750140eb3ab7aa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/coverage.json": "8842cf56a9acef0b5e751ac23139fe691a551977fd68e75c02e4f7b4374336d4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/outcomes.jsonl": "a3cb84eb3a03c7ac3719355160ef8249daaa18862cbb37a580321a989ea96e1e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/predictions.jsonl": "944d6809c039308eec42fdf0df3567cef1c86642515468403736570fdb8682e6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/refusals.jsonl": "6019bc3f41abfec4269b293ce695cd4ff922e147fc180819f58c2ac32f3e7efa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/metrics.json": "e881a6435c991c9c139f2ddbc0b81ea91abab34fe573f6db8ca7b1818c0fab59",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k10__b0/cost_report.json": "862cc6eb39d42f9fa55a9e32efb09f2e51a241dffb24dbca270b9696ff0eda90",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/preparation.jsonl": "e9c1db3b8a979ef93d8d41c1467c3ff013999456c138dc3f192f7edd7ac50292",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/status.json": "4cebd3799bbffe2500170db633ad716689039b2fb3f0f410614b504fcec0ff73",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/predictions.jsonl": "5b8e555955b2c6a57d0e77d695d238b2fe0a299fd4f9d5e1d2fe76216f486b7e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/inference_plan.json": "659920dbd02bd5d8f330d66e5e59e7ad54a83dd45fea8d1a39e6428aaac89605",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/operational_report.json": "97cd93d9fe9b55856ca7f5c0f03e69641e1c9db500caebb3ee4a7e200d02996f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/measurement.json": "0970e3d5e9c891f09ab6ec213ba011956386fb85a229145fc0987a6a4d6a26eb",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/timings.jsonl": "355632483f6d0fbd6aae57df7b3651530752a1c1152d614fcdbb73bd8ff20879",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/cost_report.json": "037a75137449c18e9d71270e947b1735c3cb3b14df6dd8747ecd0cac2e0ac97f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/config.json": "727ae2d62734d60c4825c1ca356362bfcd8e41820bc9fcd15e554478fcd30e01",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/preparation_report.json": "e7a476d2144a948df6c1c0b2851ebb17829bff5ef205bfb6c1c1917a2bf28612",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class/usage.jsonl": "f23e14eb6ce416da5ec2f0e924500aa91ace626f21735c662f91df4e37487ee6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/preparation.jsonl": "fd17a263b87ef1966a46ef50897764ec55da523ad460899acd023972aedfe3e0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/status.json": "282c9cea7cb70b0772f5f9ad2997e4ebefdfec6b3584681b7a9623e99ffe4da9",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/predictions.jsonl": "ebbc18db4711498c6a62a37867406650522177aef0ffbb580143732d61a32697",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/inference_plan.json": "2f39d947ff06ece5f5e0a11d0fd26f5df74d41134efb5818c94a76caf0e5c5af",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/operational_report.json": "7f1f06eeef983729d908988a7f3f3d896078dc2aa034175db84b076741b49893",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/measurement.json": "a11cfa62a411e2092db8b9ca690e0d0d91f3d0c74ff066fc5a5298c0325a96c9",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/timings.jsonl": "679e384fb2b84404b32bfdda9600f4ad25fccf519dc995369d458bdb1b230273",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/cost_report.json": "463582b9eb7e7bd677bcceceb3b0a7192e2dfad8e66cd036dde3acd1d11679f6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/config.json": "67e14c6a6a3621dbca031ba644a8e96b359e5a614ffe02cca50634727776983f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_report.json": "6c7707013009e29538433dafd634e72a5ae254e2f3ecf543eebebba1e8cd6ce4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0001/usage.jsonl": "762570ad36a215b7ab7ee20e11d314d8f4d273fa2ded3feaf78ab8b351cfbdec",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/preparation.jsonl": "f9fa38e6f42a690da80be566443eb8fddfcbaad6d5f810a4efe3511a37cce50e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/status.json": "f17a7afac9bc137995d23dcc5a2fd18b5e1695ffd6c9c7781c027610a87fe811",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/predictions.jsonl": "e7e07f786a0296885978fc24e960e4eeeb90db40bf68d51a799bff812878ee88",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/inference_plan.json": "393ffd6b6770b136ad30e7e377e7ca7ea047d3c3f3783db7c0d1b14f1b61d1de",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/operational_report.json": "5395247f8d29c08310f8a947ac0a405469a27471fadad0476a6f0fe3ad2a5ccf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/measurement.json": "73288bd85f01b094dcb542e572e65cec9a33b52fa769bb5eb44d2d17bf747fc5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/timings.jsonl": "4bde79f49e8bff85f5b9fb582895d24f4270299b9c95587e3159fa3da2bd5cb5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/cost_report.json": "7002e93f431cc2b67cae60d9aad12e2f5fcbfecf45e28debd9b21401c73ec3cc",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/config.json": "a3fe083248ba4a4eaa80a147d4d13fc905d526c900321f2fedbc991af47260cb",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_report.json": "e2382f7ea87daabf3b185b92cefd87dd8d59c0aa777b1337b45ac70bad4fca84",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0002/usage.jsonl": "74d5c4ba63b4470598767687a145b8803cbd9c0cf58ebc77236b2bb4c0b8cead",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/preparation.jsonl": "5dd007403b8b355360fb0655aea07195fe8310c881493e5e66b8f5c9208b1d87",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/status.json": "d5f4b6132036f0a4554b87e293367c9856930396545bf42587d1c2acd5b3ef84",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/predictions.jsonl": "c666c865fbbe9ff95c5bebf8230db627106c56af354caab7170eadb0897bba8e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/inference_plan.json": "9189c429abab3ee3fea658c06f27218504a053539ecef1c6bed9827d576ffd8a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/operational_report.json": "a894f4bf26061ea400da370619a11edc65478d432895fa396e79a5a6135c774e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/measurement.json": "7d7c31ad399d5a074e8d8f0d055e0c6f0ca53296e0a58b665b266efc049f9803",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/timings.jsonl": "b18b6aad2f52b097f2e5b14e2f33a69880513bd691f3388f19cb5b05d0bb61c4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/cost_report.json": "a94726a0d147b8fd4d2eb163484391baff111e3b04f64e42b168d52e2a403ed4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/config.json": "87a564bd5a43cd604baaae6eda75bbd4f2858aa2797058b6b5fbb5f86cfbb3d7",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/preparation_report.json": "10b238a3057738bb5d3a6f1ce369a1d2ae98d97bc03794b41a49c80fe5179048",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0003/usage.jsonl": "7a1a59ee98f39172419a1698624010367fbc54a71ccc486e6b49437e65eeeb36",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/preparation.jsonl": "2e97fe111c8961998d93a9df587c56d4b3ca126f15118dba8827de7f64a01408",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/status.json": "f6c814f6f3a6d0a5c9bc4c9b2ccafaef2e6bdaef613962d56df9978b21717662",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/predictions.jsonl": "ca9a4b1fb772df25fd828d8c1e374b9cfd1178c840d70724fa974d62868822b4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/inference_plan.json": "6060e7a01d3f827d2cdb4c6edab1a28f103de8eb814b77022864d4c03ff7177e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/operational_report.json": "3393a5d0a0e450ceccef5c87913301658a968ad6d1587dcf35fbab9d8f7e29bb",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/measurement.json": "e89c475e06b6bb705bc7cc650543cb78149b9a82e9990f36bc87f50aed85d8c4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/timings.jsonl": "34ff7eb8199a075e31559b6192085441c0018683866bf188c39e63929de191c8",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/cost_report.json": "af69e32b56a8d56cba00421fb71ebfde944df64c7c780b6e2ddc0b35b759b224",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/config.json": "d5d81b845c50dd0f7b423172547be834104e9cc51395a5885793073169df0e5e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/preparation_report.json": "67e1ece4c07203f48df518da5645d448522d5e726a7053ef867ea32b03600747",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0004/usage.jsonl": "4515007926c5eef23423c2e46c370551095a27707750df7eb417b1d8f59b5b08",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/preparation.jsonl": "efd3bcca171f75a2a518695c1dae8c407ec821c7d3b14e52b23f83d93f2bb053",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/status.json": "d76c13c64b7aa204fe3cca352e240a9d2ebad6a6839853f7c2dcf729794c8e9a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/predictions.jsonl": "00e14a2e3aec2e335652b195923d0eeb1c94c0eccb30bb4fc5a8d62a230411b4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/inference_plan.json": "2125def1b5663e61507376052698563754f3d56286330b8f5ea6e6ba28b0c9db",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/operational_report.json": "b8804142453922c16e6dec8b3313f071763873ac313793d9e93d9aafb3e69ab1",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/measurement.json": "07489fb81b6b8c0061791156937c61006e38e31a3c8ade0340018b2ac36a45c2",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/timings.jsonl": "7fc6d0c998670ed675543037ce739b97a04a0e33c0efdbde91ed164a98030d75",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/cost_report.json": "bd9dc179e41f9bdc695248869cf4892b6b036593e379b32248ac4dd772f650d4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/config.json": "803dbee2623b30d9feb763c75b307adc25044c658d47c9a6cdf747c5e234d291",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/preparation_report.json": "fd8c0bf412f8b8a64f328bc8337ece8b24c6cc002849c13c4593f84993efbaae",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/labeled_budget.json": "ccbe1164c403d90a723171aa1a09bad602d4944cae38b5d74de6f0000e670419",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n15__openai-decisions-zero-shot__budget0-per_class__part0005/usage.jsonl": "87d48393bcc2127137fe423e3fcb580e6e73fa0621d233d282e0dbeb8666e0f5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/coverage.json": "701e1f3824ccb4b58e4328e03e74626aed1ba985cbb4db8d7ed82704c922c22b",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/outcomes.jsonl": "6935c5a38d43048e1aa52c72b6dd33bbcece2a6775e8d9e3458ca0504206d1cc",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/predictions.jsonl": "2185dcc8cb4766098349ab23a72ef2209e3b74e06842f9712d041f8f5d1d8e94",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/refusals.jsonl": "e95eb25d20abb39d0c52e90ab390696ec3599690bccb7258379d4168b7bae688",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/metrics.json": "d9c8f01f82bcf2bc6f5b825ecac636b63a4349a28821b07a8ed891609dbb6814",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k15__b0/cost_report.json": "bc5efbee6527ee1e2516c16173f4c150534ab335b0f7be6897d5b2a395984a1c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/preparation.jsonl": "cad49d88eb6bbcbedb43f40dbb01349c7037dfbe7202b06cd698239a01c728d5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/status.json": "20899bf9562acfb32f7850240390535b004846241d88d0c1dea9bfcbf71bf0e5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/predictions.jsonl": "b36d3409e86713c5fd68cdfea060ab51c8f52b7be77e1d4a4ab8d2a128292d37",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/inference_plan.json": "15d69368cef4178c64e6a80c327b0f392a9c5125989a7c471286710b40bb8f80",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/operational_report.json": "7a8e13fa52c1acbf84692371fdba55102b4915ea60355fb0289c9b6370e89813",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/measurement.json": "966e2ff3d2680a88745ecf5d3e12472a9e58726baebc7165971dd6d2481eac31",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/timings.jsonl": "48ed74f661d3fc1fe232ca908674a9144787b96cef4e462211b48b3409d0e897",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/cost_report.json": "f68dde82e84efb167a11ad23ccfcde53a1b3945e794f69e57e25de77deba3eb5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/config.json": "dea2b4c788d82f47ef696982f63fa2e9a37efb15a6399fd403c0a76a21f5a017",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/preparation_report.json": "ef59f57a70bc0b917ffa2819f23843fc0ee9f21e1d64cfb9086ef1698c56b2a2",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/labeled_budget.json": "a21e59bb08da99498fa0216a83518f7e22c7e20e45b3fb4adf0f7542af086003",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class/usage.jsonl": "2dd336f3c0f4024e160cb84430d462ee4857b4d24307de2cf532706209ddb80e",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/preparation.jsonl": "94dd43e2c554311cdf754b7d5ae0606beeb4bd48c95d44524f542e214b681d38",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/status.json": "be14ea50a6215c5dd032499b11a140f4ca603e3d2385baf4c08cdf609708c42f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/predictions.jsonl": "ff0d36cb250299c84f4cdb72e8c92b0657c3ccac71e78e8b466efb156008c27a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/inference_plan.json": "3066cb608024205d149703379a1c42b1bea152b87c7b408dd929492629fc0d60",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/operational_report.json": "058c6af84b26d802f5e95614aec0d7cc5e40d65c55229a992b52f11ceb2511aa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/measurement.json": "e187803e7f9e59c132d47a1eacf862388fa7e91e9202eb2c74d52d3d2688c992",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/timings.jsonl": "23ef37af2f2296587fc2528815058afc410be741013dab28e1ed8be4f869a17c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/cost_report.json": "cd872185ff62a461431f69cb140842644526f0a83343b85f418ce99af4628076",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/config.json": "108f9fa5601763dedbb74c1f0d9e9118edec6ce38990c0abf9cb10bad4e02a0b",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_report.json": "d0030ad60b0d5db824fb97dc1a6f6010c8ae2f04fdc6f331e641a8a5bfc59549",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/labeled_budget.json": "a21e59bb08da99498fa0216a83518f7e22c7e20e45b3fb4adf0f7542af086003",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0001/usage.jsonl": "840b88e2f6679ea5f246c2788783c72be64b3c9dd4960ffa8b8a6d7365f50bcc",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/preparation.jsonl": "17dcd7d2ec8af4e0cf5b6d6f88d6b3a2a0ef5bedcd95f501f3e2dc6911db9986",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/status.json": "5a0b246277681bcb7505c1cd2446b2be0685012f89375da3f14001817a7cf97f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/predictions.jsonl": "aba1079eb609144b6a4f6abbdc6cd34041a56fd1cb3b8be24d770fe19082e04b",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/inference_plan.json": "19f1ce3f3c50b19863065a6b6d8a7fa0918424134c7aa9e42059386ca0ffd663",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/operational_report.json": "83fa96244982bb965fb5895e877f16059ecb973ea73402bd58886cbc84c244f6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/measurement.json": "7a7a59786c5b621ecda2af92bdae3c2cd4fbe4f2ba0d514fcb3a359a7d969a9b",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/timings.jsonl": "e10e3933ad9f70f2cb627802ed55e4e6cec553427f086e88ac0381cde7afa170",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/cost_report.json": "6750af97588a5ef457565196781c747bb027122fc49e021f316be8383e7487b0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/config.json": "2572fc96bd2ce0828ea0f64a1da482d4f72dc9a5daeb0639651dbea85a1feeac",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_report.json": "cedc107821a2ebab58307206b1fff435e60da931cfdffe7c1fad5cd7208a1f6c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/labeled_budget.json": "a21e59bb08da99498fa0216a83518f7e22c7e20e45b3fb4adf0f7542af086003",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0002/usage.jsonl": "8bfac920bec32f61a5a935292a95afcaa5b9b2db7f850fd55e4425b4e25ef3d4",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/preparation.jsonl": "773ebde071b910a2bb934c6cc286e8230a2b9d62721e76d52f429812fe8b77c8",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/status.json": "d074b036e261ad466a07231503c1ab952fc937de658f1925c6b704a04015b53f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/predictions.jsonl": "057b6cf353da3e372799920babef1d8f5d92f13596f5ce7697667af61ac74219",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/inference_plan.json": "d5fb5db07f65fc85b6330ee51b62be367eb214aa177928306539c144da8a7510",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/operational_report.json": "58eae0548dadf030fce9a2de3d51d0f58e6e05c8dfc9bd0ed34d15e34425e4e0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/measurement.json": "c4dcd38f5d6772936aa94809b5b2e8429fea48387b9d3502cb14bcaaf49aae1f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/timings.jsonl": "f5920a5a2e2452e7d64429c7aa13bcaee2bbd0c6b318174b2de751eb9d0c56e7",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/cost_report.json": "fbf009ba09734dce5ee960a1927c48de97b6ed335a546c5d8f1680a9ee0c86fa",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/config.json": "9d3e871b14cad58cd24f80f5e793b0863a16bd38c3528a203a69353dcb5953c0",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/preparation_report.json": "8bf358991a3c3feefce974f45e4375b33366354a174fd04496331e4eed93fcd5",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/labeled_budget.json": "a21e59bb08da99498fa0216a83518f7e22c7e20e45b3fb4adf0f7542af086003",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0003/usage.jsonl": "187745610937cbe946a4a74225481e398a6982a52c3da9433ea005f38fd4909a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/preparation.jsonl": "8569a60836ecb953f4c146003d8abe5c02386f502e1f302425a169861141d22f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/status.json": "5ab1754764f91936f00626f14c1702fc0e85e8ec2f452c11e331f8d5e6dec8c9",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/predictions.jsonl": "92f0b2d3a7a12c4844adada871fe3ae017529f8a9521d2fc8cd5c2a690f697bd",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/inference_plan.json": "cde05f26a4b4d481035f8c7fa8eb50de60b3223ec15338faffa265b4007506b6",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/operational_report.json": "92acf3a6179949bd9daab06182c8795c33c8a33ae5a441b1aa742846828e605a",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/pricing.json": "901dc762bb02150afb31010527235dccbdcb27bb9d234674c3c95551b6afc3cf",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/measurement.json": "6f0a69475605f25799a3a1c4fafbda6492b3954636cd5c7688fc7530228a1e16",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/timings.jsonl": "e8b752ee4a8352c0bdbfc00da883edf0165ebc4fbcf2645de2afc56a077da960",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/cost_report.json": "ffe752218f230b9a480c40361eb95623ea3592fc074a8d89403bce0613911438",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/config.json": "4515ed2bd0a2adcba6e1e09c064db8daf12855d524dc6602de436d6987137782",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/fit_metadata.json": "fb31f9106dde19d2bccb5a4aa4657ee364022f87dbe39bcc2f8ea779fb7b520c",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/preparation_report.json": "7fc7fc23d89c1ffb92294a85e624dba840193cf9c879814321e4b9e08e517926",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/labeled_budget.json": "a21e59bb08da99498fa0216a83518f7e22c7e20e45b3fb4adf0f7542af086003",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/preparation_metadata.json": "fb7bd9dbf3624c071e1b1be462dd9b7d0c4d87f50b782a26d5909a1796f2fcad",
+    "artifacts/benchmark_runs/20261007T182643602204Z/runs/20261007T182643602204Z__seed42__n20__openai-decisions-zero-shot__budget0-per_class__part0004/usage.jsonl": "638f0fbe9986db7e61a2523102ca459e424875bfd36c9c9b4aa4cd00134dda8d",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/coverage.json": "0e741f673408a05b4007fe28cfc81254d1732b474106452a4e9a449aff363221",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/outcomes.jsonl": "5780576a695dfb01108407419b3c968576bd05f9f157eba380ec0b5fb6d7b1c8",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/predictions.jsonl": "684b6dc270e9d74c9e473f0e69a17b2817f00e3fc7d3f3d50ed8f6192f822dfd",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/refusals.jsonl": "17eac3926d2e3b815a0ed62b69b7af12bba247292e28d607ef5cfe45af99e94f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/metrics.json": "79f277820645cbd29cf4bc33581541dbc17f00c1fc1ae99b8669f589b751903f",
+    "artifacts/benchmark_runs/20261007T182643602204Z/cells/openai-decisions__s42__k20__b0/cost_report.json": "c79c9eb75732aacac4a53f7b8fdbf19ee4667222bc7bd490117089870bc823f3"
+  }
+}

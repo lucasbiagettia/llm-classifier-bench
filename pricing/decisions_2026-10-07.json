@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "currency": "USD",
+  "api_rates": [
+    {
+      "provider": "openai",
+      "models": ["gpt-6-luna"],
+      "service_tiers": ["standard"],
+      "endpoints": ["https://api.openai.com/v1/decisions"],
+      "billing_basis": "all_input_tokens",
+      "input_usd_per_million": "0.10",
+      "cached_input_usd_per_million": "0",
+      "cache_write_usd_per_million": "0",
+      "output_usd_per_million": "0",
+      "source": "https://developers.openai.com/api/docs/guides/decisions",
+      "effective_date": "2026-10-07",
+      "date_basis": "Documentation verified on this date; not tariff start date",
+      "assumptions": "Decisions endpoint only: reported input tokens at the published base rate; no additional cache-read, cache-write or output charges. Short text requests without regional or long-context premiums, taxes, discounts or custom terms. Estimate, not invoice. Custom endpoints and unlisted resolved models remain unavailable."
+    }
+  ],
+  "local_hardware": null
+}

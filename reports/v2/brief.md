@@ -1,6 +1,6 @@
-# Banking77 — v1.2 with Llama supplement: brief
+# Banking77 — v1.2 with Llama and GPT-6 Decisions supplements: brief
 
-**64/64 quality conditions complete.** The extension includes equal training budgets for five supervised methods, retaining three zero-shot references and all original results.
+**64/64 historical quality conditions complete.** Sixteen historical method/budget variants across four label sets. GPT-6 Decisions adds four zero-shot conditions: 1 with full classification coverage and 3 completed with refusals.
 
 | Method | Fit/class | K=5 | K=10 | K=15 | K=20 |
 | --- | ---: | ---: | ---: | ---: | ---: |
@@ -20,6 +20,22 @@
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | — | — | — |
+
+## GPT-6 Decisions supplement
+
+The user-run `gpt-6-luna` campaign produced 1,990 classifications and 10 refusals across the same 2,000 planned evaluations (K=5/10/15/20, seed 42, 40 test/class). All inputs were attempted; none remain pending. The 64 historical conditions are unchanged. Only one of the four additional conditions has full classification coverage.
+
+| K | Classifications / planned | Refusals | Coverage | Accuracy | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 200/200 | 0 | 100.000% | 93.00% | 0.9297 | 0.0438 | 0.0426 | 0.2249 | 0.1107 |
+| 10 | 398/400 | 2 | 99.500% | — | — | — | — | — | — |
+| 15 | 595/600 | 5 | 99.167% | — | — | — | — | — | — |
+| 20 | 797/800 | 3 | 99.625% | — | — | — | — | — | — |
+
+A dash means full-cohort quality is unavailable. Refusals have no label or probabilities; they are neither removed to score an accepted-only subset nor assigned invented predictions. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
+
+Evidence and reproduction: [Decisions summary](decisions_results.json) records coverage, metrics, paired intervals, segment provenance and SHA-256 fingerprints. [Execution and recovery instructions](../../docs/gpt6_decisions.md). This supplement uses one resumed campaign; the earlier abandoned run is excluded, and refused inputs were not retried. The tests overlap across K, so the 2,000 evaluations are not independent samples.
 
 At equal 20/class budgets, MiniLM+LR retains the highest accuracy and macro-F1 among all five supervised methods at every K. At 100/class, MiniLM leads accuracy at K=10/15; MiniLM, Qwen and Llama tie at K=5 (98.00%). Llama now leads at K=20 (93.375%, versus MiniLM 92.375% and Qwen 92.25%). These are point estimates; the paired intervals in the extended report quantify uncertainty.
 
@@ -37,7 +53,7 @@ Llama uses byte-identical uploads and test cohorts to the paired Qwen condition.
 
 Offline checks passed for 16 historical supervised conditions, 28 budget-extension conditions and eight Llama conditions (52 supervised conditions total). There is no overlap of IDs, exact text, or text normalized with NFKC/casefold/collapsed whitespace between fit, reserved validation and test. Checks include the entire official test split and the recorded Qwen and Llama training uploads. [Audit evidence](data_integrity.json). This does not audit base-model pretraining, semantic duplicates or the provider’s internal processing.
 
-OpenAI has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable probability vectors at K=10/15/20; full-cohort calibration is unavailable there. The earlier recovery kept the 0.0001 sum tolerance and retained a class choice only when the sum was the sole invalidity and the choice was a maximum of finite nonnegative scores with positive total mass. No probabilities were renormalized. Recovery requested 970 missing IDs; historical and recovered timings remain separate.
+The generative OpenAI baseline has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable probability vectors at K=10/15/20; full-cohort calibration is unavailable there. The earlier recovery kept the 0.0001 sum tolerance and retained a class choice only when the sum was the sole invalidity and the choice was a maximum of finite nonnegative scores with positive total mass. No probabilities were renormalized. Recovery requested 970 missing IDs; historical and recovered timings remain separate.
 
 One seed and previously observed test results make this an exploratory extension. Bootstrap intervals condition on fitted models, labels, class balance and campaign seed; they do not estimate training-seed variability. The 2,000 gold-stratified resamples use seed 20260925 and pointwise 95% percentile intervals without multiplicity adjustment. Test cohorts overlap across K and must not be pooled as independent observations. Definitions were assistant-reviewed, not independently human-validated. Changing K adds classes and examples, so trends do not isolate a causal cardinality effect.
 

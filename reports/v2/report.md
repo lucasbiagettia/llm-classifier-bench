@@ -1,6 +1,6 @@
-# Banking77 v2 experiment — v1.2 with Llama supplement
+# Banking77 v2 experiment — v1.2 with Llama and GPT-6 Decisions supplements
 
-**64/64 quality conditions complete.** Sixteen method/budget variants across four label sets.
+**64/64 historical quality conditions complete.** Sixteen historical method/budget variants across four label sets. GPT-6 Decisions adds four zero-shot conditions: 1 with full classification coverage and 3 completed with refusals.
 
 ## Design and data integrity
 
@@ -32,6 +32,7 @@ Offline checks passed for 16 historical supervised conditions, 28 budget-extensi
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | — | — | — |
 
 ![Accuracy by cardinality and training budget](accuracy.png)
 
@@ -49,11 +50,42 @@ Probability-quality leadership is now shared by Emissary SFT variants: Qwen 100/
 
 BERT at 20/class scores 56.00%, 21.25%, 17.67% and 16.25% accuracy, while its 100/class variants score 96.00%, 92.50%, 87.67% and 85.12%. This characterizes the fixed two-epoch recipe; it does not establish the best achievable performance of a separately tuned BERT model.
 
+## GPT-6 Decisions supplement
+
+The user-run `gpt-6-luna` campaign produced 1,990 classifications and 10 refusals across the same 2,000 planned evaluations (K=5/10/15/20, seed 42, 40 test/class). All inputs were attempted; none remain pending. The 64 historical conditions are unchanged. Only one of the four additional conditions has full classification coverage.
+
+| K | Classifications / planned | Refusals | Coverage | Accuracy | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| 5 | 200/200 | 0 | 100.000% | 93.00% | 0.9297 | 0.0438 | 0.0426 | 0.2249 | 0.1107 |
+| 10 | 398/400 | 2 | 99.500% | — | — | — | — | — | — |
+| 15 | 595/600 | 5 | 99.167% | — | — | — | — | — | — |
+| 20 | 797/800 | 3 | 99.625% | — | — | — | — | — | — |
+
+A dash means full-cohort quality is unavailable. Refusals have no label or probabilities; they are neither removed to score an accepted-only subset nor assigned invented predictions. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
+
+At K=5, the following pointwise paired intervals compare Decisions with the existing zero-shot references. They use the same 2,000 gold-stratified bootstrap resamples and seed as the historical report. No paired quality comparison is made for cohorts with refusals.
+
+| Reference | K | Δ accuracy [95% CI], pp | Δ macro-F1 [95% CI], pp |
+| --- | ---: | --- | --- |
+| openai zero-shot | 5 | +1.00 [-2.50, +4.50] | +1.03 [-2.55, +4.56] |
+| jev zero-shot | 5 | -1.00 [-2.50, +0.00] | -1.02 [-2.54, +0.00] |
+
+| K | API attempts | HTTP 503 | Estimated total USD | Known subtotal USD | p50 / p95 latency, ms |
+| ---: | ---: | ---: | ---: | ---: | --- |
+| 5 | 200 | 0 | 0.0042550 | 0.0042550 | 204.06 / 566.78 |
+| 10 | 400 | 0 | 0.0121262 | 0.0121262 | — |
+| 15 | 600 | 0 | 0.0232347 | 0.0232347 | — |
+| 20 | 801 | 1 | — | 0.0376573 | — |
+
+Costs use the recorded input-token rate card, include refused attempts, and describe this campaign only. K=20 includes a resumed HTTP 503 attempt whose usage is unknown: its total cost is unavailable, not equal to the known subtotal. The failed attempt and its subsequent retry are both retained. Latency is not pooled across resumed segments; segment-specific measurements remain in the summary. No cross-provider cost or latency winner is established.
+
+Evidence and reproduction: [Decisions summary](decisions_results.json) records coverage, metrics, paired intervals, segment provenance and SHA-256 fingerprints. [Execution and recovery instructions](../../docs/gpt6_decisions.md). This supplement uses one resumed campaign; the earlier abandoned run is excluded, and refused inputs were not retried. The tests overlap across K, so the 2,000 evaluations are not independent samples.
+
 Qwen SFT, Llama SFT and Emissary routing are different models/mechanisms. Equal training budgets improve comparability among supervised methods; comparisons against zero-shot services still differ in supervision. Quick Train is not part of this benchmark.
 
 ## Full quality and calibration
 
-OpenAI has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable probability vectors at K=10/15/20; full-cohort calibration is unavailable there. The earlier recovery kept the 0.0001 sum tolerance and retained a class choice only when the sum was the sole invalidity and the choice was a maximum of finite nonnegative scores with positive total mass. No probabilities were renormalized. Recovery requested 970 missing IDs; historical and recovered timings remain separate.
+The generative OpenAI baseline has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable probability vectors at K=10/15/20; full-cohort calibration is unavailable there. The earlier recovery kept the 0.0001 sum tolerance and retained a class choice only when the sum was the sole invalidity and the choice was a maximum of finite nonnegative scores with positive total mass. No probabilities were renormalized. Recovery requested 970 missing IDs; historical and recovered timings remain separate.
 
 | Method | K | Coverage | Accuracy [95% CI] | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |
 | --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |
@@ -121,6 +153,10 @@ OpenAI has no probabilities. Jev retains complete accuracy/F1 coverage but has 1
 | Emissary Llama SFT (100/class) | 10 | 400/400 (completed) | 95.25% [93.25%, 97.00%] | 0.952 | 0.036 | 0.031 | 0.243 | 0.081 |
 | Emissary Llama SFT (100/class) | 15 | 600/600 (completed) | 95.00% [93.17%, 96.67%] | 0.950 | 0.029 | 0.024 | 0.168 | 0.076 |
 | Emissary Llama SFT (100/class) | 20 | 800/800 (completed) | 93.38% [91.75%, 94.75%] | 0.933 | 0.035 | 0.034 | 0.264 | 0.106 |
+| GPT-6 Decisions zero-shot | 5 | 200/200 (completed) | 93.00% [89.50%, 96.00%] | 0.930 | 0.044 | 0.043 | 0.225 | 0.111 |
+| GPT-6 Decisions zero-shot | 10 | 398/400 (completed_with_refusals) | — | — | — | — | — | — |
+| GPT-6 Decisions zero-shot | 15 | 595/600 (completed_with_refusals) | — | — | — | — | — | — |
+| GPT-6 Decisions zero-shot | 20 | 797/800 (completed_with_refusals) | — | — | — | — | — | — |
 
 ## Paired effects at equal budgets
 
@@ -238,6 +274,8 @@ Inference uses batch size 1, concurrency 1, no warmup and no automatic retries. 
 
 One seed and previously observed test results make this an exploratory extension. Bootstrap intervals condition on fitted models, labels, class balance and campaign seed; they do not estimate training-seed variability. The 2,000 gold-stratified resamples use seed 20260925 and pointwise 95% percentile intervals without multiplicity adjustment. Test cohorts overlap across K and must not be pooled as independent observations. Definitions were assistant-reviewed, not independently human-validated. Changing K adds classes and examples, so trends do not isolate a causal cardinality effect.
 
-All new measurements were executed by the user. Report generation only reads saved evidence and makes no provider calls. Original predictions remain unchanged. The publication version `v1.2` snapshot remains unchanged in Git; this supplement adds Llama in the same `v2` experiment directory.
+All new measurements were executed by the user. Report generation only reads saved evidence and makes no provider calls. Original predictions remain unchanged. The publication version `v1.2` snapshot remains unchanged in Git; supplements use the same `v2` experiment directory.
 
 Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. Add `--recompute` to recalculate from the local evidence bundle, including `artifacts/v2_budget_extension` and `artifacts/emissary_llama_comparison`. [Budget instructions](../../docs/budget_extension.md); [Llama instructions](../../docs/llama_budget_extension.md). The committed summary supports clean-clone rendering without raw datasets or credentials. Paired OpenAI comparisons are retained in `results.json`; source/model revisions and cohort identity are in the manifest. Report generation does not create tags or releases.
+
+The original 64 condition objects remain in `results.json`; the four Decisions conditions are in `decisions_results.json`. The combined `results.csv` contains all 68 conditions. To rebuild the Decisions summary from local raw evidence without provider calls, run `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py --decisions-root artifacts/benchmark_runs/20261007T182643602204Z`.
