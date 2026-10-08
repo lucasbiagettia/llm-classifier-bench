@@ -21,6 +21,7 @@ from .emissary import (
 )
 from .jev import JevClassifier
 from .openai import OpenAIClassifier
+from .openai_decisions import OpenAIDecisionsClassifier
 from .sentence_transformer import SentenceTransformerLogisticClassifier
 from .tfidf import TfidfLogisticClassifier
 
@@ -40,6 +41,7 @@ __all__ = [
     "Experiment",
     "JevClassifier",
     "OpenAIClassifier",
+    "OpenAIDecisionsClassifier",
     "SentenceTransformerLogisticClassifier",
     "TfidfLogisticClassifier",
     "parse_classification_response",

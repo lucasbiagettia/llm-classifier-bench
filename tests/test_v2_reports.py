@@ -16,11 +16,73 @@ def test_report_renders_in_empty_workdir_from_versioned_summary(tmp_path):
         '--summary',str(source),'--output-dir',str(output)],cwd=tmp_path,env=env,
         capture_output=True,text=True,check=True)
     assert '64/64 complete' in result.stdout
-    for name in ('brief.md','report.md','results.csv'):
+    for name in ('brief.md','report.md','results.csv','decisions_results.json'):
         assert (output/name).read_text()==(ROOT/'reports/v2'/name).read_text()
     assert json.loads((output/'results.json').read_text())==json.loads(source.read_text())
     assert (output/'accuracy.png').stat().st_size>1000
     assert not (tmp_path/'artifacts').exists()
+
+
+def test_decisions_publication_preserves_refusals_and_unknown_costs():
+    import csv
+    payload=json.loads((ROOT/'reports/v2/decisions_results.json').read_text())
+    rows=payload['conditions']
+    assert [(r['k'],r['n'],r['refused_examples'],r['pending_examples']) for r in rows]==[
+        (5,200,0,0),(10,398,2,0),(15,595,5,0),(20,797,3,0)]
+    assert rows[0]['metrics']['accuracy']['value']==.93
+    assert all(m['value'] is None for r in rows[1:] for m in r['metrics'].values())
+    assert [r['correct_classifications'] for r in rows]==[186,362,534,681]
+    for row in rows:
+        assert row['accepted_metrics']['accuracy']['value']==row['correct_classifications']/row['n']
+        assert row['correct_over_planned']==row['correct_classifications']/row['expected']
+        for metric in row['accepted_metrics'].values():
+            assert metric['value'] is not None
+            assert metric['metadata']['evaluated_examples']==row['n']
+            assert metric['metadata']['excluded_refusals']==row['refused_examples']
+    assert all(p['k']==5 for p in payload['paired_effects'])
+    assert sum(r['operations']['api_attempts'] for r in rows)==2001
+    assert rows[-1]['operations']['http_503_attempts']==1
+    assert rows[-1]['operations']['total_cost_usd'] is None
+    assert rows[-1]['operations']['known_cost_subtotal_usd']>0
+    with (ROOT/'reports/v2/results.csv').open() as stream:
+        combined=list(csv.DictReader(stream))
+    assert len(combined)==68
+    partial=[r for r in combined if r['status']=='completed_with_refusals']
+    assert len(partial)==3 and all(r['accuracy']==r['macro_f1']==r['multiclass_log_loss']=='' for r in partial)
+    assert all(r['accepted_accuracy'] and r['accepted_macro_f1'] and r['accepted_multiclass_log_loss'] for r in partial)
+    readme=(ROOT/'README.md').read_text()
+    brief=(ROOT/'reports/v2/brief.md').read_text()
+    assert [line for line in readme.splitlines() if line.startswith('|')]==[
+        line for line in brief.splitlines()[:brief.splitlines().index('## GPT-6 Decisions supplement')]
+        if line.startswith('|')]
+
+
+def test_decisions_render_rejects_partial_cohort_scores(monkeypatch):
+    import importlib
+    import pytest
+    monkeypatch.syspath_prepend(str(ROOT/'scripts'))
+    report=importlib.import_module('_decisions_report')
+    payload=json.loads((ROOT/'reports/v2/decisions_results.json').read_text())
+    payload['conditions'][1]['metrics']['accuracy']['value']=.99
+    with pytest.raises(ValueError,match='accepted-only'):
+        report.validate_summary(payload)
+
+
+def test_decisions_render_rejects_wrong_accepted_denominator(monkeypatch):
+    import importlib
+    import pytest
+    monkeypatch.syspath_prepend(str(ROOT/'scripts'))
+    report=importlib.import_module('_decisions_report')
+    payload=json.loads((ROOT/'reports/v2/decisions_results.json').read_text())
+    payload['conditions'][1]['accepted_metrics']['accuracy']['metadata']['evaluated_examples']=400
+    with pytest.raises(ValueError,match='scope'):
+        report.validate_summary(payload)
+
+
+def test_all_64_historical_results_remain_unchanged():
+    import hashlib
+    assert hashlib.sha256((ROOT/'reports/v2/results.json').read_bytes()).hexdigest()==(
+        '1085dc8237f7dd10767f229008a170015499fb9fbd0c2c3d1feda0948c7754e9')
 
 
 def test_published_summary_accounts_for_coverage_and_calibration():

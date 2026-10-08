@@ -156,8 +156,15 @@ def evaluate_jsonl(
     metrics: Sequence[Metric] | None = None,
 ) -> tuple[MetricResult, ...]:
     records = load_evaluation_records(path)
-    results = evaluate_records(records, metrics=metrics)
     artifact = Path(path)
+    coverage_path = artifact.parent / "coverage.json"
+    if artifact.name == "predictions.jsonl" and coverage_path.is_file():
+        coverage = json.loads(coverage_path.read_text())
+        if (coverage.get("status") != "completed"
+                or coverage.get("planned_examples") != len(records)
+                or coverage.get("planned_sample_ids") != [r.sample_id for r in records]):
+            raise ValueError("Cannot evaluate incomplete cohort: refusals/pending samples must not be silently excluded")
+    results = evaluate_records(records, metrics=metrics)
     if artifact.name != "predictions.jsonl" or not (artifact.parent / "usage.jsonl").exists():
         return results
     # Replay the ledger, not the per-prediction sum: warmup and failed attempts

@@ -147,13 +147,15 @@ def price_entry(entry: dict, card: dict, device: str | None, hardware_profile: s
             cost = amount(entry["elapsed_ms"]) / Decimal(3600000) * amount(rate["usd_per_hour"])
             result.update(kind="estimated", rate=rate,
                           basis=f"active inference wall time; {rate['interpretation']}")
-        elif entry.get("provider") == "jev":
+        elif entry.get("provider") == "jev" or entry.get("billing_basis") == "all_input_tokens":
+            # Keep historical Jev evidence wording while sharing endpoint pricing.
+            rate_description = "Jev" if entry.get("provider") == "jev" else "input-token"
             rates = [r for r in card.get("api_rates", []) if
-                     r["provider"] == "jev" and entry.get("model") in r["models"]
+                     r["provider"] == entry.get("provider") and entry.get("model") in r["models"]
                      and r.get("billing_basis") == "all_input_tokens"
                      and entry.get("endpoint") in r.get("endpoints", [])]
             if len(rates) != 1:
-                raise ValueError("exact Jev model/endpoint rate unavailable or ambiguous")
+                raise ValueError(f"exact {rate_description} model/endpoint rate unavailable or ambiguous")
             rate = rates[0]
             usage = entry.get("usage") or {}
             input_tokens = _count(usage.get("input_tokens"))
@@ -161,7 +163,7 @@ def price_entry(entry: dict, card: dict, device: str | None, hardware_profile: s
             output_tokens = _count(usage.get("output_tokens")) if output_rate else None
             cost = (Decimal(input_tokens) * amount(rate["input_usd_per_million"])
                     + Decimal(output_tokens or 0) * output_rate) / Decimal(1000000)
-            result.update(kind="estimated", rate=rate, basis="reported input tokens at selected Jev rate card",
+            result.update(kind="estimated", rate=rate, basis=f"reported input tokens at selected {rate_description} rate card",
                           billing_units={"input_tokens": input_tokens, "output_tokens": usage.get("output_tokens")})
         elif entry.get("provider") == "openai":
             rate = next((r for r in card.get("api_rates", []) if

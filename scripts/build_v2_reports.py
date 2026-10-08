@@ -291,7 +291,13 @@ def value(row, metric='accuracy'):
     return row.get('metrics', {}).get(metric, {}).get('value')
 
 
-def accuracy_table(results):
+def displayed_value(row, metric='accuracy'):
+    if row.get('refused_examples'):
+        return row.get('accepted_metrics', {}).get(metric, {}).get('value')
+    return value(row, metric)
+
+
+def accuracy_table(results, decisions=None):
     index = {(r['method'], r['fit_per_class'], r['k']): r for r in results}
     lines = ['| Method | Fit/class | K=5 | K=10 | K=15 | K=20 |',
              '| --- | ---: | ---: | ---: | ---: | ---: |']
@@ -299,6 +305,10 @@ def accuracy_table(results):
         for budget in BUDGETS[method]:
             vals = [pct(value(index[method, budget, k])) for k in COUNTS]
             lines.append(f'| {METHODS[method]} | {budget} | ' + ' | '.join(vals) + ' |')
+    if decisions:
+        lines.append('| GPT-6 Decisions zero-shot | 0 | ' +
+                     ' | '.join(pct(displayed_value(r)) + ('*' if r['refused_examples'] else '')
+                                for r in decisions['conditions']) + ' |')
     return lines
 
 
@@ -315,23 +325,32 @@ def paired_table(payload, comparison):
     return lines
 
 
-def render(payload):
+def render(payload, decisions=None):
     results = payload['conditions']
     expected = set(conditions())
     actual = {(r['method'], r['fit_per_class'], r['k']) for r in results}
     if len(results) != len(expected) or actual != expected:
         raise ValueError('Summary must account for all 64 method/budget/cardinality conditions')
+    if decisions:
+        from _decisions_report import validate_summary, narrative
+        validate_summary(decisions)
     REPORT.mkdir(exist_ok=True, parents=True)
     completed = sum(r['status'] == 'completed' for r in results)
     write_json(REPORT/'results.json', payload)
+    if decisions:
+        write_json(REPORT/'decisions_results.json', decisions)
     write_json(REPORT/'data_integrity.json', payload['data_integrity'])
     with (REPORT/'results.csv').open('w') as stream:
         fields = ['method', 'k', 'fit_per_class', 'status', 'n', 'expected', 'probability_vectors', *[m.name for m in QUALITY]]
+        if decisions:
+            fields += ['refused_examples', 'coverage', 'correct_classifications', 'correct_over_planned',
+                       *['accepted_' + m.name for m in QUALITY]]
         writer = csv.DictWriter(stream, fieldnames=fields, lineterminator='\n')
         writer.writeheader()
-        for row in results:
+        for row in results + (decisions['conditions'] if decisions else []):
             writer.writerow({**{k: row[k] for k in fields if k in row},
-                             **{k: v['value'] for k, v in row.get('metrics', {}).items()}})
+                             **{k: v['value'] for k, v in row.get('metrics', {}).items()},
+                             **{'accepted_' + k: v['value'] for k, v in row.get('accepted_metrics', {}).items()}})
     design = (
         'Seed 42; nested label sets of 5/10/15/20 classes; 40 official held-out test examples/class '
         '(200/400/600/800 predictions per condition). The 28 new budget conditions add 14,000 predictions '
@@ -369,7 +388,7 @@ def render(payload):
         'independent observations. Definitions were assistant-reviewed, not independently human-validated. '
         'Changing K adds classes and examples, so trends do not isolate a causal cardinality effect.')
     availability = (
-        'OpenAI has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable '
+        'The generative OpenAI baseline has no probabilities. Jev retains complete accuracy/F1 coverage but has 1/2/3 unavailable '
         'probability vectors at K=10/15/20; full-cohort calibration is unavailable there. The earlier recovery '
         'kept the 0.0001 sum tolerance and retained a class choice only when the sum was the sole invalidity '
         'and the choice was a maximum of finite nonnegative scores with positive total mass. No probabilities '
@@ -402,25 +421,35 @@ def render(payload):
             'score 96.00%, 92.50%, 87.67% and 85.12%. This characterizes the fixed two-epoch recipe; it does '
             'not establish the best achievable performance of a separately tuned BERT model.',
         ]
-    lines = ['# Banking77 v2 experiment — v1.2 with Llama supplement', '',
-             f'**{completed}/64 quality conditions complete.** Sixteen method/budget variants across four label sets.',
+    heading = 'v1.2 with Llama and GPT-6 Decisions supplements' if decisions else 'v1.2 with Llama supplement'
+    status = f'**{completed}/64 historical quality conditions complete.** Sixteen historical method/budget variants across four label sets.'
+    if decisions:
+        full = sum(r['status'] == 'completed' for r in decisions['conditions'])
+        status += f' GPT-6 Decisions adds four zero-shot conditions: {full} with full classification coverage and {4-full} completed with refusals.'
+    lines = [f'# Banking77 v2 experiment — {heading}', '', status,
              '', '## Design and data integrity', '', design, '', budgets, '', llama_recipe, '', integrity,
-             '', '## Accuracy by label budget', '', *accuracy_table(results), '',
+             '', '## Accuracy by label budget', '', *accuracy_table(results, decisions), '',
              '![Accuracy by cardinality and training budget](accuracy.png)', '',
              '## Interpretation', '']
     for finding in findings:
         lines += [finding, '']
+    if decisions:
+        lines += narrative(decisions)
     lines += ['Qwen SFT, Llama SFT and Emissary routing are different models/mechanisms. Equal training budgets improve '
               'comparability among supervised methods; comparisons against zero-shot services still differ '
               'in supervision. Quick Train is not part of this benchmark.', '',
               '## Full quality and calibration', '', availability, '',
               '| Method | K | Coverage | Accuracy [95% CI] | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |',
               '| --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |']
-    for row in results:
+    for row in results + (decisions['conditions'] if decisions else []):
         ci = row.get('uncertainty', {}).get('metrics', {}).get('accuracy')
-        acc = f"{pct(value(row))} [{pct(ci['lower'])}, {pct(ci['upper'])}]" if ci else '—'
-        metrics = [num(value(row, name)) for name in ('macro_f1', *CALIBRATION)]
+        marker = '*' if row.get('refused_examples') else ''
+        acc = f"{pct(value(row))} [{pct(ci['lower'])}, {pct(ci['upper'])}]" if ci else pct(displayed_value(row)) + marker
+        metrics = [num(displayed_value(row, name)) + marker for name in ('macro_f1', *CALIBRATION)]
         lines.append(f"| {row['title']} | {row['k']} | {row['n']}/{row['expected']} ({row['status']}) | {acc} | " + ' | '.join(metrics) + ' |')
+    if decisions:
+        lines += ['', '\\* Decisions metrics for K=10/15/20 use accepted classifications only (398/400, 595/600, '
+                  '797/800 coverage). They are conditional estimates; no full-cohort paired inference is made.']
     lines += ['', '## Paired effects at equal budgets', '',
               'Differences are method minus MiniLM+LR using the same training budget and test IDs. Positive '
               'values favor the named method. These exploratory comparisons do not adjust for multiplicity.', '',
@@ -447,7 +476,7 @@ def render(payload):
               '## Limitations and reproducibility', '', limitations, '',
               'All new measurements were executed by the user. Report generation only reads saved evidence '
               'and makes no provider calls. Original predictions remain unchanged. The publication version '
-              '`v1.2` snapshot remains unchanged in Git; this supplement adds Llama in the same `v2` experiment directory.', '',
+              '`v1.2` snapshot remains unchanged in Git; supplements use the same `v2` experiment directory.', '',
               'Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. '
               'Add `--recompute` to recalculate from the local evidence bundle, including '
               '`artifacts/v2_budget_extension` and `artifacts/emissary_llama_comparison`. '
@@ -455,10 +484,15 @@ def render(payload):
               'The committed summary supports clean-clone rendering without raw datasets or credentials. '
               'Paired OpenAI comparisons are retained in `results.json`; source/model revisions and '
               'cohort identity are in the manifest. Report generation does not create tags or releases.']
+    if decisions:
+        lines += ['', 'The original 64 condition objects remain in `results.json`; the four Decisions conditions are in '
+                  '`decisions_results.json`. The combined `results.csv` contains all 68 conditions. '
+                  'To rebuild the Decisions summary from local raw evidence without provider calls, run '
+                  f"`PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py --decisions-root {decisions['campaign_root']}`."]
     (REPORT/'report.md').write_text('\n'.join(lines) + '\n')
-    brief = ['# Banking77 — v1.2 with Llama supplement: brief', '', f'**{completed}/64 quality conditions complete.** '
-             'The extension includes equal training budgets for five supervised methods, retaining three '
-             'zero-shot references and all original results.', '', *accuracy_table(results), '']
+    brief = [f'# Banking77 — {heading}: brief', '', status, '', *accuracy_table(results, decisions), '']
+    if decisions:
+        brief += narrative(decisions, brief=True)
     brief += [text for finding in findings for text in (finding, '')]
     brief += [llama_recipe, '', integrity, '', availability, '', limitations, '',
               'Emissary pricing remains unknown. This brief makes no cross-provider cost or latency claim. '
@@ -479,10 +513,15 @@ def render(payload):
                 ax.plot([r['k'] for r in points], [value(r) for r in points], marker='o',
                         color=colors[method], linestyle='--' if actual_budget == 0 else '-',
                         alpha=.65 if actual_budget == 0 else 1, label=METHODS[method])
+        if decisions:
+            points = decisions['conditions']
+            ax.plot([r['k'] for r in points], [displayed_value(r) for r in points], marker='D',
+                    linestyle='--', color='black', label='GPT-6 Decisions (accepted cases)')
         ax.set(xlabel='Number of classes', xticks=COUNTS, ylim=(0, 1.02), title=f'{budget} training examples/class')
         ax.grid(alpha=.2)
     axes[0].set_ylabel('Accuracy')
-    fig.suptitle(f'Banking77 + Llama — {completed}/64 conditions; dashed lines are zero-shot references')
+    fig.suptitle('Banking77 — Decisions coverage: 200/200, 398/400, 595/600, 797/800; its curve uses accepted cases' if decisions else
+                 f'Banking77 + Llama — {completed}/64 conditions; dashed lines are zero-shot references')
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol=4, fontsize=9, frameon=False)
     fig.tight_layout(rect=(0, .13, 1, .96))
@@ -500,6 +539,15 @@ if __name__ == '__main__':
     parser.add_argument('--summary', type=Path, default=Path('reports/v2/results.json'))
     parser.add_argument('--output-dir', type=Path, default=REPORT)
     parser.add_argument('--recompute', action='store_true')
+    parser.add_argument('--decisions-root', type=Path, help='Recompute the Decisions supplement from saved campaign evidence, offline')
+    parser.add_argument('--decisions-summary', type=Path, help='Versioned Decisions summary; defaults to decisions_results.json beside --summary')
     args = parser.parse_args()
     REPORT = args.output_dir
-    render(collect(args.completion_root, args.extension_root, args.llama_root) if args.recompute else read_json(args.summary))
+    payload = collect(args.completion_root, args.extension_root, args.llama_root) if args.recompute else read_json(args.summary)
+    decisions_path = args.decisions_summary or args.summary.with_name('decisions_results.json')
+    decisions = read_json(decisions_path) if decisions_path.exists() else None
+    decisions_root = args.decisions_root or (Path(decisions['campaign_root']) if args.recompute and decisions else None)
+    if decisions_root:
+        from _decisions_report import collect_decisions
+        decisions = collect_decisions(decisions_root, payload, QUALITY)
+    render(payload, decisions)

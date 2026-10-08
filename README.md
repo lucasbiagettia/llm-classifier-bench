@@ -24,15 +24,25 @@ V2 benchmark accuracy results on Banking77, copied from the [brief](reports/v2/b
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | 90.95%* | 89.75%* | 85.45%* |
+
+GPT-6 Decisions (`gpt-6-luna`) produced 1,990 classifications and 10 refusals on
+the same test cohorts. Coverage is 200/200, 398/400, 595/600 and 797/800 for
+K=5/10/15/20. \* K=10/15/20 metrics describe accepted classifications only,
+with denominators 398, 595 and 797; the refused cases are excluded explicitly.
+These conditional estimates may favor the model and do not establish full-cohort
+superiority. K=5 has macro-F1 0.9297, ECE 0.0438,
+log loss 0.2249 and Brier 0.1107. The earlier generative OpenAI baseline is separate.
 
 [Read the full V2 benchmark report](reports/v2/report.md).
 
-The current implementation supports six classifier families:
+The current implementation supports seven classifier families:
 
 - **Emissary zero-shot and Projects fine-tuning** — routing experiments plus an
   explicit supervised classification mechanism.
 - **Jev zero-shot** — TypeSafe Choice probabilities with separate native confidence.
 - **OpenAI zero-shot** — generative closed-set classification with structured output.
+- **OpenAI GPT-6 Decisions zero-shot** — typed Choice classification with full probabilities.
 - **BERT fine-tuned** — supervised Hugging Face sequence classification.
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
 - **TF-IDF + Logistic Regression** — supervised sparse lexical baseline.
@@ -43,13 +53,14 @@ The current implementation supports six classifier families:
 - [Completed experiment design](reports/v2/protocol.md) and [configuration manifest](reports/v2/manifest.json)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
+- [GPT-6 Decisions setup and exact Banking77 replay command](docs/gpt6_decisions.md)
 - [Frozen class definitions](docs/class_definitions.md)
 - [Matched labeled-example budgets](docs/matched_label_budgets.md)
 - [Emissary configuration](docs/emissary_few_shot.md) and [adapter contract](docs/emissary_contract.md)
 - [Latency and throughput](docs/latency_measurement.md)
 - [Inference costs](docs/inference_costs.md), [self-hosted projections](docs/self_hosted_inference_costs.md), and [preparation costs](docs/preparation_costs.md)
 
-The v1.2 report with its Llama supplement covers **64/64 quality conditions** in the v2 experiment:
+The v1.2 report with its Llama supplement retains **64/64 historical quality conditions** in the v2 experiment:
 16 method/budget variants across 5/10/15/20 classes, with 40 held-out test examples
 per class. Local supervised models use 20/50/100 training examples/class; Emissary
 Qwen and Llama SFT use 20/100. Equal budgets share the same training examples. The
@@ -57,6 +68,11 @@ Qwen and Llama SFT use 20/100. Equal budgets share the same training examples. T
 [data integrity audit](reports/v2/data_integrity.json). See the
 [budget extension instructions](docs/budget_extension.md) and
 [Llama instructions](docs/llama_budget_extension.md) for the execution scripts.
+The Decisions supplement adds four zero-shot conditions: one with full coverage
+and three completed with refusals. Its [audited summary](reports/v2/decisions_results.json)
+is versioned separately so all historical results remain unchanged. The combined
+CSV contains 68 conditions. One HTTP 503 was retried on explicit resume; its
+unknown usage leaves the K=20 total cost unavailable. No refused examples were retried.
 
 Rebuild the published reports, tables and figure offline from the versioned
 summary (no API calls):
@@ -114,6 +130,7 @@ Current defaults:
 ```text
 Jev:                jev-1.13.0 (classifiers/jev.py)
 OpenAI:             gpt-5-nano
+OpenAI Decisions:   gpt-6-luna
 OpenAI reasoning:   minimal
 BERT:               google-bert/bert-base-uncased
 SentenceTransformer: sentence-transformers/all-MiniLM-L6-v2
