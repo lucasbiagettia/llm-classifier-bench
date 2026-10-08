@@ -126,7 +126,10 @@ and `cost_report.json`. These operational JSON artifacts are normal runner outpu
 
 Campaign `20261007T182643602204Z` completed all 2,000 inputs with 1,990 classifications
 and 10 refusals (0/2/5/3 at K=5/10/15/20). K=5 has full coverage and 93% accuracy;
-the other cells have unavailable full-cohort quality metrics. K=20 includes one
+the other cells publish descriptive metrics on accepted classifications with
+explicit denominators and coverage, while full-cohort F1/calibration remain
+unavailable. The report also gives correct classifications divided by all planned
+inputs, so a refusal contributes no successful classification. K=20 includes one
 HTTP 503 and its explicit retry, with unknown usage on the failed attempt.
 The earlier abandoned campaign and any future refusal retries are excluded.
 
@@ -172,7 +175,12 @@ the complete planned IDs. A cell that attempted all inputs but has refusals is
 For those cells, full-cohort quality and latency metrics remain unavailable in
 the cell summary; raw per-segment timing remains available. The generic artifact
 evaluator rejects a `predictions.jsonl` whose sibling coverage manifest declares
-missing predictions, preventing accidental scoring of only the accepted subset.
+missing predictions, preventing accidental scoring of only the accepted subset
+as if it were the full cohort. Publication explicitly computes descriptive
+`accepted_metrics` with the existing metric implementations, records their
+denominators and excluded refusals, and marks them with an asterisk in tables.
+They are stored separately from full-cohort `metrics`; the combined CSV provides
+`accepted_` columns. Paired full-cohort comparisons remain limited to K=5.
 Cost totals sum the standard segment ledgers, including all refused attempts;
 cost per 1,000 successful classifications uses the successful count. No refusal
 is silently omitted from coverage or billing. A later analysis can explicitly

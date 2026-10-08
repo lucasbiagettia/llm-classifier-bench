@@ -20,7 +20,7 @@
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
-| GPT-6 Decisions zero-shot | 0 | 93.00% | — | — | — |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | 90.95%* | 89.75%* | 85.45%* |
 
 ## GPT-6 Decisions supplement
 
@@ -29,11 +29,11 @@ The user-run `gpt-6-luna` campaign produced 1,990 classifications and 10 refusal
 | K | Classifications / planned | Refusals | Coverage | Accuracy | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 5 | 200/200 | 0 | 100.000% | 93.00% | 0.9297 | 0.0438 | 0.0426 | 0.2249 | 0.1107 |
-| 10 | 398/400 | 2 | 99.500% | — | — | — | — | — | — |
-| 15 | 595/600 | 5 | 99.167% | — | — | — | — | — | — |
-| 20 | 797/800 | 3 | 99.625% | — | — | — | — | — | — |
+| 10 | 398/400 | 2 | 99.500% | 90.95%* | 0.9105* | 0.0242* | 0.0263* | 0.2750* | 0.1243* |
+| 15 | 595/600 | 5 | 99.167% | 89.75%* | 0.8984* | 0.0417* | 0.0336* | 1.0287* | 0.1686* |
+| 20 | 797/800 | 3 | 99.625% | 85.45%* | 0.8563* | 0.0361* | 0.0383* | 1.0662* | 0.2337* |
 
-A dash means full-cohort quality is unavailable. Refusals have no label or probabilities; they are neither removed to score an accepted-only subset nor assigned invented predictions. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
+\* Metrics at K=10/15/20 describe accepted classifications only: denominators are 398, 595 and 797, respectively. Coverage and refusal counts are reported alongside them. These conditional estimates may favor the model if refused cases are harder; they do not establish superiority on the full test cohort. K=5 uses all 200 examples. Refusals have no label or probabilities, so full-cohort F1 and calibration remain unavailable. No probabilities or labels are fabricated for refusals. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
 
 Evidence and reproduction: [Decisions summary](decisions_results.json) records coverage, metrics, paired intervals, segment provenance and SHA-256 fingerprints. [Execution and recovery instructions](../../docs/gpt6_decisions.md). This supplement uses one resumed campaign; the earlier abandoned run is excluded, and refused inputs were not retried. The tests overlap across K, so the 2,000 evaluations are not independent samples.
 

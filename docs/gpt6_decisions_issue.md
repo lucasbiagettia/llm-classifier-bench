@@ -49,7 +49,7 @@ Without `--execute`, the command audits the frozen local evidence and writes off
 
 Outputs remain under `artifacts/benchmark_runs/<timestamp>/`: existing run directories and raw prediction/config/status/fit/usage/timing/metrics artifacts, plus campaign and CSV/JSON summaries. Refusals are recorded separately and execution continues through immutable runner segments. Other failures stop execution without automatic retries. `--resume CAMPAIGN_DIRECTORY` validates and skips previous predictions and refusals, and accepts a corroborated HTTP 503 failure for explicit retry; without it, execution creates a fresh campaign.
 
-Cell-level `outcomes.jsonl` and `coverage.json` retain all attempted inputs and explicit refusal counts. Full-cohort quality metrics remain unavailable if any example was refused; the evaluator must not silently score only accepted examples. Cost totals include refused calls. Resume must preserve original segment artifacts byte-for-byte and reject changed or ambiguous evidence before paid calls.
+Cell-level `outcomes.jsonl` and `coverage.json` retain all attempted inputs and explicit refusal counts. Full-cohort quality metrics remain unavailable if any example was refused; publication also reports descriptive accepted-only metrics with explicit denominators and coverage. The evaluator must not silently label these as full-cohort results. Cost totals include refused calls. Resume must preserve original segment artifacts byte-for-byte and reject changed or ambiguous evidence before paid calls.
 
 ## Expected metrics and accounting
 

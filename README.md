@@ -24,12 +24,14 @@ V2 benchmark accuracy results on Banking77, copied from the [brief](reports/v2/b
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
-| GPT-6 Decisions zero-shot | 0 | 93.00% | — | — | — |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | 90.95%* | 89.75%* | 85.45%* |
 
 GPT-6 Decisions (`gpt-6-luna`) produced 1,990 classifications and 10 refusals on
 the same test cohorts. Coverage is 200/200, 398/400, 595/600 and 797/800 for
-K=5/10/15/20. Dashes indicate unavailable full-cohort metrics because of refusals;
-we do not score only the accepted subset. K=5 has macro-F1 0.9297, ECE 0.0438,
+K=5/10/15/20. \* K=10/15/20 metrics describe accepted classifications only,
+with denominators 398, 595 and 797; the refused cases are excluded explicitly.
+These conditional estimates may favor the model and do not establish full-cohort
+superiority. K=5 has macro-F1 0.9297, ECE 0.0438,
 log loss 0.2249 and Brier 0.1107. The earlier generative OpenAI baseline is separate.
 
 [Read the full V2 benchmark report](reports/v2/report.md).

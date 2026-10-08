@@ -32,7 +32,7 @@ Offline checks passed for 16 historical supervised conditions, 28 budget-extensi
 | Emissary Qwen SFT | 100 | 98.00% | 93.25% | 93.83% | 92.25% |
 | Emissary Llama SFT | 20 | 91.00% | 91.75% | 88.00% | 87.25% |
 | Emissary Llama SFT | 100 | 98.00% | 95.25% | 95.00% | 93.38% |
-| GPT-6 Decisions zero-shot | 0 | 93.00% | — | — | — |
+| GPT-6 Decisions zero-shot | 0 | 93.00% | 90.95%* | 89.75%* | 85.45%* |
 
 ![Accuracy by cardinality and training budget](accuracy.png)
 
@@ -57,11 +57,20 @@ The user-run `gpt-6-luna` campaign produced 1,990 classifications and 10 refusal
 | K | Classifications / planned | Refusals | Coverage | Accuracy | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |
 | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 | 5 | 200/200 | 0 | 100.000% | 93.00% | 0.9297 | 0.0438 | 0.0426 | 0.2249 | 0.1107 |
-| 10 | 398/400 | 2 | 99.500% | — | — | — | — | — | — |
-| 15 | 595/600 | 5 | 99.167% | — | — | — | — | — | — |
-| 20 | 797/800 | 3 | 99.625% | — | — | — | — | — | — |
+| 10 | 398/400 | 2 | 99.500% | 90.95%* | 0.9105* | 0.0242* | 0.0263* | 0.2750* | 0.1243* |
+| 15 | 595/600 | 5 | 99.167% | 89.75%* | 0.8984* | 0.0417* | 0.0336* | 1.0287* | 0.1686* |
+| 20 | 797/800 | 3 | 99.625% | 85.45%* | 0.8563* | 0.0361* | 0.0383* | 1.0662* | 0.2337* |
 
-A dash means full-cohort quality is unavailable. Refusals have no label or probabilities; they are neither removed to score an accepted-only subset nor assigned invented predictions. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
+\* Metrics at K=10/15/20 describe accepted classifications only: denominators are 398, 595 and 797, respectively. Coverage and refusal counts are reported alongside them. These conditional estimates may favor the model if refused cases are harder; they do not establish superiority on the full test cohort. K=5 uses all 200 examples. Refusals have no label or probabilities, so full-cohort F1 and calibration remain unavailable. No probabilities or labels are fabricated for refusals. Their cause is unknown; ambiguity has not been established as the cause. The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. Decisions supplies native probabilities for every accepted classification.
+
+The successful-classification rate below uses the entire planned cohort as its denominator. A refusal contributes no successful classification. This reports end-to-end task completion without inventing a class label or probability distribution.
+
+| K | Correct classifications / planned | Successful-classification rate |
+| ---: | ---: | ---: |
+| 5 | 186/200 | 93.000% |
+| 10 | 362/400 | 90.500% |
+| 15 | 534/600 | 89.000% |
+| 20 | 681/800 | 85.125% |
 
 At K=5, the following pointwise paired intervals compare Decisions with the existing zero-shot references. They use the same 2,000 gold-stratified bootstrap resamples and seed as the historical report. No paired quality comparison is made for cohorts with refusals.
 
@@ -154,9 +163,11 @@ The generative OpenAI baseline has no probabilities. Jev retains complete accura
 | Emissary Llama SFT (100/class) | 15 | 600/600 (completed) | 95.00% [93.17%, 96.67%] | 0.950 | 0.029 | 0.024 | 0.168 | 0.076 |
 | Emissary Llama SFT (100/class) | 20 | 800/800 (completed) | 93.38% [91.75%, 94.75%] | 0.933 | 0.035 | 0.034 | 0.264 | 0.106 |
 | GPT-6 Decisions zero-shot | 5 | 200/200 (completed) | 93.00% [89.50%, 96.00%] | 0.930 | 0.044 | 0.043 | 0.225 | 0.111 |
-| GPT-6 Decisions zero-shot | 10 | 398/400 (completed_with_refusals) | — | — | — | — | — | — |
-| GPT-6 Decisions zero-shot | 15 | 595/600 (completed_with_refusals) | — | — | — | — | — | — |
-| GPT-6 Decisions zero-shot | 20 | 797/800 (completed_with_refusals) | — | — | — | — | — | — |
+| GPT-6 Decisions zero-shot | 10 | 398/400 (completed_with_refusals) | 90.95%* | 0.911* | 0.024* | 0.026* | 0.275* | 0.124* |
+| GPT-6 Decisions zero-shot | 15 | 595/600 (completed_with_refusals) | 89.75%* | 0.898* | 0.042* | 0.034* | 1.029* | 0.169* |
+| GPT-6 Decisions zero-shot | 20 | 797/800 (completed_with_refusals) | 85.45%* | 0.856* | 0.036* | 0.038* | 1.066* | 0.234* |
+
+\* Decisions metrics for K=10/15/20 use accepted classifications only (398/400, 595/600, 797/800 coverage). They are conditional estimates; no full-cohort paired inference is made.
 
 ## Paired effects at equal budgets
 

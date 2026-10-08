@@ -1,4 +1,4 @@
-"""Offline publication of Decisions coverage, without scoring accepted-only subsets."""
+"""Offline publication of Decisions quality with explicit evaluation denominators."""
 from pathlib import Path
 import json
 
@@ -15,7 +15,7 @@ def records(path):
 
 
 def collect_decisions(root, historical, quality):
-    """Audit immutable campaign segments and recompute only full-cohort metrics."""
+    """Audit immutable segments; keep accepted-only and full-cohort quality distinct."""
     root = Path(root)
     plan = read_json(root / 'campaign.json')
     require(plan['seed'] == 42 and plan['class_counts'] == [5, 10, 15, 20], 'Unexpected Decisions matrix')
@@ -57,8 +57,16 @@ def collect_decisions(root, historical, quality):
                'refused_sample_ids': [e.sample_id for e in bundle.test if e.sample_id in state['refusals']],
                'metrics': {m.name: {'name': m.name, 'value': None, 'available': False,
                            'metadata': {'reason': 'Full-cohort predictions unavailable due to refusals'}} for m in quality}}
+        rec = [evaluation_record_from_mapping(r) for r in predictions]
+        accepted_metrics = {m.name: m.as_dict() for m in evaluate_records(rec, metrics=quality)} if rec else {}
+        for metric in accepted_metrics.values():
+            metric['metadata'].update(scope='accepted_classifications', evaluated_examples=len(predictions),
+                                      excluded_refusals=refused, planned_examples=len(bundle.test))
+        row['accepted_metrics'] = accepted_metrics
+        correct = sum(r['predicted_label'] == r['gold_label'] for r in predictions)
+        row['correct_classifications'] = correct
+        row['correct_over_planned'] = correct / len(bundle.test)
         if not refused:
-            rec = [evaluation_record_from_mapping(r) for r in predictions]
             row['metrics'] = {m.name: m.as_dict() for m in evaluate_records(rec, metrics=quality)}
             row['uncertainty'] = stratified_quality_bootstrap(rec)
             for method in ('openai', 'jev'):
@@ -90,7 +98,7 @@ def collect_decisions(root, historical, quality):
             'latency_p95_ms': saved_metrics['latency_p95_ms']['value'],
             'measurement_phases': phases}
         conditions.append(row)
-    return {'schema_version': 1, 'campaign_root': str(root), 'campaign_id': plan['campaign_id'],
+    return {'schema_version': 2, 'campaign_root': str(root), 'campaign_id': plan['campaign_id'],
             'model': plan['decisions']['requested_model'], 'seed': plan['seed'],
             'scope': 'One resumed campaign; earlier abandoned campaign excluded. Refusals were not retried.',
             'audit': plan['audit'], 'conditions': conditions, 'paired_effects': paired,
@@ -109,7 +117,16 @@ def validate_summary(summary):
         require(row['coverage'] == row['n'] / row['expected'], 'Invalid Decisions coverage fraction')
         if row['refused_examples']:
             require(all(m['value'] is None for m in row['metrics'].values()) and 'uncertainty' not in row,
-                    'Refused cohorts cannot publish accepted-only quality metrics')
+                    'Refused cohorts cannot publish accepted-only metrics as full-cohort quality')
+        require(0 <= row['correct_classifications'] <= row['n']
+                and row['correct_over_planned'] == row['correct_classifications'] / row['expected'],
+                'Invalid correct-over-planned denominator')
+        for metric in row['accepted_metrics'].values():
+            metadata = metric['metadata']
+            require(metadata.get('scope') == 'accepted_classifications'
+                    and metadata.get('evaluated_examples') == row['n']
+                    and metadata.get('excluded_refusals') == row['refused_examples']
+                    and metadata.get('planned_examples') == row['expected'], 'Invalid accepted-only metric scope')
 
 
 def narrative(summary, *, brief=False):
@@ -126,17 +143,29 @@ def narrative(summary, *, brief=False):
         '| K | Classifications / planned | Refusals | Coverage | Accuracy | Macro-F1 | ECE | Adaptive ECE | Log loss | Brier |',
         '| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |']
     for r in rows:
-        vals = [r['metrics'][m]['value'] for m in ('accuracy', 'macro_f1', 'top_label_ece', 'adaptive_ece',
+        vals = [r['accepted_metrics'].get(m, {}).get('value') for m in ('accuracy', 'macro_f1', 'top_label_ece', 'adaptive_ece',
                                                  'multiclass_log_loss', 'multiclass_brier_score')]
         rendered = [('—' if v is None else f'{v*100:.2f}%' if i == 0 else f'{v:.4f}') for i, v in enumerate(vals)]
+        marker = '*' if r['refused_examples'] else ''
         lines.append(f"| {r['k']} | {r['n']}/{r['expected']} | {r['refused_examples']} | {100*r['coverage']:.3f}% | "
-                     + ' | '.join(rendered) + ' |')
-    lines += ['', 'A dash means full-cohort quality is unavailable. Refusals have no label or probabilities; '
-        'they are neither removed to score an accepted-only subset nor assigned invented predictions. '
+                     + ' | '.join(v + marker if v != '—' else v for v in rendered) + ' |')
+    lines += ['', '\\* Metrics at K=10/15/20 describe accepted classifications only: denominators are 398, 595 and 797, '
+        'respectively. Coverage and refusal counts are reported alongside them. These conditional estimates '
+        'may favor the model if refused cases are harder; they do not establish superiority on the full test cohort. '
+        'K=5 uses all 200 examples. Refusals have no label or probabilities, so full-cohort F1 and calibration '
+        'remain unavailable. No probabilities or labels are fabricated for refusals. '
         'Their cause is unknown; ambiguity has not been established as the cause. '
         'The generative OpenAI baseline (GPT-5 nano) remains a separate method without probabilities. '
         'Decisions supplies native probabilities for every accepted classification.', '']
     if not brief:
+        lines += ['The successful-classification rate below uses the entire planned cohort as its denominator. '
+                  'A refusal contributes no successful classification. This reports end-to-end task completion '
+                  'without inventing a class label or probability distribution.', '',
+                  '| K | Correct classifications / planned | Successful-classification rate |',
+                  '| ---: | ---: | ---: |']
+        for r in rows:
+            lines.append(f"| {r['k']} | {r['correct_classifications']}/{r['expected']} | {100*r['correct_over_planned']:.3f}% |")
+        lines += ['']
         lines += ['At K=5, the following pointwise paired intervals compare Decisions with the existing zero-shot references. '
                   'They use the same 2,000 gold-stratified bootstrap resamples and seed as the historical report. '
                   'No paired quality comparison is made for cohorts with refusals.', '',

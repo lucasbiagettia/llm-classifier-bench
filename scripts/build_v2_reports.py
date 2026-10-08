@@ -291,6 +291,12 @@ def value(row, metric='accuracy'):
     return row.get('metrics', {}).get(metric, {}).get('value')
 
 
+def displayed_value(row, metric='accuracy'):
+    if row.get('refused_examples'):
+        return row.get('accepted_metrics', {}).get(metric, {}).get('value')
+    return value(row, metric)
+
+
 def accuracy_table(results, decisions=None):
     index = {(r['method'], r['fit_per_class'], r['k']): r for r in results}
     lines = ['| Method | Fit/class | K=5 | K=10 | K=15 | K=20 |',
@@ -301,7 +307,8 @@ def accuracy_table(results, decisions=None):
             lines.append(f'| {METHODS[method]} | {budget} | ' + ' | '.join(vals) + ' |')
     if decisions:
         lines.append('| GPT-6 Decisions zero-shot | 0 | ' +
-                     ' | '.join(pct(value(r)) for r in decisions['conditions']) + ' |')
+                     ' | '.join(pct(displayed_value(r)) + ('*' if r['refused_examples'] else '')
+                                for r in decisions['conditions']) + ' |')
     return lines
 
 
@@ -335,11 +342,15 @@ def render(payload, decisions=None):
     write_json(REPORT/'data_integrity.json', payload['data_integrity'])
     with (REPORT/'results.csv').open('w') as stream:
         fields = ['method', 'k', 'fit_per_class', 'status', 'n', 'expected', 'probability_vectors', *[m.name for m in QUALITY]]
+        if decisions:
+            fields += ['refused_examples', 'coverage', 'correct_classifications', 'correct_over_planned',
+                       *['accepted_' + m.name for m in QUALITY]]
         writer = csv.DictWriter(stream, fieldnames=fields, lineterminator='\n')
         writer.writeheader()
         for row in results + (decisions['conditions'] if decisions else []):
             writer.writerow({**{k: row[k] for k in fields if k in row},
-                             **{k: v['value'] for k, v in row.get('metrics', {}).items()}})
+                             **{k: v['value'] for k, v in row.get('metrics', {}).items()},
+                             **{'accepted_' + k: v['value'] for k, v in row.get('accepted_metrics', {}).items()}})
     design = (
         'Seed 42; nested label sets of 5/10/15/20 classes; 40 official held-out test examples/class '
         '(200/400/600/800 predictions per condition). The 28 new budget conditions add 14,000 predictions '
@@ -432,9 +443,13 @@ def render(payload, decisions=None):
               '| --- | ---: | --- | --- | ---: | ---: | ---: | ---: | ---: |']
     for row in results + (decisions['conditions'] if decisions else []):
         ci = row.get('uncertainty', {}).get('metrics', {}).get('accuracy')
-        acc = f"{pct(value(row))} [{pct(ci['lower'])}, {pct(ci['upper'])}]" if ci else '—'
-        metrics = [num(value(row, name)) for name in ('macro_f1', *CALIBRATION)]
+        marker = '*' if row.get('refused_examples') else ''
+        acc = f"{pct(value(row))} [{pct(ci['lower'])}, {pct(ci['upper'])}]" if ci else pct(displayed_value(row)) + marker
+        metrics = [num(displayed_value(row, name)) + marker for name in ('macro_f1', *CALIBRATION)]
         lines.append(f"| {row['title']} | {row['k']} | {row['n']}/{row['expected']} ({row['status']}) | {acc} | " + ' | '.join(metrics) + ' |')
+    if decisions:
+        lines += ['', '\\* Decisions metrics for K=10/15/20 use accepted classifications only (398/400, 595/600, '
+                  '797/800 coverage). They are conditional estimates; no full-cohort paired inference is made.']
     lines += ['', '## Paired effects at equal budgets', '',
               'Differences are method minus MiniLM+LR using the same training budget and test IDs. Positive '
               'values favor the named method. These exploratory comparisons do not adjust for multiplicity.', '',
@@ -499,13 +514,13 @@ def render(payload, decisions=None):
                         color=colors[method], linestyle='--' if actual_budget == 0 else '-',
                         alpha=.65 if actual_budget == 0 else 1, label=METHODS[method])
         if decisions:
-            points = [r for r in decisions['conditions'] if r['status'] == 'completed']
-            ax.plot([r['k'] for r in points], [value(r) for r in points], marker='D',
-                    linestyle='None', color='black', label='GPT-6 Decisions (full coverage only)')
+            points = decisions['conditions']
+            ax.plot([r['k'] for r in points], [displayed_value(r) for r in points], marker='D',
+                    linestyle='--', color='black', label='GPT-6 Decisions (accepted cases)')
         ax.set(xlabel='Number of classes', xticks=COUNTS, ylim=(0, 1.02), title=f'{budget} training examples/class')
         ax.grid(alpha=.2)
     axes[0].set_ylabel('Accuracy')
-    fig.suptitle(f'Banking77 — {completed + full}/68 full-coverage conditions; Decisions shown only with full coverage' if decisions else
+    fig.suptitle('Banking77 — Decisions coverage: 200/200, 398/400, 595/600, 797/800; its curve uses accepted cases' if decisions else
                  f'Banking77 + Llama — {completed}/64 conditions; dashed lines are zero-shot references')
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol=4, fontsize=9, frameon=False)

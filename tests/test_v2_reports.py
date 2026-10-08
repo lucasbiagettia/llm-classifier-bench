@@ -31,6 +31,14 @@ def test_decisions_publication_preserves_refusals_and_unknown_costs():
         (5,200,0,0),(10,398,2,0),(15,595,5,0),(20,797,3,0)]
     assert rows[0]['metrics']['accuracy']['value']==.93
     assert all(m['value'] is None for r in rows[1:] for m in r['metrics'].values())
+    assert [r['correct_classifications'] for r in rows]==[186,362,534,681]
+    for row in rows:
+        assert row['accepted_metrics']['accuracy']['value']==row['correct_classifications']/row['n']
+        assert row['correct_over_planned']==row['correct_classifications']/row['expected']
+        for metric in row['accepted_metrics'].values():
+            assert metric['value'] is not None
+            assert metric['metadata']['evaluated_examples']==row['n']
+            assert metric['metadata']['excluded_refusals']==row['refused_examples']
     assert all(p['k']==5 for p in payload['paired_effects'])
     assert sum(r['operations']['api_attempts'] for r in rows)==2001
     assert rows[-1]['operations']['http_503_attempts']==1
@@ -41,6 +49,7 @@ def test_decisions_publication_preserves_refusals_and_unknown_costs():
     assert len(combined)==68
     partial=[r for r in combined if r['status']=='completed_with_refusals']
     assert len(partial)==3 and all(r['accuracy']==r['macro_f1']==r['multiclass_log_loss']=='' for r in partial)
+    assert all(r['accepted_accuracy'] and r['accepted_macro_f1'] and r['accepted_multiclass_log_loss'] for r in partial)
     readme=(ROOT/'README.md').read_text()
     brief=(ROOT/'reports/v2/brief.md').read_text()
     assert [line for line in readme.splitlines() if line.startswith('|')]==[
@@ -56,6 +65,17 @@ def test_decisions_render_rejects_partial_cohort_scores(monkeypatch):
     payload=json.loads((ROOT/'reports/v2/decisions_results.json').read_text())
     payload['conditions'][1]['metrics']['accuracy']['value']=.99
     with pytest.raises(ValueError,match='accepted-only'):
+        report.validate_summary(payload)
+
+
+def test_decisions_render_rejects_wrong_accepted_denominator(monkeypatch):
+    import importlib
+    import pytest
+    monkeypatch.syspath_prepend(str(ROOT/'scripts'))
+    report=importlib.import_module('_decisions_report')
+    payload=json.loads((ROOT/'reports/v2/decisions_results.json').read_text())
+    payload['conditions'][1]['accepted_metrics']['accuracy']['metadata']['evaluated_examples']=400
+    with pytest.raises(ValueError,match='scope'):
         report.validate_summary(payload)
 
 
