@@ -36,13 +36,14 @@ log loss 0.2249 and Brier 0.1107. The earlier generative OpenAI baseline is sepa
 
 [Read the full V2 benchmark report](reports/v2/report.md).
 
-The current implementation supports seven classifier families:
+The current implementation supports eight classifier families:
 
 - **Emissary zero-shot and Projects fine-tuning** — routing experiments plus an
   explicit supervised classification mechanism.
 - **Jev zero-shot** — TypeSafe Choice probabilities with separate native confidence.
 - **OpenAI zero-shot** — generative closed-set classification with structured output.
 - **OpenAI GPT-6 Decisions zero-shot** — typed Choice classification with full probabilities.
+- **Perplexity Decisions zero-shot** — native choice probabilities with separate provider confidence.
 - **BERT fine-tuned** — supervised Hugging Face sequence classification.
 - **Frozen SentenceTransformer + Logistic Regression** — supervised shallow classifier over fixed semantic embeddings.
 - **TF-IDF + Logistic Regression** — supervised sparse lexical baseline.
@@ -54,6 +55,7 @@ The current implementation supports seven classifier families:
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
 - [GPT-6 Decisions setup and exact Banking77 replay command](docs/gpt6_decisions.md)
+- [Perplexity Decisions setup and exact Banking77 replay command](docs/perplexity_decisions.md)
 - [Frozen class definitions](docs/class_definitions.md)
 - [Matched labeled-example budgets](docs/matched_label_budgets.md)
 - [Emissary configuration](docs/emissary_few_shot.md) and [adapter contract](docs/emissary_contract.md)

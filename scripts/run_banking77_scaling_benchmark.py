@@ -57,6 +57,7 @@ from llm_classifier_bench.classifiers import (
     EmissaryClient,
     OpenAIClassifier,
     OpenAIDecisionsClassifier,
+    PerplexityDecisionsClassifier,
     JevClassifier,
     SentenceTransformerLogisticClassifier,
     TfidfLogisticClassifier,
@@ -80,7 +81,8 @@ from llm_classifier_bench.runner import (
 )
 from llm_classifier_bench.measurement import add_measurement_arguments, measurement_from_args
 from _jev_campaign import add_jev_arguments, jev_options
-from _decisions_campaign import add_decisions_arguments, decisions_options, decisions_manifest
+from _decisions_campaign import (add_decisions_arguments, decisions_options, decisions_manifest,
+                                 add_perplexity_arguments, perplexity_options, perplexity_manifest)
 from _matched_budgets import (add_matched_arguments, validate_budget_arguments,
                               budget_conditions, budget_manifest, annotate_budget_row)
 
@@ -327,7 +329,11 @@ def build_classifier(
     openai_options: dict | None = None,
     jev_config: dict | None = None,
     decisions_config: dict | None = None,
+    perplexity_config: dict | None = None,
 ) -> Any:
+    if name == "perplexity-decisions":
+        return PerplexityDecisionsClassifier(**(perplexity_config or {}))
+
     if name == "openai-decisions":
         return OpenAIDecisionsClassifier(**(decisions_config or {}))
 
@@ -523,7 +529,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--classifiers",
         nargs="+",
-        choices=[*DEFAULT_CLASSIFIERS, "tfidf", "jev", "openai-decisions"],
+        choices=[*DEFAULT_CLASSIFIERS, "tfidf", "jev", "openai-decisions", "perplexity-decisions"],
         default=list(DEFAULT_CLASSIFIERS),
         help="Classifier families to run.",
     )
@@ -604,6 +610,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--dry-run", action="store_true", help="Plan Emissary selections without remote calls.")
     add_jev_arguments(parser)
     add_decisions_arguments(parser)
+    add_perplexity_arguments(parser)
     add_matched_arguments(parser)
     add_emissary_arguments(parser)
     parser.add_argument("--pricing", type=Path, default=None, help="Versioned USD rate card; omitted prices stay unavailable")
@@ -671,6 +678,7 @@ def main() -> None:
         "classifiers": list(args.classifiers),
         "jev": jev_options(args) if "jev" in args.classifiers else None,
         **({"decisions": decisions_manifest(args)} if "openai-decisions" in args.classifiers else {}),
+        **({"perplexity_decisions": perplexity_manifest(args)} if "perplexity-decisions" in args.classifiers else {}),
         "seeds": list(args.seeds),
         "train_per_class": args.train_per_class,
         "test_per_class": args.test_per_class,
@@ -768,6 +776,7 @@ def main() -> None:
                         emissary_training=emissary_training,
                         jev_config=jev_options(args),
                         decisions_config=decisions_options(args),
+                        perplexity_config=perplexity_options(args),
                         openai_options={
                             "in_context": matched_budget is not None,
                             "classifier_name": "openai-in-context" if matched_budget and matched_budget.examples else "openai-zero-shot",
