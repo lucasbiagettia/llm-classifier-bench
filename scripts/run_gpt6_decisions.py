@@ -28,7 +28,7 @@ def locate_run(evidence):
     return evidence if (evidence / "config.json").is_file() else evidence / "runs/new"
 
 
-def prepare_plan(args):
+def prepare_plan(args, *, classifier=None, method="openai-decisions"):
     """Verify frozen inputs and every completed comparable cohort without network."""
     fingerprints = {}
 
@@ -50,7 +50,7 @@ def prepare_plan(args):
     fingerprints[str(definition_path)] = shared.sha256(definition_path)
     profile = shared.load_class_definition_profile(definition_path)
     definitions = {c.name: c for c in profile.profile.classes}
-    classifier = OpenAIDecisionsClassifier(**decisions_options(args))
+    classifier = classifier if classifier is not None else OpenAIDecisionsClassifier(**decisions_options(args))
     load_pricing(args.pricing)
     fingerprints[str(args.pricing)] = shared.sha256(args.pricing)
     conditions, audit = {}, []
@@ -86,7 +86,7 @@ def prepare_plan(args):
         audit.append({"k": k, "comparable_conditions_checked": len(references),
                       "test_examples": len(bundle.test), "test_identity": "IDs, order, text and gold labels matched",
                       **shared.audit_partitions(fit, reserved, bundle.test)})
-    cells = [{"id": f"openai-decisions__s42__k{k}__b0", "method": "openai-decisions", "k": k,
+    cells = [{"id": f"{method}__s42__k{k}__b0", "method": method, "k": k,
               "budget": 0, "test_examples": 40*k} for k in COUNTS]
     return {"schema_version": 1, "dataset": "banking77", "seed": 42, "cells": cells,
             "class_counts": list(COUNTS), "test_examples_per_class": 40,

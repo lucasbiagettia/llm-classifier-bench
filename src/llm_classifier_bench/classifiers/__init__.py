@@ -22,6 +22,7 @@ from .emissary import (
 from .jev import JevClassifier
 from .openai import OpenAIClassifier
 from .openai_decisions import OpenAIDecisionsClassifier
+from .perplexity_decisions import PerplexityDecisionsClassifier
 from .sentence_transformer import SentenceTransformerLogisticClassifier
 from .tfidf import TfidfLogisticClassifier
 
@@ -42,6 +43,7 @@ __all__ = [
     "JevClassifier",
     "OpenAIClassifier",
     "OpenAIDecisionsClassifier",
+    "PerplexityDecisionsClassifier",
     "SentenceTransformerLogisticClassifier",
     "TfidfLogisticClassifier",
     "parse_classification_response",

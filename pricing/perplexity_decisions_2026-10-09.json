@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "currency": "USD",
+  "api_rates": [
+    {
+      "provider": "perplexity",
+      "models": ["pplx-decider-v1.1-27b", "pplx-decider-v1-27b"],
+      "service_tiers": ["standard"],
+      "endpoints": ["https://api.perplexity.ai/v1/decisions"],
+      "billing_basis": "all_input_tokens",
+      "input_usd_per_million": "0.02",
+      "cached_input_usd_per_million": "0",
+      "cache_write_usd_per_million": "0",
+      "output_usd_per_million": "0",
+      "source": "https://docs.perplexity.ai/docs/decisions/quickstart",
+      "effective_date": "2026-10-09",
+      "date_basis": "Documentation verified on this date; not tariff start date",
+      "assumptions": "Reported input tokens at the Decisions API rate. Output tokens are free; no per-request fee. Estimate, not invoice. Taxes, discounts and custom terms excluded. Custom endpoints, unlisted response models and missing usage remain unavailable."
+    }
+  ],
+  "local_hardware": null
+}
