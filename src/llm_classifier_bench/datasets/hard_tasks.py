@@ -28,6 +28,18 @@ ANLI_DESCRIPTIONS = {
     "neutral": "Given the premise, the hypothesis could be true or false: the premise does not establish or rule it out.",
     "contradiction": "Given the premise, the hypothesis must be false: it conflicts with information in the premise.",
 }
+CLASS_DEFINITION_PROVENANCE = {
+    "implicit_hate": {
+        "source": "https://aclanthology.org/2021.emnlp-main.29/",
+        "method": "Assistant-authored paraphrases of the paper's implicit-hate taxonomy; not verbatim quotations",
+        "review_status": "Not independently human-reviewed",
+    },
+    "anli_r3": {
+        "source": "https://github.com/facebookresearch/anli",
+        "method": "Assistant-authored definitions of the standard NLI label semantics; not verbatim quotations",
+        "review_status": "Not independently human-reviewed",
+    },
+}
 
 
 def content_id(text):
@@ -105,6 +117,7 @@ class ImplicitHateDataset:
             self.name, tuple(ClassDefinition(k, v) for k, v in HATE_DESCRIPTIONS.items()),
             tuple(partitions["train"]), tuple(partitions["test"]),
             metadata={"path": "SALT-NLP/ImplicitHate", "revision": IMPLICIT_HATE_REVISION,
+                      "class_definition_provenance": CLASS_DEFINITION_PROVENANCE[self.name],
                       "split_policy": "synthetic 60/20/20 stratified exact-input groups; not official splits",
                       "split_seed": self.split_seed, "excluded_primary_other_rows": excluded_other,
                       "secondary_label_policy": "metadata only; never additional classification targets",
@@ -159,6 +172,7 @@ class AnliDataset:
             self.name, tuple(ClassDefinition(k, v) for k, v in ANLI_DESCRIPTIONS.items()),
             tuple(partitions["train"]), tuple(partitions["test"]),
             metadata={"path": "facebook/anli", "revision": ANLI_REVISION, "round": "R3",
+                      "class_definition_provenance": CLASS_DEFINITION_PROVENANCE[self.name],
                       "train_split": "train_r3", "validation_split": "dev_r3", "test_split": "test_r3",
                       "input_format": "Premise: {premise}\\nHypothesis: {hypothesis}", "group_audit": audit,
                       "cross_split_duplicate_policy": "test > dev > train; exclude exact duplicate inputs from lower-priority candidates; merge annotations into existing owner; unique examples never move",

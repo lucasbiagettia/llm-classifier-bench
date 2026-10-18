@@ -526,6 +526,18 @@ commands](docs/hard_datasets.md) for explanation metadata, official/synthetic
 partitions, budget caps, unknown Emissary costs and later execution. AG News also
 works with `--datasets ag_news` and uses all four labels.
 
+Prepare the supervised **20/50/100 fit examples per class** sweep on both datasets,
+keeping 40 test examples per class and running each zero-shot variant once:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets.py \
+  --train-budgets 20 50 100 --dry-run --output-dir artifacts/hard_fit_sweep
+```
+
+This plans 42 conditions; the [sweep protocol](docs/hard_datasets.md#fit-budget-sweep-20--50--100-per-class)
+describes nested fit pools, execution caps and the documented source of the fixed
+class descriptions.
+
 ## Before formal benchmark claims
 
 The infrastructure is sufficient to begin pilot measurements after the regression/smoke suite passes. Before treating results as publishable benchmark evidence, still freeze:

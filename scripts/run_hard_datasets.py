@@ -79,6 +79,17 @@ def context_pool(bundle, cfg):
         validation_examples=bundle.validation or ())[0]
 
 
+def fit_budget_bundle(bundle, per_class):
+    """Take nested prefixes of the frozen, independently shuffled class pools."""
+    train = []
+    for name in bundle.class_names:
+        group = [e for e in bundle.train if e.label == name]
+        if len(group) < per_class:
+            raise ValueError(f"Insufficient frozen fit support for {name}: {len(group)} < {per_class}")
+        train.extend(group[:per_class])
+    return replace(bundle, train=tuple(train))
+
+
 def build_classifier(method, cfg, *, run_id, test_count):
     seed, models = cfg["seed"], cfg["models"]
     if method == "tfidf":
@@ -144,6 +155,16 @@ def prepare(args, cfg):
         minimum = 0 if key in ("seed", "validation_per_class") else 1
         if type(cfg[key]) is not int or cfg[key] < minimum:
             raise ValueError(f"{key} must be an integer >= {minimum}")
+    budgets = getattr(args, "train_budgets", None)
+    if budgets is None:
+        budgets = ([args.train_per_class] if args.train_per_class is not None
+                   else cfg.get("train_budgets", [cfg["train_per_class"]]))
+    if (not isinstance(budgets, list) or not budgets
+            or any(type(b) is not int or b < 1 for b in budgets)):
+        raise ValueError("train_budgets must be a nonempty list of positive integers")
+    cfg["train_budgets"] = sorted(set(budgets))
+    # One maximum-size snapshot; smaller conditions share per-class prefixes.
+    cfg["train_per_class"] = max(budgets)
     if args.emissary_project_id:
         cfg["emissary"]["project_id"] = args.emissary_project_id
     names = args.datasets or cfg["datasets"]
@@ -185,26 +206,37 @@ def prepare(args, cfg):
             "source_explanation_coverage": {s: explanation_coverage(getattr(source, s) or ()) for s in ("train", "validation", "test")},
             "selected_explanation_coverage": {s: explanation_coverage(getattr(bundle, s) or ()) for s in ("train", "validation", "test")},
             "test_sample_ids": [e.sample_id for e in bundle.test],
+            "fit_budgets": {str(b): {
+                "fit_per_class": b,
+                "fit_sample_ids": [e.sample_id for e in fit_budget_bundle(bundle, b).train],
+                "counts": dict(Counter(e.label for e in fit_budget_bundle(bundle, b).train)),
+            } for b in cfg["train_budgets"]},
             "input_characters": {"min": min(len(e.text) for e in bundle.test), "max": max(len(e.text) for e in bundle.test)}}
         for method in dict.fromkeys(methods):
-            missing_project = method in SFT and not cfg["emissary"].get("project_id")
-            classifier = (None if missing_project else build_classifier(
-                method, cfg, run_id=f"{name}-{method}-plan", test_count=len(bundle.test)))
-            preflight = getattr(classifier, "preflight", None)
-            support = preflight(bundle.classes, bundle.inputs()) if preflight else {"supported": True}
-            if method in ("openai", "openai-context"):
-                support = classifier.plan_context(bundle.classes, context_pool(bundle, cfg) if method == "openai-context" else (), bundle.inputs())
-            blocker = None if support["supported"] else support.get("reason", "context_limit_exceeded")
-            if missing_project:
-                blocker = "Configure emissary.project_id or --emissary-project-id before preparation"
-            plan["cells"].append({"dataset": name, "method": method, "blocker": blocker,
-                "regime": "supervised" if method in LOCAL | SFT else "in_context" if method == "openai-context" else "zero_shot",
-                "fit_examples": len(bundle.train) if method in LOCAL | SFT else 0,
-                "validation_examples": len(bundle.validation) if method in LOCAL else 0,
-                "validation_examples_supplied": len(bundle.validation) if method in LOCAL | SFT else 0,
-                "context_examples": len(context_pool(bundle, cfg)) if method == "openai-context" else 0,
-                "test_examples": len(bundle.test), "preflight": support,
-                "cost": planned_cost(method, classifier, bundle, cfg, card)})
+            for budget in cfg["train_budgets"] if method in LOCAL | SFT else [0]:
+                # Context mode stays fixed, drawn from the smallest shared pool.
+                cell_bundle = fit_budget_bundle(bundle, budget or min(cfg["train_budgets"]))
+                cell_cfg = {**cfg, "train_per_class": budget or min(cfg["train_budgets"])}
+                missing_project = method in SFT and not cfg["emissary"].get("project_id")
+                classifier = (None if missing_project else build_classifier(
+                    method, cell_cfg, run_id=f"{name}-{method}-fit{budget}-plan", test_count=len(bundle.test)))
+                preflight = getattr(classifier, "preflight", None)
+                support = preflight(bundle.classes, bundle.inputs()) if preflight else {"supported": True}
+                if method in ("openai", "openai-context"):
+                    support = classifier.plan_context(bundle.classes,
+                        context_pool(cell_bundle, cell_cfg) if method == "openai-context" else (), bundle.inputs())
+                blocker = None if support["supported"] else support.get("reason", "context_limit_exceeded")
+                if missing_project:
+                    blocker = "Configure emissary.project_id or --emissary-project-id before preparation"
+                plan["cells"].append({"dataset": name, "method": method, "blocker": blocker,
+                    "regime": "supervised" if method in LOCAL | SFT else "in_context" if method == "openai-context" else "zero_shot",
+                    "fit_per_class": budget,
+                    "fit_examples": len(cell_bundle.train) if method in LOCAL | SFT else 0,
+                    "validation_examples": len(bundle.validation) if method in LOCAL else 0,
+                    "validation_examples_supplied": len(bundle.validation) if method in LOCAL | SFT else 0,
+                    "context_examples": len(context_pool(cell_bundle, cell_cfg)) if method == "openai-context" else 0,
+                    "test_examples": len(bundle.test), "preflight": support,
+                    "cost": planned_cost(method, classifier, cell_bundle, cell_cfg, card)})
     plan["estimated_priced_subtotal_usd"] = sum(c["cost"]["estimated_usd"] or 0 for c in plan["cells"])
     plan["total_cost_usd"] = None
     plan["total_cost_reason"] = "Unpriced hosted preparation/inference and unmeasured local compute; subtotal is an estimate, not results"
@@ -256,19 +288,24 @@ def execute(args):
     rows = []
     for cell in plan["cells"]:
         name, method = cell["dataset"], cell["method"]
-        bundle = bundles[name]
+        budget = cell["fit_per_class"]
+        bundle = fit_budget_bundle(bundles[name], budget or min(cfg["train_budgets"]))
+        cell_cfg = {**cfg, "train_per_class": budget or min(cfg["train_budgets"])}
         # Zero-shot methods receive no labels. Demonstrations are a separate budget.
         if method not in LOCAL | SFT:
-            bundle = replace(bundle, train=context_pool(bundle, cfg) if method == "openai-context" else (), validation=())
+            bundle = replace(bundle, train=context_pool(bundle, cell_cfg) if method == "openai-context" else (), validation=())
         run_id = f"{name}__{method}"
-        classifier = build_classifier(method, cfg, run_id=f"{campaign_id}-{run_id}", test_count=len(bundle.test))
+        if budget and len(cfg["train_budgets"]) > 1:
+            run_id += f"__fit{budget}"
+        classifier = build_classifier(method, cell_cfg, run_id=f"{campaign_id}-{run_id}", test_count=len(bundle.test))
         result, error = None, None
         try:
             result = run_benchmark(StaticDataset(bundle), classifier, BenchmarkRunConfig(
                 output_root=output / "runs", run_id=run_id, validation_fraction=0,
                 split_seed=cfg["seed"], pricing_path=root / "pricing.json",
                 measurement=MeasurementConfig(**plan["measurement"]),
-                metadata={"prepared_plan_sha256": digest(path), "dataset": name, "method": method}))
+                metadata={"prepared_plan_sha256": digest(path), "dataset": name, "method": method,
+                          "fit_per_class": budget}))
         except BaseException as exc:
             error = exc
             raise
@@ -277,7 +314,8 @@ def execute(args):
                                   bundle, len(bundle.train), len(bundle.validation))
             row = summary_row(campaign_id=campaign_id, condition=condition, classifier_key=method,
                               classifier=classifier, result=result, error=error)
-            row.update(dataset=name, context_examples=cell["context_examples"], run_dir=str(output / "runs" / run_id))
+            row.update(dataset=name, fit_per_class=budget,
+                       context_examples=cell["context_examples"], run_dir=str(output / "runs" / run_id))
             rows.append(row)
             write_json(output / "summary.json", rows)
             write_summary_csv(output / "summary.csv", rows)
@@ -293,7 +331,11 @@ def parser():
     p.add_argument("--dry-run", action="store_true", help="Default behavior; load/sample/plan only")
     p.add_argument("--execute", action="store_true", help="Execute an already prepared --plan")
     p.add_argument("--plan", type=Path)
-    for key in ("seed", "train-per-class", "validation-per-class", "test-per-class", "context-total"):
+    fit = p.add_mutually_exclusive_group()
+    fit.add_argument("--train-per-class", type=int, help="Single fit budget per class (default 20)")
+    fit.add_argument("--train-budgets", nargs="+", type=int,
+                     help="Nested fit budgets per class, e.g. 20 50 100; zero-shot/context run once")
+    for key in ("seed", "validation-per-class", "test-per-class", "context-total"):
         p.add_argument(f"--{key}", type=int)
     p.add_argument("--hate-annotations", type=Path, help="Optional official stage-3 TSV with exact post/target/implied_statement")
     p.add_argument("--emissary-project-id")
@@ -316,7 +358,7 @@ def main(argv=None):
         if args.plan is None:
             p.error("--execute requires a previously prepared --plan")
         if args.datasets or args.methods or any(getattr(args, k) is not None for k in
-            ("seed", "train_per_class", "validation_per_class", "test_per_class", "context_total", "emissary_project_id", "hate_annotations")):
+            ("seed", "train_per_class", "train_budgets", "validation_per_class", "test_per_class", "context_total", "emissary_project_id", "hate_annotations")):
             p.error("Execution uses frozen settings; prepare a new plan to change datasets, methods or budgets")
         print(execute(args))
     else:
