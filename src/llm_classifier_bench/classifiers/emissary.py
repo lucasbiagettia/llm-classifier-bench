@@ -158,6 +158,15 @@ class EmissaryClient:
             raise EmissaryResponseError("Base-model response must be an object")
         return response
 
+    def create_project(self, name: str) -> dict[str, Any]:
+        """Create a workspace, as in the historical Qwen submission workflow."""
+        if not isinstance(name, str) or not name.strip():
+            raise ValueError("Project name must be nonempty")
+        response = self._post("/v1/projects", {"name": name})
+        if not isinstance(response.get("id"), str) or not response["id"].strip():
+            raise EmissaryResponseError("Created project must contain a nonempty id")
+        return response
+
     def retrieve_project(self, project_id: str) -> dict[str, Any]:
         response = self._get(f"/v1/projects/{project_id}")
         if not isinstance(response, dict):

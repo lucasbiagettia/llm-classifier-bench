@@ -52,7 +52,7 @@ def test_decisions_publication_preserves_refusals_and_unknown_costs():
     assert all(r['accepted_accuracy'] and r['accepted_macro_f1'] and r['accepted_multiclass_log_loss'] for r in partial)
     readme=(ROOT/'README.md').read_text()
     brief=(ROOT/'reports/v2/brief.md').read_text()
-    assert [line for line in readme.splitlines() if line.startswith('|')]==[
+    assert [line for line in readme.split('<!-- HARD DATASETS START -->')[0].splitlines() if line.startswith('|')]==[
         line for line in brief.splitlines()[:brief.splitlines().index('## GPT-6 Decisions supplement')]
         if line.startswith('|')]
 

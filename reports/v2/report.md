@@ -290,3 +290,39 @@ All new measurements were executed by the user. Report generation only reads sav
 Render from the committed summary: `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py`. Add `--recompute` to recalculate from the local evidence bundle, including `artifacts/v2_budget_extension` and `artifacts/emissary_llama_comparison`. [Budget instructions](../../docs/budget_extension.md); [Llama instructions](../../docs/llama_budget_extension.md). The committed summary supports clean-clone rendering without raw datasets or credentials. Paired OpenAI comparisons are retained in `results.json`; source/model revisions and cohort identity are in the manifest. Report generation does not create tags or releases.
 
 The original 64 condition objects remain in `results.json`; the four Decisions conditions are in `decisions_results.json`. The combined `results.csv` contains all 68 conditions. To rebuild the Decisions summary from local raw evidence without provider calls, run `PYTHONPATH=src venv/bin/python scripts/build_v2_reports.py --decisions-root artifacts/benchmark_runs/20261007T182643602204Z`.
+
+<!-- HARD DATASETS START -->
+## Hard-dataset supplement
+
+**34/34 included conditions completed**, 17 per dataset; seed 42 and 40 held-out test examples/class (240 Implicit Hate, 120 ANLI R3). Supervised fit budgets are 20/50/100 per class; OpenAI in-context uses five demonstrations total and zero-shot methods use no fit labels. Validation labels consumed: zero. These fixed-label tasks test domain difficulty, not label-cardinality scaling.
+
+| Method | Fit/class | Implicit Hate (6 classes) | ANLI R3 (3 classes) |
+| --- | ---: | ---: | ---: |
+| TF-IDF + LR | 20 | 40.42% | 30.83% |
+| TF-IDF + LR | 50 | 48.75% | 30.00% |
+| TF-IDF + LR | 100 | 45.00% | 30.00% |
+| MiniLM + LR | 20 | 48.75% | 41.67% |
+| MiniLM + LR | 50 | 55.83% | 35.00% |
+| MiniLM + LR | 100 | 57.92% | 35.00% |
+| BERT | 20 | 17.92% | 29.17% |
+| BERT | 50 | 30.42% | 39.17% |
+| BERT | 100 | 44.58% | 33.33% |
+| OpenAI zero-shot | 0 | 30.83% | 49.17% |
+| OpenAI in-context (5 total) | 0 | 37.50% | 45.83% |
+| Jev zero-shot | 0 | 48.33% | 66.67% |
+| GPT-6 Decisions zero-shot | 0 | 49.17% | 47.50% |
+| Emissary routing zero-shot | 0 | 30.83% | 42.50% |
+| Emissary Qwen SFT | 20 | 33.75% | 39.17% |
+| Emissary Qwen SFT | 50 | 45.00% | 38.33% |
+| Emissary Qwen SFT | 100 | 55.83% | 40.83% |
+
+Implicit Hate: MiniLM+LR at 100/class leads the observed accuracy (57.92%); Qwen at 100/class reaches 55.83%. ANLI R3: Jev zero-shot leads the observed accuracy (66.67%). These are exploratory point estimates on small cohorts; increasing fit labels does not consistently improve every method. Comparisons between supervised and zero-shot methods use different label budgets.
+
+GPT-6 Decisions refused 18/240 Implicit Hate inputs (92.50% classification coverage); its 49.17% accuracy and 0.5070 macro-F1 include those refusals as errors on all 240 inputs. ANLI Decisions has 120/120 classification coverage. This full-denominator policy differs from the historical Banking77 accepted-only supplement above; those older results remain unchanged.
+
+Jev Implicit Hate has three probability vectors renormalized for sums within 0.05 of one; original values and the correction policy remain in raw evidence. All other Jev vectors are unchanged and none are missing. This differs from the historical strict sum policy. Emissary Llama is excluded after the Implicit Hate 20/class job failed; its remaining jobs were not attempted. Perplexity is excluded by user instruction. Neither exclusion is a zero score.
+
+Implicit Hate uses a synthetic stratified 60/20/20 split after grouping identical posts; ANLI uses official R3 train/dev/test boundaries, removing cross-split exact duplicates from lower-priority pools. Class descriptions are fixed assistant-authored rubrics, not independently human-reviewed. Per-example explanations stay outside classifier inputs. Local transformers use CPU, BERT two epochs, and Qwen SFT one epoch; BERT length 512 differs from the earlier Banking77 recipe. One seed, model-specific truncation and uncontrolled hosted hardware limit interpretation. No cross-provider cost or latency winner is claimed; Emissary prices remain unavailable.
+
+[Full hard-task report](hard_datasets.md), [results JSON](hard_datasets_results.json) and [CSV](hard_datasets_results.csv).
+<!-- HARD DATASETS END -->

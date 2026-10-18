@@ -648,3 +648,20 @@ def test_profile_null_task_list_waits_for_actual_compatibility():
     classifier._sleep = Mock()
     assert classifier._wait_for_dataset("ms-fixture", "ds-fixture") == ready
     classifier._sleep.assert_called_once()
+
+
+def test_create_project_matches_historical_submission_contract():
+    client, session = http_client(posts=[{"id": "ms-fresh", "name": "fresh"}])
+    assert client.create_project("fresh")["id"] == "ms-fresh"
+    assert session.post.call_count == 1
+    args, kwargs = session.post.call_args
+    assert args[0].endswith("/v1/projects")
+    assert kwargs["json"] == {"name": "fresh"}
+
+
+@pytest.mark.parametrize("payload", [{}, {"id": ""}, {"id": 123}])
+def test_create_project_requires_returned_id(payload):
+    client, session = http_client(posts=[payload])
+    with pytest.raises(EmissaryResponseError, match="nonempty id"):
+        client.create_project("fresh")
+    assert session.post.call_count == 1

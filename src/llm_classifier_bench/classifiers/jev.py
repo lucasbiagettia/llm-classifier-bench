@@ -39,7 +39,8 @@ class JevClassifier:
     def __init__(self, *, model=DEFAULT_JEV_MODEL, endpoint=DEFAULT_JEV_ENDPOINT,
                  api_key=None, timeout_s=30.0, max_retries=0, retry_backoff_s=1.0,
                  max_requests=None, context_window_tokens=32000, session=None,
-                 classifier_name="jev-zero-shot"):
+                 classifier_name="jev-zero-shot", probability_sum_tolerance=PROBABILITY_SUM_TOLERANCE,
+                 invalid_sum_policy="error"):
         parsed = urlsplit(endpoint)
         if parsed.scheme != "https" or not parsed.netloc or parsed.username or parsed.password or parsed.query or parsed.fragment:
             raise ValueError("Jev endpoint must be an HTTPS URL without credentials, query or fragment")
@@ -55,6 +56,14 @@ class JevClassifier:
             if isinstance(value, bool) or not math.isfinite(value) or value <= 0:
                 raise ValueError(f"{key} must be finite and positive")
         self.name = classifier_name
+        if (isinstance(probability_sum_tolerance, bool) or
+            not math.isfinite(probability_sum_tolerance) or
+            not PROBABILITY_SUM_TOLERANCE <= probability_sum_tolerance <= .05):
+            raise ValueError("probability_sum_tolerance must be between the shared tolerance and 0.05")
+        if invalid_sum_policy not in ("error", "label_only"):
+            raise ValueError("invalid_sum_policy must be error or label_only")
+        self.probability_sum_tolerance = probability_sum_tolerance
+        self.invalid_sum_policy = invalid_sum_policy
         self.model, self.endpoint = model, endpoint
         self.timeout_s, self.max_retries = timeout_s, max_retries
         self.retry_backoff_s, self.max_requests = retry_backoff_s, max_requests
@@ -136,6 +145,9 @@ class JevClassifier:
                 "retry_backoff_s": self.retry_backoff_s, "max_requests": self.max_requests,
                 "transport_attempts_complete": not self._injected_session,
                 "tie_policy": "preserve_provider_choice_if_exact_maximum",
+                "probability_sum_tolerance": self.probability_sum_tolerance,
+                "invalid_sum_policy": self.invalid_sum_policy,
+                "rounding_policy": "renormalize_only_outside_shared_tolerance; preserve_raw_values",
                 "confidence_semantics": "probability_of_predicted_label; native confidence stored separately",
                 "limits": {"choice_options": 255, "configured_single_question_tokens": self.context_window_tokens,
                            "documented_request_tokens": 64000, "documented_state_plus_question_tokens": 32000,
@@ -212,17 +224,32 @@ class JevClassifier:
                 raise ValueError("Jev probability/confidence must be a finite number in [0,1]")
             return float(value)
         probabilities = {name: probability(probabilities[name]) for name in names}
-        if not math.isclose(sum(probabilities.values()), 1.0, rel_tol=0, abs_tol=PROBABILITY_SUM_TOLERANCE):
-            raise ValueError("Jev probabilities do not sum to one")
         if probabilities[label] != max(probabilities.values()):
             raise ValueError("Jev choice is not a maximum-probability class")
+        provider_probabilities = dict(probabilities)
+        total = sum(probabilities.values())
+        sum_policy = "unchanged"
+        if not math.isclose(total, 1.0, rel_tol=0, abs_tol=PROBABILITY_SUM_TOLERANCE):
+            if math.isclose(total, 1.0, rel_tol=0, abs_tol=self.probability_sum_tolerance + 1e-12):
+                probabilities = {name: value / total for name, value in probabilities.items()}
+                sum_policy = "renormalized_rounding"
+            elif self.invalid_sum_policy == "label_only" and total > 0:
+                probabilities = None
+                sum_policy = "label_only_invalid_provider_sum"
+            else:
+                raise ValueError("Jev probabilities do not sum to one")
         native = answer.get("confidence")
         if native is not None:
             native = probability(native)
-        return Prediction(sample_id, label, probabilities[label], probabilities, latency_ms,
+        return Prediction(sample_id, label, probabilities[label] if probabilities else None, probabilities, latency_ms,
                           model=body["model"], request_id=request_id,
                           raw_response={"requested_model": self.model, "resolved_model": body["model"],
                                         "provider_choice": label, "provider_confidence": native,
                                         "provider_confidence_unavailable_reason": "not reported" if native is None else None,
                                         "request_sha256": digest,
-                                        "tied_maximum_labels": [n for n in names if probabilities[n] == probabilities[label]]})
+                                        "provider_probabilities": provider_probabilities,
+                                        "provider_probability_sum": total,
+                                        "probability_sum_policy": sum_policy,
+                                        "probability_sum_tolerance": self.probability_sum_tolerance,
+                                        "probabilities_unavailable_reason": "invalid_provider_sum" if probabilities is None else None,
+                                        "tied_maximum_labels": [n for n in names if provider_probabilities[n] == provider_probabilities[label]]})

@@ -29,6 +29,7 @@ class BertClassifier:
         model: str = DEFAULT_BERT_MODEL,
         training: BertTrainingConfig | None = None,
         classifier_name: str = "bert-finetuned",
+        device: str | None = None,
     ) -> None:
         if not model.strip():
             raise ValueError("model cannot be empty")
@@ -36,6 +37,9 @@ class BertClassifier:
             raise ValueError("classifier_name cannot be empty")
 
         self.model = model
+        if device not in (None, "cpu", "cuda"):
+            raise ValueError("device must be cpu, cuda, or None for automatic selection")
+        self.requested_device = device
         self.training = training or BertTrainingConfig()
         self._name = classifier_name
         self._classes: tuple[ClassDefinition, ...] = ()
@@ -94,7 +98,7 @@ class BertClassifier:
         torch, AutoTokenizer, AutoModelForSequenceClassification = _load_transformer_stack()
         _set_seed(torch, self.training.seed)
 
-        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        device = torch.device(self.requested_device or ("cuda" if torch.cuda.is_available() else "cpu"))
         self._device = device
         sync = lambda: torch.cuda.synchronize(device) if str(device).startswith("cuda") else None
         with preparation_stage(self, "bert.load", "load", synchronize=sync,
@@ -194,6 +198,7 @@ class BertClassifier:
 
     def inference_metadata(self) -> dict[str, Any]:
         return {"backend": "local", "device": str(self._device) if self._device is not None else None,
+                "requested_device": self.requested_device or "auto",
                 "max_input_tokens": self.training.max_length, "truncation": True,
                 "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
 

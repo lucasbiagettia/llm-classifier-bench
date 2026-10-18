@@ -18,7 +18,7 @@ class EvaluationRecord:
 
     sample_id: str
     gold_label: str
-    predicted_label: str
+    predicted_label: str | None
     confidence: float | None
     probabilities: Mapping[str, float] | None
     latency_ms: float | None
@@ -30,8 +30,10 @@ class EvaluationRecord:
             raise ValueError("EvaluationRecord.sample_id cannot be empty")
         if not self.gold_label.strip():
             raise ValueError("EvaluationRecord.gold_label cannot be empty")
-        if not self.predicted_label.strip():
+        if self.predicted_label is not None and not self.predicted_label.strip():
             raise ValueError("EvaluationRecord.predicted_label cannot be empty")
+        if self.predicted_label is None and (self.confidence is not None or self.probabilities is not None):
+            raise ValueError("Null prediction cannot contain confidence or probabilities")
 
         if self.confidence is not None:
             if not math.isfinite(self.confidence):

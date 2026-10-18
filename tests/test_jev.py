@@ -282,6 +282,34 @@ def test_rounded_probabilities_are_not_renormalized(transport):
     assert prediction.probabilities == {"World": .25, "Sports": .74995}
 
 
+@pytest.mark.parametrize("sports,total,policy", [(.74, .99, "renormalized_rounding"),
+    (.76, 1.01, "renormalized_rounding"), (.65, .9, "label_only_invalid_provider_sum")])
+def test_opt_in_sum_margin_preserves_raw_values(transport, sports, total, policy):
+    body = copy.deepcopy(FIXTURE["response"])
+    body["answers"]["classification"]["probabilities"] = {"World": .25, "Sports": sports}
+    classifier = prepared(transport, body, probability_sum_tolerance=.05, invalid_sum_policy="label_only")
+    prediction = classifier.predict(build_bundle().inputs()[:1])[0]
+    assert prediction.predicted_label == "Sports"
+    assert prediction.raw_response["provider_probability_sum"] == pytest.approx(total)
+    assert prediction.raw_response["provider_probabilities"] == {"World": .25, "Sports": sports}
+    assert prediction.raw_response["probability_sum_policy"] == policy
+    if total == .9:
+        assert prediction.probabilities is None and prediction.confidence is None
+    else:
+        assert sum(prediction.probabilities.values()) == pytest.approx(1)
+        assert prediction.confidence == pytest.approx(sports / total)
+
+
+@pytest.mark.parametrize("probabilities", [{"World": .8, "Sports": .1},
+    {"World": -0.1, "Sports": 1.0}, {"World": 0., "Sports": 0.}])
+def test_sum_margin_does_not_accept_invalid_values_or_wrong_argmax(transport, probabilities):
+    body = copy.deepcopy(FIXTURE["response"])
+    body["answers"]["classification"]["probabilities"] = probabilities
+    classifier = prepared(transport, body, probability_sum_tolerance=.05, invalid_sum_policy="label_only")
+    with pytest.raises(ValueError):
+        classifier.predict(build_bundle().inputs()[:1])
+
+
 @pytest.mark.parametrize("changes", [
     {"model": "jev-unknown"}, {"endpoint": "https://example.invalid/v1/systemone"},
     {"usage": {"input_tokens": True}}, {"usage": {"input_tokens": -1}},

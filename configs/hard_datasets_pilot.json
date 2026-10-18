@@ -2,6 +2,7 @@
   "schema_version": 1,
   "datasets": ["implicit_hate", "anli_r3"],
   "seed": 42,
+  "local_device": "cpu",
   "train_per_class": 20,
   "validation_per_class": 0,
   "test_per_class": 40,

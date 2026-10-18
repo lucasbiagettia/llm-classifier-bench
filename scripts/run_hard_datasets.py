@@ -31,6 +31,7 @@ from llm_classifier_bench.runner import BenchmarkRunConfig, run_benchmark
 from run_banking77_scaling_benchmark_v2 import (
     Condition, StaticDataset, summary_row, utc_campaign_id, write_summary_csv,
 )
+from _hard_recovery import continue_hosted
 
 ROOT = Path(__file__).resolve().parents[1]
 METHODS = ("tfidf", "sentence-transformer", "bert", "openai", "openai-context",
@@ -100,16 +101,19 @@ def build_classifier(method, cfg, *, run_id, test_count):
         settings = {**cfg[method], "seed": seed}
         settings["c_values"] = tuple(settings["c_values"])
         return SentenceTransformerLogisticClassifier(model=models[method],
-            training=SentenceTransformerTrainingConfig(**settings))
+            training=SentenceTransformerTrainingConfig(**settings), device=cfg.get("local_device"))
     if method == "bert":
-        return BertClassifier(model=models[method], training=BertTrainingConfig(**cfg[method], seed=seed))
+        return BertClassifier(model=models[method], training=BertTrainingConfig(**cfg[method], seed=seed),
+                              device=cfg.get("local_device"))
     if method in ("openai", "openai-context"):
         return OpenAIClassifier(model=models["openai"], **cfg["openai"],
                                 in_context=method == "openai-context")
     if method == "jev":
-        return JevClassifier(model=models[method], max_requests=test_count, max_retries=0)
+        return JevClassifier(model=models[method], max_requests=test_count, max_retries=0,
+                             **cfg.get("jev", {}))
     if method == "openai-decisions":
-        return OpenAIDecisionsClassifier(model=models[method], base_url=cfg["endpoints"][method])
+        return OpenAIDecisionsClassifier(model=models[method], base_url=cfg["endpoints"][method],
+                                        **cfg.get("openai-decisions", {}))
     if method == "perplexity-decisions":
         return PerplexityDecisionsClassifier(model=models[method], base_url=cfg["endpoints"][method])
     if method in ("emissary", *SFT):
@@ -266,6 +270,9 @@ def execute(args):
     for name, expected in plan["files_sha256"].items():
         if digest(root / name) != expected:
             raise ValueError(f"Prepared file changed: {name}")
+    for name, expected in plan.get("reuse_files_sha256", {}).items():
+        if digest(name) != expected:
+            raise ValueError(f"Completed evidence changed: {name}")
     blockers = [f"{c['dataset']}/{c['method']}: {c['blocker']}" for c in plan["cells"] if c["blocker"]]
     if blockers:
         raise ValueError("Blocked cells: " + "; ".join(blockers))
@@ -285,7 +292,11 @@ def execute(args):
     output = root / "executions" / campaign_id
     output.mkdir(parents=True, exist_ok=False)
     write_json(output / "campaign.json", {**plan, "plan_sha256": digest(path)})
-    rows = []
+    rows = [{**r, "source_campaign_id": r.get("campaign_id"), "campaign_id": campaign_id,
+             "reused": True} for r in plan.get("reused_results", [])]
+    if rows:
+        write_json(output / "summary.json", rows)
+        write_summary_csv(output / "summary.csv", rows)
     for index, cell in enumerate(plan["cells"], 1):
         name, method = cell["dataset"], cell["method"]
         budget = cell["fit_per_class"]
@@ -304,12 +315,16 @@ def execute(args):
               f"test={len(bundle.test)}", flush=True)
         result, error = None, None
         try:
-            result = run_benchmark(StaticDataset(bundle), classifier, BenchmarkRunConfig(
+            run_config = BenchmarkRunConfig(
                 output_root=output / "runs", run_id=run_id, validation_fraction=0,
                 split_seed=cfg["seed"], pricing_path=root / "pricing.json",
                 measurement=MeasurementConfig(**plan["measurement"]),
                 metadata={"prepared_plan_sha256": digest(path), "dataset": name, "method": method,
-                          "fit_per_class": budget}))
+                          "fit_per_class": budget})
+            if cell.get("resume_run"):
+                result = continue_hosted(bundle, classifier, run_config, cell["resume_run"], StaticDataset)
+            else:
+                result = run_benchmark(StaticDataset(bundle), classifier, run_config)
         except BaseException as exc:
             error = exc
             raise
@@ -320,6 +335,10 @@ def execute(args):
                               classifier=classifier, result=result, error=error)
             row.update(dataset=name, fit_per_class=budget,
                        context_examples=cell["context_examples"], run_dir=str(output / "runs" / run_id))
+            if result is not None and result.metrics_path is not None:
+                accuracy_metadata = read_json(result.metrics_path).get("accuracy", {}).get("metadata", {})
+                row.update(null_predictions=accuracy_metadata.get("null_predictions", 0),
+                           classification_coverage=accuracy_metadata.get("classification_coverage"))
             rows.append(row)
             write_json(output / "summary.json", rows)
             write_summary_csv(output / "summary.csv", rows)

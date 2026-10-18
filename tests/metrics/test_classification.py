@@ -46,3 +46,13 @@ def test_macro_f1_can_use_full_declared_label_space() -> None:
 
     assert result.value == pytest.approx(0.5)
     assert result.metadata["per_class_f1"] == {"A": 1.0, "B": 0.0}
+
+
+def test_null_predictions_are_errors_without_creating_an_extra_class():
+    records = (record("1", "A", "A"), record("2", "A", None), record("3", "B", None))
+    assert accuracy_score(records) == pytest.approx(1 / 3)
+    macro, per_class = macro_f1_score(records)
+    assert set(per_class) == {"A", "B"}
+    assert per_class["A"] == pytest.approx(2 / 3)
+    assert macro == pytest.approx(1 / 3)
+    assert AccuracyMetric().compute(records).metadata["null_predictions"] == 2

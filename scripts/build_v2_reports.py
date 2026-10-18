@@ -541,6 +541,7 @@ if __name__ == '__main__':
     parser.add_argument('--recompute', action='store_true')
     parser.add_argument('--decisions-root', type=Path, help='Recompute the Decisions supplement from saved campaign evidence, offline')
     parser.add_argument('--decisions-summary', type=Path, help='Versioned Decisions summary; defaults to decisions_results.json beside --summary')
+    parser.add_argument('--hard-summary', type=Path, help='Versioned hard-task summary; defaults beside --summary')
     args = parser.parse_args()
     REPORT = args.output_dir
     payload = collect(args.completion_root, args.extension_root, args.llama_root) if args.recompute else read_json(args.summary)
@@ -551,3 +552,7 @@ if __name__ == '__main__':
         from _decisions_report import collect_decisions
         decisions = collect_decisions(decisions_root, payload, QUALITY)
     render(payload, decisions)
+    hard_path = args.hard_summary or args.summary.with_name('hard_datasets_results.json')
+    if hard_path.exists():
+        from _hard_report import render as render_hard
+        render_hard(read_json(hard_path), REPORT)
