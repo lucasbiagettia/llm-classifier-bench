@@ -32,6 +32,7 @@ class SentenceTransformerLogisticClassifier:
         training: SentenceTransformerTrainingConfig | None = None,
         classifier_name: str = "sentence-transformer-logreg",
         encoder: Any | None = None,
+        device: str | None = None,
     ) -> None:
         if not model.strip():
             raise ValueError("model cannot be empty")
@@ -39,6 +40,9 @@ class SentenceTransformerLogisticClassifier:
             raise ValueError("classifier_name cannot be empty")
 
         self.model = model
+        if device not in (None, "cpu", "cuda"):
+            raise ValueError("device must be cpu, cuda, or None for automatic selection")
+        self.requested_device = device
         self.training = training or SentenceTransformerTrainingConfig()
         self._name = classifier_name
         self._encoder = encoder
@@ -85,7 +89,8 @@ class SentenceTransformerLogisticClassifier:
         with preparation_stage(self, "encoder.load", "load",
                                cache="reused_in_memory" if self._encoder is not None else "disk_cache_hit_unknown",
                                model=self.model, original_build_cost="unavailable") as evidence:
-            encoder = self._encoder or _load_sentence_transformer(self.model)
+            encoder = self._encoder or (_load_sentence_transformer(self.model, device=self.requested_device)
+                                        if self.requested_device else _load_sentence_transformer(self.model))
             evidence["encoder_type"] = f"{type(encoder).__module__}.{type(encoder).__qualname__}"
             module = getattr(encoder, "_modules", {}).get("0")
             encoder_config = getattr(getattr(module, "auto_model", None), "config", None)
@@ -178,6 +183,7 @@ class SentenceTransformerLogisticClassifier:
     def inference_metadata(self) -> dict[str, Any]:
         device = getattr(self._encoder, "device", None)
         return {"backend": "local", "device": str(device) if device is not None else None,
+                "requested_device": self.requested_device or "auto",
                 "max_input_tokens": getattr(self._encoder, "max_seq_length", None),
                 "transport_max_retries": 0, "batch_execution": "sequential_single_example"}
 
@@ -229,14 +235,14 @@ class SentenceTransformerLogisticClassifier:
         return predictions
 
 
-def _load_sentence_transformer(model: str) -> Any:
+def _load_sentence_transformer(model: str, *, device: str | None = None) -> Any:
     try:
         from sentence_transformers import SentenceTransformer
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError(
             "sentence-transformers is not installed. Run pip install -r requirements.txt."
         ) from exc
-    return SentenceTransformer(model)
+    return SentenceTransformer(model, device=device) if device else SentenceTransformer(model)
 
 
 def _load_logistic_regression() -> Any:

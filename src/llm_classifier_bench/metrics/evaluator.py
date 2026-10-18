@@ -78,7 +78,7 @@ def evaluation_record_from_mapping(payload: Mapping[str, Any]) -> EvaluationReco
     return EvaluationRecord(
         sample_id=str(payload["sample_id"]),
         gold_label=str(payload["gold_label"]),
-        predicted_label=str(payload["predicted_label"]),
+        predicted_label=str(payload["predicted_label"]) if payload["predicted_label"] is not None else None,
         confidence=(
             float(payload["confidence"])
             if payload.get("confidence") is not None

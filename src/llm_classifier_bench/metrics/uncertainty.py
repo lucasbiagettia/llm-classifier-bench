@@ -26,10 +26,10 @@ def stratified_quality_bootstrap(
     first = require_records(records)
     if repetitions < 100:
         raise ValueError("Use at least 100 bootstrap repetitions")
-    labels = sorted({r.gold_label for r in first} | {r.predicted_label for r in first})
+    labels = sorted({r.gold_label for r in first} | {r.predicted_label for r in first if r.predicted_label is not None})
     label_index = {label: i for i, label in enumerate(labels)}
     gold = np.array([label_index[r.gold_label] for r in first])
-    predicted = np.array([label_index[r.predicted_label] for r in first])
+    predicted = np.array([label_index.get(r.predicted_label, -1) for r in first])
     other = None
     if paired_records is not None:
         second = require_records(paired_records)
@@ -40,16 +40,16 @@ def stratified_quality_bootstrap(
         if any(a.gold_label != b.gold_label or a.metadata.get("input") != b.metadata.get("input")
                for a, b in zip(first, ordered)):
             raise ValueError("Paired gold labels and input text must match")
-        labels = sorted(set(labels) | {r.predicted_label for r in ordered})
+        labels = sorted(set(labels) | {r.predicted_label for r in ordered if r.predicted_label is not None})
         label_index = {label: i for i, label in enumerate(labels)}
         gold = np.array([label_index[r.gold_label] for r in first])
-        predicted = np.array([label_index[r.predicted_label] for r in first])
-        other = np.array([label_index[r.predicted_label] for r in ordered])
+        predicted = np.array([label_index.get(r.predicted_label, -1) for r in first])
+        other = np.array([label_index.get(r.predicted_label, -1) for r in ordered])
 
     def scores(indices, prediction):
         truth, pred = gold[indices], prediction[indices]
         tp = np.bincount(truth[truth == pred], minlength=len(labels))
-        denom = np.bincount(truth, minlength=len(labels)) + np.bincount(pred, minlength=len(labels))
+        denom = np.bincount(truth, minlength=len(labels)) + np.bincount(pred[pred >= 0], minlength=len(labels))
         f1 = np.divide(2 * tp, denom, out=np.zeros(len(labels)), where=denom > 0)
         return np.array([(truth == pred).mean(), f1.mean()])
 

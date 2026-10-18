@@ -92,3 +92,22 @@ def test_validation_accuracy_ties_keep_first_configured_c(monkeypatch) -> None:
     assert classifier.selected_c == 0.1
     assert classifier.fitted_metadata()["tie_breaking"] == "first_candidate_in_configured_order"
     assert [item["validation_accuracy"] for item in classifier.fitted_metadata()["candidate_scores"]] == [0.97] * 3
+
+
+def test_explicit_cpu_is_forwarded_without_automatic_gpu_selection(monkeypatch):
+    import sys
+    from types import SimpleNamespace
+    from llm_classifier_bench.classifiers.sentence_transformer import _load_sentence_transformer
+    calls = []
+    encoder = object()
+    def factory(model, **kwargs):
+        calls.append((model, kwargs))
+        return encoder
+    monkeypatch.setitem(sys.modules, "sentence_transformers", SimpleNamespace(SentenceTransformer=factory))
+    assert _load_sentence_transformer("cached-model", device="cpu") is encoder
+    assert calls == [("cached-model", {"device": "cpu"})]
+
+
+def test_explicit_device_is_recorded():
+    classifier = SentenceTransformerLogisticClassifier(device="cpu")
+    assert classifier.inference_metadata()["requested_device"] == "cpu"

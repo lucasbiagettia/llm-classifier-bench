@@ -493,7 +493,10 @@ def _validate_predictions(
                 "Classifier did not preserve input order/sample_id at position "
                 f"{index}: expected {example.sample_id!r}, got {prediction.sample_id!r}"
             )
-        if prediction.predicted_label not in valid_labels:
+        refusal = prediction.predicted_label is None and (prediction.raw_response or {}).get("refusal") is True
+        if refusal and (prediction.confidence is not None or prediction.probabilities is not None):
+            raise ValueError("Refusal must not contain confidence or probabilities")
+        if prediction.predicted_label not in valid_labels and not refusal:
             raise ValueError(
                 f"Prediction for {prediction.sample_id!r} returned unknown label "
                 f"{prediction.predicted_label!r}"
@@ -571,9 +574,10 @@ def _write_predictions_jsonl(
                 "input": example.text,
                 "gold_label": example.label,
                 "predicted_label": prediction.predicted_label,
+                "prediction_status": "refusal" if prediction.predicted_label is None else "classified",
                 "correct": example.label == prediction.predicted_label,
                 "confidence": prediction.confidence,
-                "probabilities": dict(prediction.probabilities or {}),
+                "probabilities": None if prediction.predicted_label is None else dict(prediction.probabilities or {}),
                 "latency_ms": observation["elapsed_ms"] if observation["batch_size"] == 1 else None,
                 "latency_scope": "predict_call_single_example" if observation["batch_size"] == 1 else "unavailable_for_batched_call",
                 "adapter_latency_ms": prediction.latency_ms,
@@ -673,6 +677,7 @@ def _classifier_metadata(classifier: Classifier) -> dict[str, Any]:
         "context_window_tokens",
         "completion_reserve_tokens",
         "framing_allowance_tokens",
+        "refusal_policy",
     ):
         value = getattr(classifier, attribute, None)
         if value is not None:

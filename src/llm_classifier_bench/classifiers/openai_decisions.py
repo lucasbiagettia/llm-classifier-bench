@@ -56,7 +56,7 @@ class OpenAIDecisionsClassifier:
     total_labeled_examples_used = 0
 
     def __init__(self, *, model=None, api_key=None, base_url=None, timeout_s=None,
-                 session=None, classifier_name="openai-decisions-zero-shot"):
+                 session=None, classifier_name="openai-decisions-zero-shot", refusal_policy="error"):
         load_dotenv(override=False)
         self.model = model if model is not None else os.getenv("OPENAI_DECISIONS_MODEL", DEFAULT_DECISIONS_MODEL)
         base_url = base_url if base_url is not None else os.getenv("OPENAI_BASE_URL", DEFAULT_DECISIONS_BASE_URL)
@@ -70,6 +70,9 @@ class OpenAIDecisionsClassifier:
         if not isinstance(self.model, str) or not self.model.strip() or not classifier_name.strip():
             raise ValueError("model and classifier_name must be nonempty")
         self.timeout_s = timeout_s
+        if refusal_policy not in ("error", "null"):
+            raise ValueError("refusal_policy must be error or null")
+        self.refusal_policy = refusal_policy
         self._name = classifier_name
         self._api_key = api_key
         self._session = session
@@ -122,6 +125,7 @@ class OpenAIDecisionsClassifier:
                 "question_type": "choice", "question_count": 1,
                 "confidence_semantics": "probability_of_predicted_label; native confidence stored separately",
                 "tie_policy": "preserve_provider_choice_if_exact_maximum",
+                "refusal_policy": self.refusal_policy,
                 "api_contract_source": DECISIONS_SOURCE}
 
     def set_usage_sink(self, sink):
@@ -186,6 +190,11 @@ class OpenAIDecisionsClassifier:
             raise ValueError("OpenAI Decisions requires exactly one classification answer")
         answer = answers[0]
         if answer.get("type") == "refusal":
+            if self.refusal_policy == "null":
+                return Prediction(sample_id, None, None, None, latency_ms,
+                    model=body["model"], request_id=request_id,
+                    raw_response={"refusal": True, "requested_model": self.model,
+                                  "resolved_model": body["model"], "request_sha256": digest})
             raise OpenAIDecisionsRefusalError(sample_id, request_id)
         if answer.get("type") != "choice" or answer.get("name") != "classification":
             raise ValueError("OpenAI Decisions requires the named classification choice answer")

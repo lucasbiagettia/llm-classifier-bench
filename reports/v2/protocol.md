@@ -135,3 +135,33 @@ base; this does not isolate model size or instruction tuning.
 The immutable `v1.2` Git tag keeps the preceding 56-condition publication.
 This supplement extends its reports without changing any previous metrics or
 predictions. See [Llama execution instructions](../../docs/llama_budget_extension.md).
+
+## Hard-task supplement: Implicit Hate and ANLI R3
+
+The October 18 user-run extension adds two fixed-label tasks, with all six fine
+Implicit Hate labels (excluding `other`) and all three ANLI R3 labels. Seed 42,
+40 test examples/class, shared nested 20/50/100 fit examples/class and zero consumed
+validation labels give 34 completed included conditions. Local models and Qwen
+SFT use each fit budget; zero-shot methods run once, and OpenAI in-context uses
+five total demonstrations once. Perplexity and all Llama budgets are excluded;
+the first Implicit Hate Llama training failed before any predictions.
+
+The user-specified tasks replace issue #9's proposed SELU-first search; no SELU
+review is claimed. They test implicit meaning and adversarial NLI, rather than
+label scaling or a target accuracy range. Implicit Hate uses documented synthetic
+grouped stratified splits; ANLI retains official R3 holdouts after duplicate
+handling. Fixed class descriptions, revisions, source/selected class balances,
+test and fit IDs, input lengths, explanation coverage, evidence checksums and
+per-condition settings are in the separate
+[hard-task manifest and results](hard_datasets_results.json).
+
+Unlike the historical Banking77 accepted-only Decisions supplement, these new
+results count null refusals as incorrect in full-cohort accuracy and as false
+negatives in macro-F1. Calibration is unavailable when a cohort lacks probability
+vectors. Jev permits recorded renormalization for sum deviations up to 0.05; three
+Implicit Hate vectors were corrected. Historical Banking77 metrics and policies
+remain unchanged. Resumed cost/latency segments stay separate.
+
+See the [hard-task report](hard_datasets.md) for full tables and uncertainty,
+[execution and dataset documentation](../../docs/hard_datasets.md), and
+`scripts/build_hard_datasets_report.py --help` for offline reproduction.

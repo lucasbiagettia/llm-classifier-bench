@@ -183,6 +183,63 @@ def test_refusal_is_distinct_from_http_failure_and_has_sample_request_evidence(t
     assert not (root / "metrics.json").exists()
 
 
+def test_null_refusal_continues_and_retains_usage_and_full_denominator(transport, tmp_path):
+    refusal = copy.deepcopy(BODY)
+    refusal["answers"] = [{"type": "refusal", "name": "classification"}]
+    transport.outcomes = [Response(refusal), Response(BODY)]
+    result = run_benchmark(FakeDataset(build_bundle()), OpenAIDecisionsClassifier(refusal_policy="null"),
+                           BenchmarkRunConfig(output_root=tmp_path, pricing_path=CARD))
+    predictions = [json.loads(line) for line in result.predictions_path.read_text().splitlines()]
+    assert predictions[0]["predicted_label"] is None and predictions[0]["probabilities"] is None
+    assert predictions[0]["confidence"] is None and predictions[0]["prediction_status"] == "refusal"
+    assert predictions[0]["correct"] is False
+    assert predictions[1]["predicted_label"] == "Sports"
+    metrics = json.loads(result.metrics_path.read_text())
+    assert metrics["accuracy"]["metadata"]["n_samples"] == 2
+    assert metrics["accuracy"]["metadata"]["null_predictions"] == 1
+    assert metrics["accuracy"]["metadata"]["classification_coverage"] == .5
+    assert None not in metrics["macro_f1"]["metadata"]["labels"]
+    assert metrics["multiclass_log_loss"]["value"] is None
+    attempts = [json.loads(line) for line in (result.run_dir / "usage.jsonl").read_text().splitlines()
+                if json.loads(line)["kind"] == "api_attempt"]
+    assert len(attempts) == 2 and all(e["status"] == "success" for e in attempts)
+    assert json.loads((result.run_dir / "cost_report.json").read_text())["total_cost_usd"] == pytest.approx(.00006)
+
+
+def test_recovery_reuses_paid_refusal_without_retry_and_completes_remaining(transport, tmp_path, monkeypatch):
+    from dataclasses import replace
+    from llm_classifier_bench.core import LabeledExample
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    from _hard_recovery import continue_hosted, validated_pending
+    bundle = build_bundle()
+    bundle = replace(bundle, train=(), validation=(),
+                     test=(*bundle.test, LabeledExample("test-3", "Another sports story", "Sports")))
+    refusal = copy.deepcopy(BODY)
+    refusal["answers"] = [{"type": "refusal", "name": "classification"}]
+    transport.outcomes = [Response(BODY), Response(refusal)]
+    with pytest.raises(OpenAIDecisionsRefusalError):
+        run_benchmark(FakeDataset(bundle), OpenAIDecisionsClassifier(), BenchmarkRunConfig(
+            output_root=tmp_path, run_id="original", pricing_path=CARD))
+    source = tmp_path / "original"
+    previous = (source / "predictions.jsonl").read_bytes()
+    classifier = OpenAIDecisionsClassifier(refusal_policy="null")
+    pending, old = validated_pending(bundle, classifier, source)
+    assert [e.sample_id for e in pending] == ["test-3"]
+    assert old["test-2"]["predicted_label"] is None
+    transport.outcomes = [Response(BODY)]
+    result = continue_hosted(bundle, classifier, BenchmarkRunConfig(
+        output_root=tmp_path, run_id="continued", pricing_path=CARD), source, FakeDataset)
+    assert len(transport.calls) == 3  # No retry for the paid refusal.
+    assert (source / "predictions.jsonl").read_bytes() == previous
+    rows = [json.loads(line) for line in result.predictions_path.read_text().splitlines()]
+    assert [r["sample_id"] for r in rows] == ["test-1", "test-2", "test-3"]
+    assert rows[1]["prediction_status"] == "refusal"
+    metadata = json.loads(result.metrics_path.read_text())["accuracy"]["metadata"]
+    assert metadata["null_predictions"] == 1 and metadata["n_samples"] == 3
+    # Consolidated predictions remain reusable on subsequent continuations.
+    assert not validated_pending(bundle, classifier, result.run_dir)[0]
+
+
 @pytest.mark.parametrize("outcome", [Response({}, 429), Response({}, 401), Response({}, 302),
                                      Response(ValueError("bad JSON")), requests.Timeout("secret details")])
 def test_errors_are_not_retried_and_preserve_prior_predictions(transport, tmp_path, outcome):

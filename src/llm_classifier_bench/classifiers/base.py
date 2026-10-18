@@ -26,7 +26,7 @@ class Prediction:
     """
 
     sample_id: str
-    predicted_label: str
+    predicted_label: str | None
     confidence: float | None
     probabilities: Mapping[str, float] | None
     latency_ms: float

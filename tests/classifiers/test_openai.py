@@ -77,6 +77,26 @@ def test_default_client_has_explicit_timeout_and_no_hidden_retries(monkeypatch):
     assert options["timeout"] == 120.0
 
 
+def test_explicit_chat_refusal_becomes_null_and_next_prediction_continues():
+    client = StubClient()
+    normal = client.chat.completions.create
+    calls = []
+    def create(**kwargs):
+        calls.append(kwargs)
+        if len(calls) == 1:
+            return SimpleNamespace(id="refused-request", model="test-model", choices=[
+                SimpleNamespace(message=SimpleNamespace(content=None, refusal="Cannot classify"))])
+        return normal(**kwargs)
+    client.chat.completions.create = create
+    classifier = OpenAIClassifier(model="test-model", client=client, refusal_policy="null")
+    classifier.prepare((ClassDefinition("World", "World news"), ClassDefinition("Sports", "Sports news")))
+    predictions = classifier.predict([ClassificationInput("1", "First text"), ClassificationInput("2", "Second text")])
+    assert predictions[0].predicted_label is None
+    assert predictions[0].raw_response["refusal"] is True
+    assert predictions[0].request_id == "refused-request"
+    assert predictions[1].predicted_label == "Sports"
+
+
 def test_injected_client_retry_policy_is_recorded():
     client = StubClient()
     client.max_retries = 2

@@ -40,6 +40,7 @@ class OpenAIClassifier:
         context_window_tokens: int | None = None,
         completion_reserve_tokens: int = 4096,
         framing_allowance_tokens: int = 1024,
+        refusal_policy: str = "error",
     ) -> None:
         if classifier_name is None:
             classifier_name = "openai-in-context" if in_context else "openai-zero-shot"
@@ -51,6 +52,9 @@ class OpenAIClassifier:
             raise ValueError("reasoning_effort cannot be empty")
 
         self.model = model
+        if refusal_policy not in ("error", "null"):
+            raise ValueError("refusal_policy must be error or null")
+        self.refusal_policy = refusal_policy
         self.reasoning_effort = reasoning_effort
         self._name = classifier_name
         self._classes: tuple[ClassDefinition, ...] = ()
@@ -101,6 +105,7 @@ class OpenAIClassifier:
                 key: getattr(timeout, key, None) for key in ("connect", "read", "write", "pool")
             },
             "server_hardware": None,
+            "refusal_policy": self.refusal_policy,
             "context_policy": self.context_policy(),
         }
 
@@ -254,6 +259,11 @@ class OpenAIClassifier:
         class_names = [c.name for c in self._classes]
 
         try:
+            refusal = getattr(response.choices[0].message, "refusal", None)
+            if isinstance(refusal, str) and refusal.strip() and self.refusal_policy == "null":
+                return Prediction(example.sample_id, None, None, None, latency_ms,
+                    model=getattr(response, "model", None) or self.model,
+                    request_id=getattr(response, "id", None), raw_response={"refusal": True})
             content = response.choices[0].message.content
         except (AttributeError, IndexError) as exc:
             raise ValueError("OpenAI response does not contain message content") from exc

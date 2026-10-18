@@ -1,9 +1,14 @@
-# Hard-dataset pilot preparation
+# Hard-dataset experiments and preparation
 
 This adds preparation and execution commands for ImplicitHate (all six requested
-fine labels) and ANLI R3 (all three labels). **No paid runs or real-dataset model
-training have been performed.** Preparation counts and cost projections below are
-not experimental performance results. AG News was already implemented; the new
+fine labels) and ANLI R3 (all three labels). **The user completed 34 included
+conditions**, 17 per dataset, across 20/50/100 fit examples/class and 40 test/class.
+The [published results](../reports/v2/hard_datasets.md),
+[JSON evidence summary](../reports/v2/hard_datasets_results.json) and
+[brief](../reports/v2/brief.md) describe the actual outcomes. Llama was excluded
+after its first training failed; Perplexity was excluded by user instruction.
+The preparation counts and projections below describe the original plan, not
+measured performance or actual billed spending. AG News was already implemented; the new
 entry point also accepts `--datasets ag_news` and uses all four labels.
 
 ## Evidence used to choose the pilot
@@ -241,36 +246,114 @@ single-budget preparation audit below is retained as historical evidence.
 
 From the repository root (use `venv/bin/python` here, or your active environment):
 
-For a **single command that actually prepares and executes all 42 conditions**,
+For a **single command that executes all 42 conditions from the prepared data**,
 use the live launcher below. This trains models and makes paid API requests:
 
 ```bash
 PYTHONPATH=src venv/bin/python scripts/run_hard_datasets_experiment.py \
-  --emissary-project-id PROJECT_ID --allow-unpriced
+  --allow-unpriced
 ```
 
-It loads `.env`, checks `OPENAI_API_KEY`, `EMISSARY_API_KEY`, `JEV_TOKEN`,
-`PERPLEXITY_API_KEY`, and the existing Emissary Projects workspace before doing
-any work. The project may instead be set as `EMISSARY_PROJECT_ID` in `.env`.
+It loads `.env` and checks `OPENAI_API_KEY`, `EMISSARY_API_KEY`, `JEV_TOKEN` and
+`PERPLEXITY_API_KEY` before doing any work. If no workspace is supplied, it
+**creates one Emissary project programmatically**, using the same `POST /v1/projects`
+flow as the saved historical Qwen submission script. The ID is persisted before
+any upload, training or deployment. An existing workspace can optionally be
+selected with `--emissary-project-id` or `EMISSARY_PROJECT_ID` in `.env`.
 The default is exactly **40 test examples/class**, matching the historical
 Banking77 experiment: 120 ANLI R3 examples and 240 ImplicitHate examples, shared
 across all budgets and methods. Fit remains 20/50/100 per class. To reduce only
 the evaluation volume, append `--test-per-class 20` (60/120 test examples).
 
-The launcher creates a fresh configured plan under
-`artifacts/hard_experiments/<timestamp>/` and immediately executes it with caps
+By default the launcher reads `artifacts/hard_fit_sweep/plan.json` and its frozen
+snapshots. Select another prepared pool with `--prepared-plan PATH`. It verifies
+plan/data/pricing checksums and the complete 42-condition matrix and fit IDs,
+then creates a **new execution plan** from those inputs: no dataset download,
+training reshuffle or new test selection. At a smaller test budget it takes the
+same per-class prefixes. A request exceeding the prepared test support fails.
+Source code hashes are retained as provenance; the new plan rechecks current
+request support and freezes current code hashes rather than executing an old plan
+with modified code. The original prepared plan and snapshots remain unchanged.
+
+The new plan lives under `artifacts/hard_experiments/<timestamp>/` and executes with caps
 of 4,320 inference calls, 12 SFT jobs and USD 2 for the priced estimate. It never
-overwrites an earlier dry-run plan; deterministic sampling reproduces the same
-samples for matching settings. The original dry-run without a Projects workspace
-has blocked SFT cells and cannot be executed as a full campaign as-is.
+overwrites an earlier dry-run plan. Missing workspace blockers are resolved in
+the new plan after successful automatic project creation. The creation intent and
+returned project ID are saved in `project_creation.json`; a failed/ambiguous POST
+is never automatically retried, and an existing output directory is never reused.
 Emissary charges remain unknown, hence the explicit `--allow-unpriced` flag.
-Credential presence checks cannot establish whether remote credentials or the
-workspace are valid. Execution stops on the first failure; rerunning creates a
+Credential presence checks cannot establish whether remote credentials are valid.
+Execution stops on the first failure; rerunning creates a
 new campaign and can repeat paid work. Progress prints each condition and budgets,
 and results go to `executions/<timestamp>/summary.csv` and `summary.json`.
 
 Use `--dry-run` on this launcher to validate preparation without training or paid
 inference; the lower-level commands below remain supported for separate stages.
+
+The launcher and the hard-task configuration now default to **CPU** for MiniLM
+and BERT, explicitly forwarding the device to both adapters. Historical campaigns
+also used CPU (`CUDA_VISIBLE_DEVICES=""`), as confirmed in their operational
+artifacts. Automatic selection could choose a GTX 1050 even though the installed
+PyTorch CUDA build lacked its kernels. No package reinstall is required for CPU
+execution. `--device auto` or `--device cuda` are optional overrides for compatible
+environments; actual and requested devices are recorded in classifier metadata.
+
+To continue a failed campaign while retaining its completed conditions and project:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets_experiment.py \
+  --resume-from PREVIOUS_CAMPAIGN_ROOT --device cpu --allow-unpriced
+```
+
+Add `--skip-perplexity` to exclude Perplexity Decisions on both datasets and
+remove its API-key requirement. The exclusion is saved in `excluded_methods` and
+persists in later resumptions. An excluded provider's failed condition does not
+block continuation, and excluded methods are omitted from executed results.
+Add `--skip-emissary-llama` to similarly exclude every Llama fit budget on both
+datasets, including a failed Llama training job. Qwen and Emissary zero-shot remain
+included. Both exclusion flags can be used together and persist on resume.
+
+The root must contain `plan.json` and exactly one execution summary. Continuation
+creates a new output directory, audits full prediction coverage, exact fit/test
+IDs, class definitions, model/training settings and completed status, and seals
+the reused evidence hashes. It reuses the original Emissary project. Only pending
+conditions run; failed local conditions may restart on CPU. Completed entries are
+included in the new summary with `reused=true` and their original artifact paths;
+historical timing/device evidence is preserved, not remeasured. The previous
+campaign is not modified. Failed Jev conditions can continue at sample level:
+saved predictions are checked against the frozen text, gold labels, model and
+request hashes, and only missing inputs generate new requests. The failed response
+itself was not saved and its input must be requested again. The merged run provides
+full-cohort quality metrics; original and continuation runs keep separate usage,
+failed-attempt cost and timing ledgers, linked by `recovery.json`.
+
+The launcher treats explicit OpenAI refusals (Chat and Decisions) as completed
+results with `predicted_label`, confidence and probabilities set to JSON `null`.
+It records `prediction_status=refusal` and continues without retrying. Accuracy
+keeps the full test denominator, counting refusals as incorrect. Macro-F1 counts
+them as false negatives for their gold class, without adding a null class.
+Calibration metrics are unavailable when any test result lacks probabilities.
+Accuracy metadata and campaign summaries expose `null_predictions` and
+`classification_coverage`, so abstentions are visible rather than dropped.
+
+Partial OpenAI Decisions runs can also resume by exact frozen request hashes.
+Refusals from the older strict adapter are recovered from the HTTP-200 refusal
+usage event and its single-example timing, without repeating that paid request.
+The historical failure ledger remains intact. Only unprocessed inputs are sent.
+Other incomplete hosted conditions require explicit recovery to avoid repeating
+paid work. Standalone adapters keep their strict default refusal policy; the hard
+experiment launcher freezes `refusal_policy=null` in the new plan.
+
+This launcher configures Jev with a sum tolerance of 0.05. Sums within the shared
+1e-4 tolerance remain unchanged; larger rounding deviations within 0.05 are
+renormalized, retaining raw probabilities, their sum and the correction policy.
+Larger deviations retain only the label, with confidence/probabilities unavailable,
+so calibration metrics become unavailable for that cohort. Invalid values, labels,
+zero sums and non-maximum provider choices still fail. The general Jev adapter
+keeps its strict defaults for other experiments. An ambiguous project creation also
+requires reconciliation before continuation. Use `--dry-run` to audit continuation
+without training, inference or creating remote resources. Test size/settings must
+match any completed conditions being reused.
 
 ```bash
 # Default: prepare BOTH datasets and all variants; no fitting or paid API calls.
@@ -330,8 +413,10 @@ inputs, and verifies snapshot, pricing and plan checksums before work. New run
 folders under `executions/` preserve the common runner's config, fit metadata,
 predictions, metrics, operational timings, usage and preparation reports. A
 summary CSV/JSON is updated after every attempted condition. Runs stop on the
-first error/refusal; partial predictions stay saved. There is no automatic resume:
-rerunning execution starts a new campaign and may repeat paid work.
+first error; explicit OpenAI refusals follow the frozen refusal policy above.
+Partial predictions stay saved. Rerunning low-level execution
+starts a new campaign and may repeat paid work. Use the experiment launcher's
+`--resume-from` above to reuse completed results and continue partial Jev runs.
 
 The call cap bounds **inference attempts** across the campaign, with retries and
 warmup disabled. It excludes API resource creation and bounded polling. The SFT
@@ -385,17 +470,32 @@ Offline regression tests cover labels, unknown-label rejection, official and
 synthetic partitions, duplicate/conflicting annotations, supplemental exact joins,
 explanation stripping, reproducibility, all-method shared inputs, integrity/call/
 job/estimate guards, and real TF-IDF execution on a small **synthetic fixture**.
-The actual pinned HF loaders and the complete preparation matrix were also run,
-with no training or paid inference. The compact preparation audit is versioned at
+The actual pinned HF loaders and the complete preparation matrix were initially
+run without training or paid inference. The compact preparation audit is versioned at
 `reports/hard_datasets/preparation.json`; full prepared snapshots stay under ignored
 `artifacts/` and can be reproduced using the frozen revisions and default command.
 
-This is a partial contribution to [issue #9](https://github.com/lucasbiagettia/llm-classifier-bench/issues/9).
-It follows the datasets explicitly requested here; it does not claim to complete
-the issue's SELU candidate review or all future task-selection work.
+The completed integration and results address
+[issue #9](https://github.com/lucasbiagettia/llm-classifier-bench/issues/9) using the
+two datasets explicitly chosen by the user. This replaces the issue's proposed
+SELU-first candidate search; no SELU review is claimed. Difficulty follows the
+implicit-hate taxonomy and adversarial inference design, not a chosen accuracy
+target. Original train/dev information informed preparation; the fixed test
+cohorts were reserved for the user-run evaluation and were not resampled after
+seeing scores. Access/license uncertainty for the Implicit Hate mirror remains
+documented above; neither corpus is redistributed in Git.
 
 Validation command: `PYTHONPATH=src venv/bin/python -m pytest -m 'not integration' -q`
-— 515 passed, 3 integration tests deselected, including the sweep and live-launcher tests.
+— includes explicit CPU selection,
+continuation that preserves completed evidence, snapshot reuse, automatic
+project creation, ambiguous-request handling and all 42 conditions through the real
+runner with offline classifiers. The live launcher's dry-run was also validated
+against `artifacts/hard_fit_sweep`: original fit/test IDs were preserved and no
+remote project, training or inference was created.
+MiniLM also passed a real offline CPU embedding smoke check with cached weights
+and two synthetic sentences. The failed campaign's continuation audit reused its
+three completed TF-IDF conditions, retained the Emissary project and left 39
+conditions pending without paid calls or real-dataset training.
 `git diff --check` also passed.
 Prepared CSV/Parquet URL resolution still requires network access even with a
 populated HF cache; the frozen-plan execution path does not resolve dataset URLs.

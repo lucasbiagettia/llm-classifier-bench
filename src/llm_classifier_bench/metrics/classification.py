@@ -29,7 +29,7 @@ def macro_f1_score(
     class_names = tuple(labels) if labels is not None else tuple(
         sorted(
             {record.gold_label for record in frozen}
-            | {record.predicted_label for record in frozen}
+            | {record.predicted_label for record in frozen if record.predicted_label is not None}
         )
     )
     if not class_names:
@@ -69,7 +69,10 @@ class AccuracyMetric:
         return MetricResult(
             name=self.name,
             value=accuracy_score(frozen),
-            metadata={"n_samples": len(frozen)},
+            metadata={"n_samples": len(frozen),
+                      "null_predictions": sum(r.predicted_label is None for r in frozen),
+                      "classification_coverage": sum(r.predicted_label is not None for r in frozen) / len(frozen),
+                      "null_policy": "count as incorrect; retain full test denominator"},
         )
 
 

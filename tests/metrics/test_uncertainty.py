@@ -40,3 +40,14 @@ def test_reject_mismatched_gold():
         stratified_quality_bootstrap(rows("ab"), paired_records=(
             EvaluationRecord(sample_id="0", gold_label="b", predicted_label="a", confidence=None, probabilities=None, latency_ms=None),
             EvaluationRecord(sample_id="1", gold_label="b", predicted_label="b", confidence=None, probabilities=None, latency_ms=None)), repetitions=100)
+
+
+def test_nulls_count_as_misses_in_bootstrap_and_paired_comparisons():
+    from llm_classifier_bench.metrics.classification import macro_f1_score
+    records = rows(["a", None, "a", None])
+    result = stratified_quality_bootstrap(records, repetitions=100)
+    assert result["metrics"]["accuracy"]["estimate"] == .5
+    assert result["metrics"]["macro_f1"]["estimate"] == pytest.approx(macro_f1_score(records)[0])
+    paired = stratified_quality_bootstrap(records, paired_records=records, repetitions=100)
+    assert paired["metrics"]["accuracy"]["estimate"] == 0.
+    assert paired["metrics"]["macro_f1"]["estimate"] == 0.

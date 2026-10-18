@@ -16,6 +16,7 @@ selects it explicitly:
 
 | Stage | Operation expected by the adapter |
 | --- | --- |
+| Automatic workspace (hard-dataset launcher) | `POST /v1/projects` with a name; persist ID before training |
 | Project | `GET /v1/projects/{project_id}` validates an existing project |
 | Base model | `GET /v1/models/{model}` must advertise classification support |
 | Dataset | multipart `POST /v1/projects/{project_id}/datasets` |
