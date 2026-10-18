@@ -6,6 +6,8 @@ from llm_classifier_bench.datasets.huggingface import (
     HFDatasetSpec,
     HuggingFaceClassificationDataset,
 )
+from .base import ClassificationDataset
+from .hard_tasks import AnliDataset, ImplicitHateDataset
 
 
 _BANKING77_BASE_URL = (
@@ -110,13 +112,15 @@ AG_NEWS_SPEC = HFDatasetSpec(
     path="fancyzhx/ag_news",
 )
 
-DATASET_REGISTRY: dict[str, HFDatasetSpec] = {
+DATASET_REGISTRY: dict[str, HFDatasetSpec | type[AnliDataset] | type[ImplicitHateDataset]] = {
     BANKING77_SPEC.name: BANKING77_SPEC,
     AG_NEWS_SPEC.name: AG_NEWS_SPEC,
+    "implicit_hate": ImplicitHateDataset,
+    "anli_r3": AnliDataset,
 }
 
 
-def get_dataset(name: str) -> HuggingFaceClassificationDataset:
+def get_dataset(name: str) -> ClassificationDataset:
     """Build a dataset adapter from its stable registry name."""
 
     try:
@@ -125,4 +129,4 @@ def get_dataset(name: str) -> HuggingFaceClassificationDataset:
         available = ", ".join(sorted(DATASET_REGISTRY))
         raise KeyError(f"Unknown dataset {name!r}. Available: {available}") from exc
 
-    return HuggingFaceClassificationDataset(spec)
+    return HuggingFaceClassificationDataset(spec) if isinstance(spec, HFDatasetSpec) else spec()

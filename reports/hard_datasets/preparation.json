@@ -1,0 +1,1608 @@
+{
+  "schema_version": 1,
+  "status": "prepared_without_training_or_inference",
+  "configuration": {
+    "schema_version": 1,
+    "datasets": [
+      "implicit_hate",
+      "anli_r3"
+    ],
+    "seed": 42,
+    "train_per_class": 20,
+    "validation_per_class": 0,
+    "test_per_class": 40,
+    "context_total": 5,
+    "endpoints": {
+      "openai-decisions": "https://api.openai.com/v1",
+      "perplexity-decisions": "https://api.perplexity.ai/v1"
+    },
+    "models": {
+      "openai": "gpt-5-nano-2025-08-07",
+      "openai-decisions": "gpt-6-luna",
+      "perplexity-decisions": "pplx-decider-v1.1-27b",
+      "jev": "jev-1.13.0",
+      "bert": "google-bert/bert-base-uncased",
+      "sentence-transformer": "sentence-transformers/all-MiniLM-L6-v2",
+      "emissary-qwen": "Qwen3-4B-Base",
+      "emissary-llama": "Llama-3.2-1B-Instruct"
+    },
+    "bert": {
+      "epochs": 2,
+      "batch_size": 16,
+      "learning_rate": 2e-05,
+      "weight_decay": 0.01,
+      "max_length": 512
+    },
+    "sentence-transformer": {
+      "embedding_batch_size": 64,
+      "c_values": [
+        1.0
+      ],
+      "max_iter": 2000
+    },
+    "tfidf": {
+      "c_values": [
+        1.0
+      ],
+      "fallback_c": 1.0
+    },
+    "openai": {
+      "reasoning_effort": "minimal",
+      "context_window_tokens": 128000,
+      "completion_reserve_tokens": 4096
+    },
+    "emissary": {
+      "project_id": null,
+      "num_train_epochs": 1
+    },
+    "pricing": [
+      "pricing/inference_2026-09-25.json",
+      "pricing/decisions_2026-10-07.json",
+      "pricing/perplexity_decisions_2026-10-09.json"
+    ]
+  },
+  "git_revision": "17aea0e28f96cf77c9ba9d52d7afa9641b37f191",
+  "git_worktree_dirty": true,
+  "implementation_sha256": {
+    "scripts/run_hard_datasets.py": "02fef21391e67eaeda4dc3c272ebcdfdb0683b82fde3146f294e0ca76921d726",
+    "src/llm_classifier_bench/datasets/hard_tasks.py": "51e04072e87e376faf6cb2c1f86a53120855350c5362f6778dcee422b78f83db",
+    "src/llm_classifier_bench/datasets/base.py": "4d17b8902da20f136e5cc74f39400b3fb9b505ecba83e82d4e299899cfdc02d2",
+    "src/llm_classifier_bench/runner.py": "ca873df3aac2d5fc662d69347cce46137257760c25af89c91811987a616a5745"
+  },
+  "files_sha256": {
+    "pricing.json": "0584047da6c34127533a55a5948f0591135a409223116070157922d5a934b9a6",
+    "implicit_hate.json": "f312b65d89e8f6378ebba00bd7a2c002b3754c10fcfc48e457f8bb86b97c5a5a",
+    "anli_r3.json": "65010b508ee91e559d09612e9f778b665ee4d11a00b78954d39f3ba701e41b5c"
+  },
+  "measurement": {
+    "batch_size": 1,
+    "warmup_examples": 0,
+    "client_location": null,
+    "cache_condition": "uncontrolled; provider cache hits not observed",
+    "hardware_profile": null
+  },
+  "automatic_retries": 0,
+  "failure_policy": "stop on first failure or refusal; preserve artifacts; no automatic resume",
+  "planned_api_calls": 2880,
+  "planned_training_jobs": 4,
+  "estimated_priced_subtotal_usd": 1.48457397,
+  "total_cost_usd": null,
+  "total_cost_reason": "Unpriced hosted preparation/inference and unmeasured local compute; subtotal is an estimate, not results",
+  "prepared_on": "2026-10-17",
+  "validation": "Pinned public Hugging Face CSV/Parquet loaders; no real-dataset training or paid inference",
+  "reproduce": "PYTHONPATH=src venv/bin/python scripts/run_hard_datasets.py --dry-run --output-dir artifacts/hard_pilot",
+  "datasets": {
+    "implicit_hate": {
+      "snapshot": "implicit_hate.json",
+      "labels": [
+        "white_grievance",
+        "incitement",
+        "inferiority",
+        "irony",
+        "stereotypical",
+        "threatening"
+      ],
+      "source": {
+        "path": "SALT-NLP/ImplicitHate",
+        "revision": "57d34fad1cf7d4d9e71774ea17c4c1a7f57af8d4",
+        "split_policy": "synthetic 60/20/20 stratified exact-input groups; not official splits",
+        "split_seed": 42,
+        "excluded_primary_other_rows": 80,
+        "secondary_label_policy": "metadata only; never additional classification targets",
+        "group_audit": {
+          "rows": 6266,
+          "groups": 6265,
+          "conflicting_groups_excluded": 0,
+          "retained_examples": 6265
+        },
+        "supplemental_annotations": {
+          "sha256": null,
+          "exact_matched_posts": 0,
+          "unmatched_posts": 0,
+          "join": "exact post equality only; preserve all matching rows; no inferred explanations"
+        }
+      },
+      "source_fingerprint_sha256": "9e240f346f5c154e3e67643d4fac6baa456431422a532db1cdf6f80552669cbd",
+      "source_counts": {
+        "train": {
+          "white_grievance": 922,
+          "incitement": 761,
+          "inferiority": 517,
+          "irony": 478,
+          "stereotypical": 679,
+          "threatening": 399
+        },
+        "validation": {
+          "white_grievance": 308,
+          "incitement": 254,
+          "inferiority": 172,
+          "irony": 159,
+          "stereotypical": 227,
+          "threatening": 133
+        },
+        "test": {
+          "white_grievance": 308,
+          "incitement": 254,
+          "inferiority": 173,
+          "irony": 160,
+          "stereotypical": 227,
+          "threatening": 134
+        }
+      },
+      "selected_counts": {
+        "train": {
+          "white_grievance": 20,
+          "incitement": 20,
+          "inferiority": 20,
+          "irony": 20,
+          "stereotypical": 20,
+          "threatening": 20
+        },
+        "validation": {},
+        "test": {
+          "white_grievance": 40,
+          "incitement": 40,
+          "inferiority": 40,
+          "irony": 40,
+          "stereotypical": 40,
+          "threatening": 40
+        }
+      },
+      "source_explanation_coverage": {
+        "train": {
+          "examples": 3756,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "validation": {
+          "examples": 1253,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "test": {
+          "examples": 1256,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        }
+      },
+      "selected_explanation_coverage": {
+        "train": {
+          "examples": 120,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "validation": {
+          "examples": 0,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "test": {
+          "examples": 240,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        }
+      },
+      "test_sample_ids": [
+        "implicit_hate:da0159c17f8b12bf95dab2f10722f022a07065f6bdae4b94241c59ca6dac8a43",
+        "implicit_hate:f40577d8780078154c8f3533d19553d064c8c5f0e8f9f02f4d4596c74d1bd33e",
+        "implicit_hate:cf133977f415c0a5bde274e5af895a3a52b52c711a2ac1ad687db3f99845b4c8",
+        "implicit_hate:378a50311cfb01e3bda127522b559efa149a1ec4bfc09c66554d5ca1fcee58ed",
+        "implicit_hate:e1257d9f1adb57b33ceb0b680840130a84a9790ccac95f9ececc144cfa3e2173",
+        "implicit_hate:becdfcf9737cd231324ac661088746ec1bdcca69814b45cd40ced59e9e630ec1",
+        "implicit_hate:7648c07a276b0e8e0cdb0be1aec0d82c71f8953d9a91643000e95777c474047c",
+        "implicit_hate:f6389e7ee3679e562c968d9c9c70946b688d2f714a64f5a2bc966c3afc3f91d8",
+        "implicit_hate:f7cf3c173f2cd9d17905970c7f2372c6fdc89d8ff8ec061121bfac76bfe27062",
+        "implicit_hate:87b4bf0ab408e614b0a4875bbcc9aac36c9505bc633e18301177ea0c55c87517",
+        "implicit_hate:b459993caf72bf7245916f4a079a49f6b5be3ec0fdc1e220266db8918dffa212",
+        "implicit_hate:735a889984bbae4c86fb20bad20ce2e132d95a5cc0523e9fdafe686081b73b72",
+        "implicit_hate:490478d8462569382074cc88f850e9f8e0677f0ac27a3c750ccef7e06548eb8d",
+        "implicit_hate:594fb09c155f9bb6fe52bf090316215ba5c8ce03bec77af814a982d20a30e7d0",
+        "implicit_hate:073eab110cef8567c83e3c434c3fff0baa2c395677d03434bb0ff24175ed114e",
+        "implicit_hate:bc2a6068adeb1e49f808f95d6d2d4e73b0146e9b379d879ed60a048b50115bb9",
+        "implicit_hate:35deb05b04fff6236a216b768032bf28ef15f6c0e01ce6c8e887f5b470f6c230",
+        "implicit_hate:c3d49a2ef0616e4061e18b10d5274db389cd82b832de45a259b39452e04e8481",
+        "implicit_hate:642e81f199a3afe7d756cfcd664333bfb711d8f9fbe5c62cfa08519440058dbc",
+        "implicit_hate:b67497e9cd0504918bd8a56212752295319e4e9c63d281cfae8878690df067dd",
+        "implicit_hate:a2ec2f3c469d376662863b605148153a6849d64daee463c45533a531d6a8e7e7",
+        "implicit_hate:83b22315ebe519d34ac4da9d5bf249894ea1966a2ac850c9b5464442932c6fc8",
+        "implicit_hate:2d5c596c92a0fe1aa75a3b9974125d3819918c03e93d6e68eb3e1031f02fb758",
+        "implicit_hate:e4b25ddfa056c69d111e3f8157dc3608a40ebd07676ebae2bfd1957a21a2c30d",
+        "implicit_hate:fe234584f2b982ef1371de80b431df7e2363a02e68bd34aa99202caa9314c590",
+        "implicit_hate:29d33b3ef841145f38fdedf82321ba9bb6578d924b4f7c01900ae0730ab441d0",
+        "implicit_hate:76384905ed471902a88e19ffbc3e3ba6bdac6ec45952696b7c7d5b041009bd00",
+        "implicit_hate:a1e9e7206a68267eb1b759b1e6d286729a86a1a3b5a34fa5645ec413a75344fa",
+        "implicit_hate:6dde99d5fd1adac7387060c6971ada85c7bc97969ead89f39bcaa153855ffb29",
+        "implicit_hate:f3d97111a0d93dbad1aa37f88b670ae2d07cde0c59c3a6bdcf5171f4e379bfb2",
+        "implicit_hate:2b580631dc5223e3a436a0415418a15f7a49740a9f4a25058fb07bc1ce956517",
+        "implicit_hate:5c4e980d328555e75f5131da56da6e4f31246c853179b0d5d4a822b60d38efe7",
+        "implicit_hate:4736715261515ba57e144e109d743368777d588d17ce76829579112f6298303d",
+        "implicit_hate:e544e690024e921eed438e873b9a31ea406f530376d85c9015cff28422a31d39",
+        "implicit_hate:e87228e8e97377f7bcdce7900f81c1c436f2b218f126d74063e65a6cd1867202",
+        "implicit_hate:d3defbecae18d14016a03d7108132f84d77fd1a136352e5903cfde6e6d1ef348",
+        "implicit_hate:778f4a290312d27166885785c1c2afd70ec86ccf85b4ee0aa46884ca3c46103a",
+        "implicit_hate:ae66278db0037d4716c27de7932cea28c497ba9776b4142cba25cc0994c8d197",
+        "implicit_hate:ff80829e5b02294bb7621faf653e971ccdf190dd3f768b3f1778c318297524ea",
+        "implicit_hate:0e2755c426aa09978e014f986ae04f08435cb03f3a0c600b285275b0536c4b8f",
+        "implicit_hate:4ef7e106bfc3cd9db87d06eeb27deea9e8acef85f165d69e0ac2d15e88e692e1",
+        "implicit_hate:d041aa39758c5528cf9c9da56dd1cb4ff18b7114975e4173767fd88ee1ae2b2b",
+        "implicit_hate:d6eca306b7cb1a10a9f006cce2939d8b9e4c6e7a92d1f561cd472ccf92c51737",
+        "implicit_hate:a060e8c55ba352066e6a73d0ad604befdc22178e67a467141b13961f6372e6b6",
+        "implicit_hate:9fb5123863930f0e60c4e3b365624baf688dfb0585ca010fba400f4858ca7a6d",
+        "implicit_hate:758687e44d93bfc7d7d49b53889e592493944a667e5b5ecaa0074dcdd6b1a33f",
+        "implicit_hate:4d6f92f9223a1489e6c55acdbe2b8e9376dfaea434cf23dc8a2bc29c952c4aa6",
+        "implicit_hate:ff8abfd84f3c5bf367b41eab7c1bd48df739b61d38315012835f8c8e07bfc374",
+        "implicit_hate:1b1ddf44505998ea5d46e57b370abbdf332896495b97c050534c931cced1e216",
+        "implicit_hate:1bb37417792e5bc7640c9d07fd15595f78d2b861d61ded739dd820f99d937fbe",
+        "implicit_hate:df29e7bb7614f6f477f4f12fbaca40c54600c70d90a3bfd1f2f15440598e5591",
+        "implicit_hate:44c474f7dcd8f7a251bd7c6e36e6a48d3aa32ac840b4475ce0308da77f440416",
+        "implicit_hate:6186ba31f499b5129bf9cb5fe7d6b2c898615d7339e68c1f34634a7dafd67db9",
+        "implicit_hate:fc55df22b71205e932b39626dee1e15f2270042e3f432831e38be084fc386913",
+        "implicit_hate:67f09bea6771ba12fb2b79c8849feec18564862df93347a4f336f5ec9fca39db",
+        "implicit_hate:0486620d8a9aaeb4b5e731fc6447d4b5d41b62b21f7c9d14aee669e734b6dc94",
+        "implicit_hate:071e91cbfdda2b297da40d6d765c3d39a3dedcb1bff7edc6d34e0d693b3cc2e3",
+        "implicit_hate:fc6dc74d7dc735ef57d647e33aab85c44eac8155eb7e66b2cee4330b23779254",
+        "implicit_hate:86aae045ef65421e3f36a600caaa5b902fcf87ae853d7cb5c3716cf890fce69b",
+        "implicit_hate:c79d33378e2e63917301d9cf1bd8a14de4fd14e6ab15b4becbac112563935c67",
+        "implicit_hate:f87e7a5e81a10f779cae3d4ca2da04c4d75cdd7dfed5c009dfd0ff850965ddab",
+        "implicit_hate:d8914d9d6c0e64c816dd405f5de1ddc299953fae21c728eccdb186de42e41081",
+        "implicit_hate:4eb5bea3567c1256bd456cab155fc0faf67dab27fd4d6fb7feb2b43afcbe4498",
+        "implicit_hate:85bef06d44136498248946c17a8ecf6bf72298c94dbdff93d22ce9077b4879f1",
+        "implicit_hate:6c79a4cec9f1fbd79d5fc7b5073de3a7e27e2a7c979354a4e9c59fc02a2cbfa4",
+        "implicit_hate:a621a06ad7e685bd216bb69e21debdac7ef21b94c909df14fed1ca037dc7cc73",
+        "implicit_hate:4eae5086329fbc12a1612fb9dcac9bce8e30d97a09c73e8acf3d6f06b0659abb",
+        "implicit_hate:c37c75314aed6a9637134144cc7df1c4bfea43383f04eb6f86e33ec4c0013458",
+        "implicit_hate:33111266d18eb7f56250e871f1cd831625b29fffbba3414a8e185c3fe87a5ba6",
+        "implicit_hate:bfcf58b73367cf406ac4f6937281914f2c87b21b1fb730d7e3f385fc41c5a4e2",
+        "implicit_hate:0ae69945efc6fbaa147329319d1a7ee0120b617a6ed21cd80faf5756273e746d",
+        "implicit_hate:406178cdb50d3419a8d69072e5d0e8abfb9e6791eeeaf23fbc97995238d5585d",
+        "implicit_hate:1b505a178f0717aa78a955f1e9e1eebc6ea7a5f0982ae48832e9c29af8918fee",
+        "implicit_hate:35bf55ee023760c666250386ef2700d5c428dbc7f1f2259faf33296604bfc89e",
+        "implicit_hate:d52d632db82df269e233d137e2ce4ec783bf7166244bdaedd2eb08675ee2f704",
+        "implicit_hate:1aad50eba62c48c057de0d64537d2ce127b8cfb9323d81a9651df7f92d7dab85",
+        "implicit_hate:49a1c55af2ac81fc32d328498ea8b9efdebf55165659bf623c7ae16d8c0dc824",
+        "implicit_hate:35c4e5bd1cd5ba44d67391c7d0ab41a8f87e421380665b2c4419ff5ae095214c",
+        "implicit_hate:dcfe3f7072f344de09df70b43ce5007e66faf818d8d4b4480fe6bf226699dd11",
+        "implicit_hate:d28fbfb3a26b6e92c2a8ebaf98b426dbf9d9343503680dcd1091016653447d4c",
+        "implicit_hate:2014d79e70c9095d99735da3d5d99b52cc34d9b52eece0ef457053d77ff714b1",
+        "implicit_hate:f5092b39d0a1939a9781dcf27ea21e8f37fc9d2b69ad0ed6a782914151466b04",
+        "implicit_hate:4bcbf8874cf2014f6452ae7580dddb80e542d8591be82d39f3272c48d7f46917",
+        "implicit_hate:8161ef1e89afeaac1d13b9087b107bf34080d7384f3acf21b2bec630357e1a61",
+        "implicit_hate:21c31cbbdd9e0af04ac8710163cd4651b1aa9873a73888add5c92633662fc55d",
+        "implicit_hate:65d612ab85d63e46236d7859d72491dad36da74d42bcc2368511bdbaeeff09bf",
+        "implicit_hate:9b74dd652db2350f31ebde8e423bbc0ead101171fde45cc639fa3e4209e4d7f4",
+        "implicit_hate:210ac7361997366465c1018c2732cf0cae87875005acf8dacaeb06bbcf81154a",
+        "implicit_hate:c2de8e4c1f21f0ac3ea1efcb0272e1ad8f92c5a8ff571f9ea5effee6a94f50ef",
+        "implicit_hate:6fbe5045649dcdb6af9086c5e1fb08b0b6ed0e418a88c7abf5ba6f4185f3aa6c",
+        "implicit_hate:1dd7fbd240ec92146024038cbcfed3d600253444af51d40314963ec596a4b740",
+        "implicit_hate:2a1935280cb54f46e8fc11b691b5cb9b87c26154662e2df5e9b369c0c8149541",
+        "implicit_hate:a838349d7d6eab0421b4470c4ab524594f05a61b5ce84311affa64d53637a38c",
+        "implicit_hate:b3975979d1780d750d6d4ae3a59e13cc6afcdcfb87bbdd6c22b29482fc014de5",
+        "implicit_hate:4c452ed775715d68394a4d4fa327bf8bf752aa58f77ce42f833d716c2512f649",
+        "implicit_hate:0d2d907c8dbabf376a640dee7515035cb99fbc402bf5e8ce428dc69d70b984c9",
+        "implicit_hate:b81654f9686f9cab4aa3ec6f861ba273abbae1cf53fc8a14ea789d39f2aca936",
+        "implicit_hate:45b100d44d949f5e798f6f17cf185f36cb1c7a335692ac55a5aff39f18b7231a",
+        "implicit_hate:75fe7b180e7b02d0597ed98eb8b7406c87c8e3dbbd4e70bda7e266a61850def8",
+        "implicit_hate:006b5e182a80c3db60e78df8617ebe9088013bb86a81660f2d50e34a491cd9d5",
+        "implicit_hate:e67e804ea897828efec24e3bbb7995cda41ab6fb84ed4f59e5d8d7f757d7a7ce",
+        "implicit_hate:71489cf391c09c92a69c1f1c67cbd672d3c84675b9668425e4e2b3a9ca7179e7",
+        "implicit_hate:c3122e6163362cfb966e071c0edd7a36f0e322721fd830ad3001c70a06e2a75c",
+        "implicit_hate:c93f40e20e8ae5763c8c319a44f02b0ad152978ceaae6be2bdaed9227efc11cb",
+        "implicit_hate:45bb54f609ce6dddee1f1a796335df80d882e755536a21aa643a975095c7f012",
+        "implicit_hate:0a524dc5a253651320eff96b9c618ff97e0554bc2fea8eb53ca211cccfa9745b",
+        "implicit_hate:d4d50627f44eb4d8fce7b1094a4370d2fe892725f594a96078d3c5b99b006841",
+        "implicit_hate:9bb071988ecfe4ec12899dc1e22b902f3f4b52aa0382a52fbd33eb16c8523755",
+        "implicit_hate:b2ff0186424ccdee426b512f8101fad5b0edbcc62d129efa8c637a9fd825c37c",
+        "implicit_hate:4c9d245d5b96ffac618e8a64933e93ce575e7cc855c355e3265dc7ed2e59fa9b",
+        "implicit_hate:03b4a95f001a1f039fc7bb1106446e4e4d70ca11aa83ba6c407ab01b875421ad",
+        "implicit_hate:efeab1eee8cf76d360dbb2f61dec6adc047becd5d17bb6b5ace72dfd0a99717b",
+        "implicit_hate:2968af85d5601da55180e0adad9ab8919233a75140b7ebb89638ba678b2bc375",
+        "implicit_hate:ff63a9fc52cab514fd9b91c693dc269a54b0d5229bae55c7cd382da6cac2d913",
+        "implicit_hate:822259a970ccb1a5bd853cde01dc92cd4a334d52099890e200a4275be3f1a45f",
+        "implicit_hate:de0eea98b9233b7c3efe07bf53537d746c57f1565ded3a7b9501aa3f1f391dc2",
+        "implicit_hate:18787996aef434a6b08e7839bdab786d7884b369ad75f5b73d3c2db1aa8c89b8",
+        "implicit_hate:382eaf1cb5642e3fbcc1ae72eaafc610e2cf7f39dd9c28d90741c46e085e66d3",
+        "implicit_hate:de1a966600fe58d7568b628709bbadddaf9954d56b90465ff7aaafc4b0d8d878",
+        "implicit_hate:c969903b0d86bc361aeea190d2ae918522b6dbce03dc464ef0b6f1ac05d4e563",
+        "implicit_hate:f968fe3a1513f9f1f30c2078c0788246a74604b115c2d05233c0bbfb2ed1aaff",
+        "implicit_hate:be240effab352f0bf9fde7a5b4ba4eae7de866bb4b3e9265005f9cd3612091b3",
+        "implicit_hate:f67b04d5201d39bb1f72fc09e8eb4c1938f04d14a4ee2eaa2d2e7d49421b5916",
+        "implicit_hate:f6ba8bb625868b25e13d6a54c79df28a30397aa8915bb42b1788bcbe08817845",
+        "implicit_hate:335e3334473f9bc03dd97373e0f731b993d6fcf076660eb2706c2dbb03099b54",
+        "implicit_hate:e250756f1303b924eb357c3558a8f9df33b181cadc0131daf49df2e2382ece4d",
+        "implicit_hate:e2ccfbd46019949b63534c08e3e920b3876b4bf35fe686e872eb8b284fbd2d33",
+        "implicit_hate:dc082c4cf43ccee44f6b0a7b761fa15d9a786fed79f3f3cb87f307b6738c3074",
+        "implicit_hate:4410c37b690c18551f3feafa21e17034aed549f973b2c40e2fd3b7c076692741",
+        "implicit_hate:3b1b9cc0f75258eb39fa6eba9d82e37f26ff11e5c84e38d574c60adec71087de",
+        "implicit_hate:06222259e1d266df7790378a5ecc8a26a11dfd1de48b25a3211fbaab6ebe3c28",
+        "implicit_hate:2256a2b72a2eab96fd38e22d7e3937fb440c0bd7a6a5f49b8f4d850fcc280552",
+        "implicit_hate:957d8eefc6b6c8dea6499b918ae756ee18475325f19359e9531e344c4b9fe78b",
+        "implicit_hate:e414b47869d8f108c646aba898c8955bec7cc53666b8e7bde4073bab98b9d06a",
+        "implicit_hate:991427c7c93660a55fdca360768ac977d9051876b6afc103ce7047e845abc431",
+        "implicit_hate:b0e33b792e3eddd154c871d7617450908d013bd12f2bfe98b85643a12c0803e5",
+        "implicit_hate:d686bf8688798287e32cab619ede506ec621edc9874761820d25d9b669866fd5",
+        "implicit_hate:826e60258ca4363be734fecea48c44010fa639fa9dfe428255487a1e79602503",
+        "implicit_hate:7d031df7e4aa4041509d942cbd473766ed19504680afb4285191d98bf3cd3db3",
+        "implicit_hate:ea2097c9b37d811279af9681e74c9c6cf4a4a6dc859629fb801927599288f7ed",
+        "implicit_hate:e1dc74dcadba6d1697aa49ba2c408d998e1427f1135d3086be563b68fe880faa",
+        "implicit_hate:64fbbd0b0d937da2801711606bf537044aec24235dedb94687defbf8856281b0",
+        "implicit_hate:59e27feb1b7b812b0fefc20578345cdecd2dff88b435b1c24dfc8266d91efcd4",
+        "implicit_hate:3e70a82217631d6645af63a660991667cad765e6e59d985075d5a35abb74ce02",
+        "implicit_hate:86b90e5677a3dbbced40190a81452f4c87371c12d0fb930d07745e8c1e813d2e",
+        "implicit_hate:ea97d8086d12f4c053a185c4380b3370aadb12cc212a222a3d7ce9112a46f37d",
+        "implicit_hate:ab9924f38ea4be4e7905c41d4f63da5a308f5d485542e7d8680145e97c416ab5",
+        "implicit_hate:57aa77457111bef5610d78fb683ae121bcb553cd9d5d907b530833922f449c79",
+        "implicit_hate:daf4375c16d115a280361b6e4619429071ec906ba4a2c350609b5707f7c33052",
+        "implicit_hate:6b75757d5672f85614b0d6a4a967d7c192dda96ec618f13721c21e7f1326fa4f",
+        "implicit_hate:f2c1d4484751560d759f4ae10b8ade01f9288f78db2f4b8566ed46bbd24d984d",
+        "implicit_hate:f6d876cda101a1a522b4933dd57472e87ebf2cfc424a6de3183a77074a43a549",
+        "implicit_hate:7a1ce5fd23c54199b3fca148dd5683e3888721ddb8062c7f654f1fe8aa987f1a",
+        "implicit_hate:270feb90900c2a88e5bbd42606e31c34d9c59a106b6e667883cd216c677198a9",
+        "implicit_hate:52bedf2d939496d8929c6a8a15c72545bd43d8c11235c8735bdb54b7b5516c36",
+        "implicit_hate:4eb950492cb9bae1509bd2464e474d59159a4348591962e2f7170d55a217f583",
+        "implicit_hate:40ff7a2ce78c1010abf7c9ede20be7c3a21c20c801ff0e76e14a21464bf5acce",
+        "implicit_hate:648f9ee185c1bd34e90f0223384bc34789326f70f0695feee394dee2cc3ecda3",
+        "implicit_hate:89533149b8c4c80c43d8202ee788feb479990c7131a2b7dfa3e67ce2e3342c82",
+        "implicit_hate:1ea5c7e58edd4f47e510518a495e78ef72ba880d7c8f49eab0551bda6d81b717",
+        "implicit_hate:d7c58eab53d65e27ae49c0e46e0c2702f437ae9a9b7d9b5b2a4729fa79d94119",
+        "implicit_hate:4ee51f882fa20ca6d967c28b28c039b5b4a03fe50fd1b46ca6fe7c54086bb37a",
+        "implicit_hate:df733e16aafaf13ee276f8ae24f1697fc16052bd61393c7061b74004db61c3f5",
+        "implicit_hate:88fa839f26a270a12514a2bef9ce0fd75feb4e2d4f56173ff0f2c38f0e946a4f",
+        "implicit_hate:b27ddffb016f9caaa08678dfe454171c50aa7b9f1e9e6f7af3558c765d4f483a",
+        "implicit_hate:2efce27c9e1bb0294cf5d9736b23e83a7780d4ac0748ef7ce94033c05571235b",
+        "implicit_hate:c3f82ba0b18d0c034853fb3e2a275ca58c8daeef7597aeaea31a34a777d23960",
+        "implicit_hate:aa2583d05eac9e629478ef98bfde76ce9cdb5a9a5e7e78ee59e0b1ce7fcfed95",
+        "implicit_hate:2b0307db9cdd48fcef35006cb07845e0fe829870667cb5aebbda017957d3d4d6",
+        "implicit_hate:c7184fb5dfc9ffc54b700ce87bce9ad380b78a5e7942f814d19c1132f641a236",
+        "implicit_hate:128a2256ffae6eea8ac011a16cc3250b4ca1deb920d5df58dabc3146f0fb6801",
+        "implicit_hate:6d5f4780615e519da8980ee3c379fc972cfa54b917de82f2ca669f948af38cb4",
+        "implicit_hate:4b13781e1fe55bb6d6b42f1c8f3558637d1ee822d9fcd210de3eb3316cf168fd",
+        "implicit_hate:c3c1aa48d33b0e3f2d3cb04b276ae60081c6b44e515cf262aafe767c089dc68e",
+        "implicit_hate:89d53acae4a91f30264c69b9da2a8d709b0f92befe33893fc6eb6d228da950de",
+        "implicit_hate:041b14f45f3d43b8d215c32f60f6cd9a98f207e0fd7945530cb9bfb18e716bd5",
+        "implicit_hate:67a5ac17bb823126775d73e4dce38c09d221fc0c192807c820bab97b93bfd36d",
+        "implicit_hate:33eab498db70a636e4e134184452bd4a2a8ed3561d7cf939efc99c57faa7abef",
+        "implicit_hate:31b8095522e1573ea8b28c76f37607f199c4af4a90a754a97ad6178f69a68a28",
+        "implicit_hate:76e533790fa2c5381563dfeecd730fdec669ea6ef9f8a784d10ad398b4609c34",
+        "implicit_hate:b2c03efc96b7cbdd676e1116a06336a6c8010475216f1bd62b1b4773d89acaf4",
+        "implicit_hate:9e6fbac36bfe508cdfea9a5f2b6f390821769ff711e1230d8babda53f0d79b1d",
+        "implicit_hate:ec2c2e6e79bd47b3c6eb933ed01712274dc33f9a74c8027fe43e6b0554d7f388",
+        "implicit_hate:8f7ec69555250f9d01c02a060b5d58fd54ed9549fa7748a017c6faae7c8e8525",
+        "implicit_hate:e45866bc74bbdb781b290fc0d212c8af948746afb89579399d3f3fa77ff1e139",
+        "implicit_hate:ba2943ddbca42b01eeb492877104707cf58f791cda8290ed525188d874514262",
+        "implicit_hate:13aca5fc4ea29491e542cfe8f5c0aa9b2383d0ce61e47b3dd6615d49a6908deb",
+        "implicit_hate:fc4a50b4d7779142ef6f106b46d14467c9c5cab8b3e9ac6c6f6e58128a1d7488",
+        "implicit_hate:e1463bbd8e0525f63fe671ed6d50f15b462df5a8701bb5cd59ab7b795f26e57e",
+        "implicit_hate:51268f595eff17785f813608234e093e333d19899f3f6780777e7356dc1eb2d1",
+        "implicit_hate:c316aa0857ea8a80066d0ee51a73fcb6f26082e97a755f6ec79ba8b840b28a9f",
+        "implicit_hate:19ccb9219691dd4d649a7bee6e315277dbdcf39b777bb0a015380f16f8acd557",
+        "implicit_hate:8000a7bebe048fe07000b0c82bcb9b813919b1f1e2741ed262f35ca55994bf73",
+        "implicit_hate:7c2fd5b7812d2eb25ef406d53135b7b4b57e066a21d9971533e345d930d627bd",
+        "implicit_hate:62e3c07de59d248de84bdaccf2bad1bba30a1a998de8775122ba2b27a74a24e9",
+        "implicit_hate:9c96c001fdf8f9bd84b8e4dc474df11a138757fc805d6cb66ed8aab719fa12f9",
+        "implicit_hate:408f4a87ff12bd7bc4bc330e885605008abd753a7878f696ac806e235b2a721f",
+        "implicit_hate:9db86d6f8a000ac25e382ad65af0cbb52388c70879781e84ea67df93475fe6bc",
+        "implicit_hate:3da1f65a44b1bf6f2f3b553c9c65d3c26ef812892a0c284b18de643c5c16f3ee",
+        "implicit_hate:999abd930725be0816cb6948ce006f65e369071a7c2eafaf73d281a8fdb7054e",
+        "implicit_hate:c75b73ba52d22f9f7868b8ab87b2148a52f7cd920863c719bf11a4d9cfb1bca3",
+        "implicit_hate:aa784a723943207bdda29dea954c602c0d550c5a2e9e5b4d82087fd7b6fb1677",
+        "implicit_hate:7ca8aaff17b68348213f848ed1c94b1dc5112c2aa531f99bfb9b4c8d2a749a60",
+        "implicit_hate:b0f053e3b7c1701e49094dbf6bcbee6015fb2156eb1a0538e3ffe16bf5d3750e",
+        "implicit_hate:5b49868731a2d52078369d38d7147c62c9d8dce5d243720054e129977b506c65",
+        "implicit_hate:6d1a9fa1ac25ac241bc477fadb4f1d55ac4b79ee2f3f4cd35717fee393adf647",
+        "implicit_hate:e0fb0d0d677c86d591f60eed150ee79fa09fb2d211f925a8033776d7bbf21514",
+        "implicit_hate:fbf9c26e70e5ec505605ef8ad9bab0d66b665cd46f81f757c4e7b2ec478128cc",
+        "implicit_hate:437d2a531060d2d3bb5adadbfe3076b83bc662509584f7947553d7eb36a150da",
+        "implicit_hate:b58754b67e45649e55e8bfb601d7f0818832539033104521e5fc24fab59cbbc3",
+        "implicit_hate:77d9b4063fafa7ac6aa6bd48f11a77c5b37218ee8ed421d8f2b51ef23a52546f",
+        "implicit_hate:615556165bced0452f20ba1d3c36b344c4c396263296a6697d716efbed2b8024",
+        "implicit_hate:4e125575470ec0b586dfc2bcea05b217e3ebd729dbfca538d1652eab11484b3c",
+        "implicit_hate:abef14919fe490bef5167d166c332312b74f9039ad9772ebe74097a0ff3a8ef2",
+        "implicit_hate:58dec1aafb279dfa0a9f681060dcdf4f287bcf7c64a26051ed6e53130d55b86d",
+        "implicit_hate:d1c2ecaf97a4761071daf182a1b06f092f63e2345913b9d3a5e7cf1ba316c5be",
+        "implicit_hate:8766a89441be92f9f5a6bd4166d8c35fc8fc3b370682b8464525832b48007dec",
+        "implicit_hate:90631b3a70c8cd35ae621d329daecc57b451a6304310d9986a6e4fc9af55eefd",
+        "implicit_hate:10c6f31af7e4fc7d619cfa05e894216cce23664e2743affa57616cb3b7dea822",
+        "implicit_hate:81cace4a4cf40c6fb875629c4745b8edec96359d9d2f74c971dad252113209d1",
+        "implicit_hate:aa9727455aa5fb49eea53b20f76ab1dee9286da30f22ceb230bd6614d00e494b",
+        "implicit_hate:bf73670b99512e0662a8ecb86b45c3cb1348c49e060ac62c34093c565116c7e3",
+        "implicit_hate:0f5c2a6a60298ed705073d64debaaf94081bf9fd094eb910600c94a58c7793b8",
+        "implicit_hate:43ff916ad61b3e5b79dde4546a7ed8dc0ade286c7d8bb8076e02cbb90403eff1",
+        "implicit_hate:9dbaf3b6d9b7ea9c64bfe87e3ab36fc6ea70cc257c0899248458565ed975a834",
+        "implicit_hate:62958107ed1e90b6a35f847498ae9be960959c1576723446028854887dd89bce",
+        "implicit_hate:7b702e5d1f4df3ec34076de994f3259deb468439836668f26d682b30f5f43a78",
+        "implicit_hate:1b4f7d1b090169400b8eede7b4aced81fcebaebb4bc4ec142e4b315350c66ae2",
+        "implicit_hate:0f5385ad92d86425d81c6ae2e3e0417ebabfb3b607e3dbe57740cb6516c2cccc",
+        "implicit_hate:4aaa611394736448dd01c65cb4104ab8ce9b5ad53a3b1879c618f79ca23ef50e",
+        "implicit_hate:b6a931182777359ef9ddf6dcfaee5b801e85a627ee9450ea1f5fe5ff3b6cdba4",
+        "implicit_hate:b3b8a1d3989805ffe7d9017bb2082883c3b5dec9d955e0e9359b7d2d9d783b28",
+        "implicit_hate:507d027828a3cdd1a1ad8eef6397dddd1652583bdb3bb4aec0a9157023a9c655",
+        "implicit_hate:d7d04be8e677d60268563b7b8ba7b450e7d771b3fa233d21c51f29ffa1cfb1d4",
+        "implicit_hate:55632e7c2c56a9eceae60b719f59579241f00199444026be7ac1b8900f35e148",
+        "implicit_hate:08c68a52e2bdf68cc172af4011bc09f994cfa9411f2098be916b58923c017be8",
+        "implicit_hate:ddec3c396de0cd5c25be88654183a5bf00e0b041a0f07422b84caf255b71d876",
+        "implicit_hate:47d26aa6cb13dc3effec49b27945a1edd30e36f31c1f593ceec4b2d6386a0edb",
+        "implicit_hate:c22019512e7dbde59a6c3d9a2ee82f812d3c374bbcd7e4c8dbe38d3864c5304d",
+        "implicit_hate:2e75b5e34d9a3371e095988bd76957469b95f6aa46835daaac2a6fd743996e14"
+      ],
+      "input_characters": {
+        "min": 13,
+        "max": 801
+      },
+      "classes": [
+        {
+          "name": "white_grievance",
+          "description": "Implicit hate expressing frustration at a minority group's perceived privilege or portraying white people as unfairly victimized."
+        },
+        {
+          "name": "incitement",
+          "description": "Implicit hate promoting hate groups or ideologies, encouraging solidarity or flaunting in-group power."
+        },
+        {
+          "name": "inferiority",
+          "description": "Implicit hate implying that a demographic group or its members have less worth or are inferior to others."
+        },
+        {
+          "name": "irony",
+          "description": "Implicit hate using sarcasm, humor or satire to demean a demographic group or its members."
+        },
+        {
+          "name": "stereotypical",
+          "description": "Implicit hate associating a demographic group with negative attributes through stereotypes, euphemisms or metaphors."
+        },
+        {
+          "name": "threatening",
+          "description": "Implicit hate indirectly committing to or advocating harm to a group's body, well-being, reputation or liberty."
+        }
+      ],
+      "fit_sample_ids": [
+        "implicit_hate:d251f3352def8f3c6a42a3d8cfc030bc32d0c26475bffe77c3e93783b7f3c5e8",
+        "implicit_hate:2a563e295abc2ae8dc6f910ed803c70d977c77c525a2ddf55cf368c53a76dc58",
+        "implicit_hate:4873b922be6972222fd729ddfb9220de378b40de5488cab0766407e199e08afb",
+        "implicit_hate:a02f839e29ac8c8fc34eb8a7cadba637ad1af386c44da35e1ea02b26dcbfe7ff",
+        "implicit_hate:f58b3269a4c15a7430ff01481c8306989e6b4ce8eb8ee8bdd3c8457ab0d036ca",
+        "implicit_hate:f903929a7ba68168bd3f68a7a4ea62906fbe99c90f757299e48227759cefd1b1",
+        "implicit_hate:e0e65b3f5b33014499da0a99b19c229cf55395940d3427e4d4bd789a9e0bf622",
+        "implicit_hate:028dc3324467536f9bf25d11c9be46eb55b8a4dd45164948208a6c93c119745b",
+        "implicit_hate:a466cf121fb70333571b18be2742b5236d3888ee177264e4939a735e5fe254c7",
+        "implicit_hate:4862e3b49d11792e5157c415ea838e1429871ec457dd52654e7ea56b23059dca",
+        "implicit_hate:0e9889b5c2966b9adff7616264fbab229864da4e879b76c33659f717969f2f3e",
+        "implicit_hate:9cf4ae349e51dad2751872bc5f09bc1695f7755a0be76aa2ea82cc1cc5546c1c",
+        "implicit_hate:04df29c6cdb6ca2d213a6ba3d0ebbbcf67ae1cd43fca213f7b0e5a52aa1c43ff",
+        "implicit_hate:683cd785d0c60935d3c21538c63d8a7e7e1c4ca98743225ebcceb298ed6427b4",
+        "implicit_hate:3cf1762a78bc5b665982e635ef4225f7f075ed6f538b3d22413fa622d05d7750",
+        "implicit_hate:44b350028eb5c3c0c9d0f377b2befc6c615743f49f5b1e242631a6d0f48dc841",
+        "implicit_hate:80bef569e8592262ce8a598fade8e47d7bb34f3980d27a397406b25a474d5cbb",
+        "implicit_hate:0cde619b0e3bf2706202c9c1b6c236e2f13e9ad0bea3896d0245ce1c882ca2d1",
+        "implicit_hate:c1727994229df2d6bbb81c393fbf50a965ec884d30e0d25c41883a2f38347191",
+        "implicit_hate:76a02c5745430bfe7e013d4854ccd08c41ec1f57e5909c69f5825679176e8c88",
+        "implicit_hate:96b2371c0c54a90caefc801bc330be7cd7cdbb783bcab4d2f1f65ec04b6100d2",
+        "implicit_hate:b02b43e3689ee56d2855c26878608475a1a5ca2a8d1b945fcd5e5dafb22e370e",
+        "implicit_hate:e2dab1f8d96e89b09d31a4bc5a60633eab75cb6b023b922b1cd3fd70be87f68a",
+        "implicit_hate:f3884b3955d3ccf887b791c50b92a2a23cf44d6f62ed8b55d01041bad9a7c735",
+        "implicit_hate:47749b049e844c605c8e384c72d30e828770d7d09283f962020a83dae3759ad3",
+        "implicit_hate:10d93630642a2debec9d3feb36153ca4dae1fec848ca2c70b43861f6adf25b6f",
+        "implicit_hate:b8e3461fc61fc787811b58a36aa02e13112561d7edcf452763d7286d239f753c",
+        "implicit_hate:f59db553778d1bda62a6557912ef1958ed2acb64ad0882fb70c8d6e5a01e0ed6",
+        "implicit_hate:18eb980968a82e6a4cf39f2b4779d7848596c41a8a9a35fe7c4314db6dd35a11",
+        "implicit_hate:bdfd0fc8de8560201d788e2276b09bc53f68928c6352e719961e2eb364bc119e",
+        "implicit_hate:cc4b6d6576cc945e2e640f1ee83c994587569371723cede076d6b0a75d676daf",
+        "implicit_hate:07219850ade21225f58bccb64f0f3db71ab6b609e26b05f6d8681e5921a4e168",
+        "implicit_hate:522cd987fd7850b86b19b13374a11d33a5ba0899f50e1c68fc79fdb59707d59c",
+        "implicit_hate:e64582b989da5219fddf8dcfc350c6d17de0803d9057fd9439dcae1e4eaf1257",
+        "implicit_hate:429add85ab6fd6f3681d106aef4afb6b756eb568b64b32c4d7fd4c9cc9866abf",
+        "implicit_hate:da5ddc1dea4a076b84848ef8e14d2225f1dde39c2dc8b7289230d498e9d8146c",
+        "implicit_hate:b2f9d90c55710ec5d0657c2f1b44fd829b9deaaf882e01b1a279bbf5fee95cb9",
+        "implicit_hate:1afae54c66239dc99d5743aefd20c4101973db711700f02f7aaf2476070cefb1",
+        "implicit_hate:5aade48bbc4a13a8e4cd112367068ac2a65f93c5e65dcd8686d946f6e8431ee2",
+        "implicit_hate:34799e069b774445a15a956269fe0319faff843aa4c6e756eb3aa0c992767b12",
+        "implicit_hate:8ddc3d34bae72057d32917cbd3bfe0371954e7918748727c9bbb2ae5d0edb26c",
+        "implicit_hate:38a2c9c65dabddc0c72a7d3ae975f6cdd6087099e2cf4a2271a8ae55fe7cdd7f",
+        "implicit_hate:e52aa409b56d7f943b6b074741dd9db32f6e0ceb62a6f50823f04fbbe4f4f178",
+        "implicit_hate:5999d5b12bc65f05fbbc65f2b3436748c2024ce6ba8e3aac58e7ff753ab3504a",
+        "implicit_hate:d8d25c4a42a8e3b2934c2f97a65aaf3d69239c3d54b297da0acb580add1ad8dc",
+        "implicit_hate:ef8e5d6ac34dcdfcd039aa066c0fe0516facd868ad9e76ff4e54e6df16788d1c",
+        "implicit_hate:84a662caccc6832fa06a6f04c1aba14c2ea211bb94790334c76d904e2d64b1a6",
+        "implicit_hate:e711d563c8673d115e9ef426bc644cb03ed2399414a6e412cec4325d44529b27",
+        "implicit_hate:4e2e64c16a1f2fd4d417bc26ab9839bf161a6fa3c56bda8e7202c9fad662d45f",
+        "implicit_hate:09a4d449d28207cdbedc23b1b36c3fd65c562bbb6b7c79dbed64636affd97907",
+        "implicit_hate:9cf2f548a7bfda044d0a206a3f85b2277b56d369ed56e490d817db7a1505d117",
+        "implicit_hate:2f211f695cd086086b11efd459a7676ff2525f0c078838236bd6dd619f8d2281",
+        "implicit_hate:e980f14db69aca27bf0a665dfc2801cde3af2519a2ec7169f4966e0a4b9096ca",
+        "implicit_hate:667fd14004a608d3644d211663502b8f83e7ab76f123926782d6b571ff7cbfaa",
+        "implicit_hate:02f0e433fb03267b2ec0a6bca447761ccb20154a600ce0c3d4e661a07b001b5f",
+        "implicit_hate:22086d895a9bb0034a2109f521c166f4b7575d0c65ebb150861254cfae677b87",
+        "implicit_hate:850fd013f6874ec939d20ca995745a0bd74f225fa98670049212e06aff4b7c6d",
+        "implicit_hate:f3924febb72340fb020ee4abc647ac1de957be5786bac2db689cf2e35488cb85",
+        "implicit_hate:e779170f012b382d4719056f37d89fccccb7897c61e44c15a73d6192ab1112be",
+        "implicit_hate:01c886df833a8d5d5fe7043d57890d2f29e9df06e626b9d3464a61fe40f4b6f9",
+        "implicit_hate:3401bbcae916196dc835c486aae74abae260dcec73d5cd8d9afef0349eddceb3",
+        "implicit_hate:ccaaeeb5cd25e3f95788d8450d7f66cc9f914795a4d0ce970de10b0cada415f0",
+        "implicit_hate:6ee396f601113f2d42e9522500a7c29dea1b3ed383dd705782be2329f2679008",
+        "implicit_hate:35d3e363edafc43666929942c0c401acf088ec68a6fb9f66b9d365e76c8c36a6",
+        "implicit_hate:ebec3dc514f851de43c3c0f73d67b64e88ce5c222c8a6b7a8d69fb39821782c0",
+        "implicit_hate:b874dc15c3f18db81ab21bafb9585d1e2128d81e8af3b956091dc99eba1e0ef5",
+        "implicit_hate:20a83e829d1e6a75d68fc91228b5c374a1a4068abc3da0f56a10bfa399b7e7cd",
+        "implicit_hate:782641225d052063c41adcea3dac971f54249c13d7932d283be9245d1a4b53af",
+        "implicit_hate:10d91d5de382349a43fa47b0c599801f500eec2591ad37c2adfad8cc8adc0d70",
+        "implicit_hate:2c0476816ac9114d2c0ebf8b453578d4305e7dd74e9494a289aa95724b329ed3",
+        "implicit_hate:4333a4763f204964a3ff16b764bd33faa743bc4855a3e40d4e831e54f0e8c095",
+        "implicit_hate:4a10767ffdbec85e1a4d7436da43285c48e86a78ffd37660ab6fd905f8b5c7c6",
+        "implicit_hate:4db0052e38fd570777bbb4399adb21f9b3bbc9fa14d116f7700677f0b307d1c0",
+        "implicit_hate:fa3441d22b230657732d6b6a74e65ec7b93b8831898c058e9974218e5713fa1c",
+        "implicit_hate:739af727e71fa4234c054752db4481a296a50da9f8efab8f44cf79d563d77e78",
+        "implicit_hate:5148148ec6da47847e825c59818c14706f9b5a5e8cbbad3e80dc81dbf90f8839",
+        "implicit_hate:ffc4b152eba8bf59bdd548e3bdaed27134919d8f2d3a041ae9325bfcb7d9daa2",
+        "implicit_hate:12b240cfdee016868101e0ee64fe22b8e32f7beff294a3cdae9d1a7cd0c21f58",
+        "implicit_hate:b12bc8873b739c32e62bac916a26e98468842ea2fa6c1b647388626c14e3fded",
+        "implicit_hate:e624666d391beff6e8714489ba0a67d43a646029ac8c8f5d04dcdaecb1978b02",
+        "implicit_hate:74a7ecf003bc48b4ac48b4eee0a04e19abbeac683b0f29f57c6aad421b20c190",
+        "implicit_hate:2afeb5b1969aaa5583fb1ba3a43825b9180e21e4bf6f17206265cebb8043bbcc",
+        "implicit_hate:45bc4687acdc7d1c2e5edd131a5e47453cef3b8a29f4f9df67ec9110b09d4642",
+        "implicit_hate:b7c34bc77624fecf77121b2dcab1805456885fc44bd1c23accaae563f3d660db",
+        "implicit_hate:bb47b5fa46fa37a5ff8f5dd379fd6bd0e8a5266475627db3b93aa3f39fbd4760",
+        "implicit_hate:8791e635fc5d04a821b612fbf1e6025a9af12e21a6656335825a20a222b0eba1",
+        "implicit_hate:11095da7138ade7643be79f82afa646f888013eeaf8e33d1ea6aaf98d7f8645f",
+        "implicit_hate:d4f8a2c4c2ff9fd61ab1e21495e7119fa5a2778d9b523ab1fed611012994e5f7",
+        "implicit_hate:909984e87334d08bfac4520ea5d83e7a2da1f0d479e62b48f210fad47f777e82",
+        "implicit_hate:97716c9d6fc2e4e0de4bb7298ccfd951f542f8e304a77be2caf9a358694df961",
+        "implicit_hate:9733b79cf3a3210288f9bc949d721ede5bb4a7b5570b572f107e3f25f226b591",
+        "implicit_hate:9f0ae72ff95ac5749f86b25e1e27f6edbf21fd9da406b1ac227d68ceb4e25ad9",
+        "implicit_hate:f396011b3d402bec3a8d29afb6035626f8004030bf637194df240dadc6b684bb",
+        "implicit_hate:ef0f59cb9a0e2b3e93343c9f17ba9cadbef87b4fd7eaa395ba721e798b0c1edc",
+        "implicit_hate:8c4e8d880673ce0090bf10f73c179c1be4ff749d936f45618bea3cd27a8d4f3f",
+        "implicit_hate:ce957e07c1548d3458291685fbc14e8970ef22d23ba403cbe9f94820f1a20539",
+        "implicit_hate:502362ada9ef5ac54e2c978e0d9845c414115d5ca2042c097c54ff2d4ef79519",
+        "implicit_hate:3370afc1aadb8190afa01954221b2427494d75c9e6dd6f6bc54eb04647928741",
+        "implicit_hate:3a528cb8247d9e2dd7600cd14ccbff0d15a0eb37ce7bae1eddcad9f69bd25bd7",
+        "implicit_hate:da7fd784ece3533f20ea09016a097473b68ec04f046ef95b31d57849a2f4ce9c",
+        "implicit_hate:8e1d3d4619fe18afee4d31df87fcc9b08bae0e906d4c5c91608fb80168adbd08",
+        "implicit_hate:5abebe3f5cca96ab249192a788fb0970462e3f43948580ce4d67694c28564051",
+        "implicit_hate:99ae66d631fbbd4cb243e176bddd7baf7df327eb3996f14f28e68308c0e9652d",
+        "implicit_hate:bfe334b37b2f0223f28f7b37545139c3babbfb6903155ad9a57c28551071bf37",
+        "implicit_hate:d53570e5a06f36ddd456ed4e99f303d9af2780613871edae60d10b2142cccc20",
+        "implicit_hate:08f0b6f60e3cbe24e93dfcdbbf803dcc3128b5daed37b89a594013ce54213f49",
+        "implicit_hate:53f756fe8488f11f6c1c10e13631c8d20a2eddda15e763877ec4fd8b58262063",
+        "implicit_hate:4dc16e8503d021456c1a9c32b65d6dc7b5b02b0eb6dc2b2368dbf5d115091245",
+        "implicit_hate:05731e1843881b9b432a0f347ecce2264d945b9d9c34f02c46e1cd258c8e4487",
+        "implicit_hate:359e2fd4a0289a6666f2796f176261ad80c41293af9b8a4c18b9c74f55d2b0d5",
+        "implicit_hate:ced92064075e356658fcc65f22f0b56b905f76ecff4c0f108fdb9d08ca515c4b",
+        "implicit_hate:d489ca68ff5e6dbb26a8741f66ddd5f524683f1aa6b980c03747ac33c4181b8a",
+        "implicit_hate:d0a3925130701606f33819c25bc93e6493f30d1f73716b5cf44780cd80cbad69",
+        "implicit_hate:484fa68e6c12c37b50f4c112e88df50778f56ea5271caaa1dbfaa249b1398289",
+        "implicit_hate:81fe8227886874a3b73cec2fd6b793882f5f85d9c44f3542e6a6afb1d1b19d88",
+        "implicit_hate:6a5f0684f8adf232834c55103d404808a286e2fefb7d3b13f581f3870a028900",
+        "implicit_hate:3564a374b00ddbf0a0c284e39e82e483f800459b58e075448303fa1d82bbc23c",
+        "implicit_hate:7f4618aa714b65f12b60de61e2c7275f432efdaf363dbc682a3a4e06172a21b7",
+        "implicit_hate:12a7cf117cfec4f9b3b29abe8d902b48d331df8223977eba217d01e1bf0c88f2",
+        "implicit_hate:98b43315fbbfc1501cb6d1b174f6805e274933b7ffb8fcef1fa8979212a8baf3"
+      ],
+      "validation_sample_ids": []
+    },
+    "anli_r3": {
+      "snapshot": "anli_r3.json",
+      "labels": [
+        "entailment",
+        "neutral",
+        "contradiction"
+      ],
+      "source": {
+        "path": "facebook/anli",
+        "revision": "8e4813d81f46d313dac7892e1c28076917cfcdf9",
+        "round": "R3",
+        "train_split": "train_r3",
+        "validation_split": "dev_r3",
+        "test_split": "test_r3",
+        "input_format": "Premise: {premise}\\nHypothesis: {hypothesis}",
+        "group_audit": {
+          "train": {
+            "rows": 100459,
+            "groups": 100361,
+            "conflicting_groups_excluded": 0,
+            "retained_examples": 100361
+          },
+          "dev": {
+            "rows": 1200,
+            "groups": 1200,
+            "conflicting_groups_excluded": 0,
+            "retained_examples": 1200
+          },
+          "test": {
+            "rows": 1200,
+            "groups": 1200,
+            "conflicting_groups_excluded": 0,
+            "retained_examples": 1200
+          }
+        },
+        "cross_split_duplicate_policy": "test > dev > train; exclude exact duplicate inputs from lower-priority candidates; merge annotations into existing owner; unique examples never move",
+        "cross_split_excluded_ids": {
+          "train": [
+            "anli_r3:7e016f4173f45a1942dc4ddf021948b5818264ce36199fe115fc96f4b6d38815"
+          ],
+          "dev": []
+        }
+      },
+      "source_fingerprint_sha256": "85eba8f140cca330b103f68ec2e41f5bd653bc5e72fbbe8ae608309dcdfafe29",
+      "source_counts": {
+        "train": {
+          "neutral": 40736,
+          "entailment": 32252,
+          "contradiction": 27372
+        },
+        "validation": {
+          "contradiction": 396,
+          "entailment": 402,
+          "neutral": 402
+        },
+        "test": {
+          "neutral": 402,
+          "entailment": 402,
+          "contradiction": 396
+        }
+      },
+      "selected_counts": {
+        "train": {
+          "entailment": 20,
+          "neutral": 20,
+          "contradiction": 20
+        },
+        "validation": {},
+        "test": {
+          "entailment": 40,
+          "neutral": 40,
+          "contradiction": 40
+        }
+      },
+      "source_explanation_coverage": {
+        "train": {
+          "examples": 100360,
+          "reason": 13374,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "validation": {
+          "examples": 1200,
+          "reason": 1200,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "test": {
+          "examples": 1200,
+          "reason": 1200,
+          "target": 0,
+          "implied_statement": 0
+        }
+      },
+      "selected_explanation_coverage": {
+        "train": {
+          "examples": 60,
+          "reason": 4,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "validation": {
+          "examples": 0,
+          "reason": 0,
+          "target": 0,
+          "implied_statement": 0
+        },
+        "test": {
+          "examples": 120,
+          "reason": 120,
+          "target": 0,
+          "implied_statement": 0
+        }
+      },
+      "test_sample_ids": [
+        "anli_r3:4f7154f267cff92be59e059fb9fe709ea009ec253529220f26c3e63647cefe1b",
+        "anli_r3:f7a0af01043b764908fdd39e4f7076ed91e507317cdce9cd21c00a90a88fe122",
+        "anli_r3:1c33bb831cc8417a6b01709344c8fee6fddb707402322e53bf058a2a83cd428d",
+        "anli_r3:a9fa4fb7f6af45cee834bbd82bb0b0a7a72a001514d714c8e64673837b6bd074",
+        "anli_r3:19bf37f81d3bdc48c093c40550c3092e1b6954352d969980b5ed3f97e83f0932",
+        "anli_r3:0b524d36bc24d420d0e33b83b584a657da8628f9256d46dad948a7fecd3bb272",
+        "anli_r3:1f8f8d150bed9469a327523a575e8ddeba0588ce3e972427a8c5bd2e61352afd",
+        "anli_r3:5aeaa203044a8bcc728d7734ca18dffc1a4a3c5e529e5f155444cba466348df9",
+        "anli_r3:33a83b59108c3a764e7c22b37e5a0527b6cd52d035929e9d4f76527d425b7da3",
+        "anli_r3:ad4e21000cf54d9e10ea9ba23498a9af7ee959f73ac1910b7581bc00c44f10b0",
+        "anli_r3:b979156ddc27a1c406e3981b81c1d5db8ebe2a87eaae93f3bbfc498b2f9de9cd",
+        "anli_r3:c5e699091d194792c2dafd11d7b610b125c7d22a27a9288a7f4e68192a5d3a4a",
+        "anli_r3:929d0837f1630a8d11dcfc7ca59a2cf896eeb0ae220064b3ea9dde930a20fd22",
+        "anli_r3:ef4dc7664442c8bcd8138c410b335bd95c8d4b5a3f70ff183846e7c792d1a001",
+        "anli_r3:12593ab60f670d411d75503d8c1d1684c7c72de5b0090380ef5de62d177bbee2",
+        "anli_r3:5bfec72fa9d4b092732aebbb42a8b1098462d0fa70b295ac2215a6d98b50ed60",
+        "anli_r3:e46bc01fd1c5d132ecd083eac91afed2f7a32d4e505fd101a686789ac92f2665",
+        "anli_r3:7e132c95398728eb092a9cb3b20feae7c5e1cc6f3f2e26ea2b0425a7846e2fbb",
+        "anli_r3:b4ddd36b69fe1be4806537efcdd46099a83cab0922ede3c2c5145ff43e4fea12",
+        "anli_r3:a1dcaffcf32834cb7f24cc9a9f2234f4ee309582c327358399adfa9ac2ca2691",
+        "anli_r3:44590a16d64024134c5e60eb9c809af465f4ee1be8a63788776fa462fb616690",
+        "anli_r3:33ab614228b32e0cab89ed67fe74dd227c3e3277d985d2201896eb7ee1a93a3c",
+        "anli_r3:d9ff891a28b3844e10ff23b3871b98e770238df88f624f7c71ca9a9d8b3dbd4b",
+        "anli_r3:bfe7653e4c9ebbc1d02a46c783d06b96085a49a3f2c6bdb2f0e49897a377c2ac",
+        "anli_r3:124d99df3f8cb4e3fba19785dabdd268d7f166be01c40acdd22d0f45fb557dff",
+        "anli_r3:3771ad368fabcdf16076d49651a536f9c6e723c8b82c6ee8e6db9eca8d2e589f",
+        "anli_r3:3f50ca2e9ec4db01c8475e9d7a4123ee35415d48ab2df419d6d3583d68ccf1b9",
+        "anli_r3:b0de75f2bd4fafbbd47449f96e30d2dd3bf7a528953f37837e08875b1e65fe04",
+        "anli_r3:9636ff8d503dc0d06a703496f4ca23a922a80a9cc01478eea57167d8cb03035c",
+        "anli_r3:47f6a3d81c5c8eeb2b92c3146e6b77daa8d530922b80808ab0254ed01046de5b",
+        "anli_r3:39aabaef6bc12f52c072134dc8f13f9e734931772c7904e53c8c154b2d8ed308",
+        "anli_r3:6df8b36368ca8679814ff60ab8e7d404c95b2d350dc6e337ee70c72935506f6a",
+        "anli_r3:0f76c7be788f97a6b186cd7749fd3b17d24833dfacb8e2318ac6397be2d056e7",
+        "anli_r3:8ead37981e395e0c6458c096a69bf0ac67934f7326a3610edef5516d652f70a3",
+        "anli_r3:a03d4e7e256d3454f2e2f2df024910311a10e55c147ce173b3182ad900a9f2de",
+        "anli_r3:df0861f56adeb150de5f258c1df9bd09a62de547aee9c102173192cf2603d4fa",
+        "anli_r3:3faf0135412555cb827e3e3e60ed4a3fc48567874d6d61ba7d95b6fb32875496",
+        "anli_r3:ab4120561b36cc6ab75b579060ae1caaeb48a6c64b32cf76aba4d277635fbe44",
+        "anli_r3:0d6cab949227d6de1dcdeb9a3aa056990f7ed876f1a37ce47d85c4739c77f646",
+        "anli_r3:27e8757e31269a3357e3e8dd05cef8b781a9603d63f66ff7f92dfaddeb52dcd7",
+        "anli_r3:d9d4d50d7c8ad6f5c0877a042e54ad1be30a7cfd0095cc0303ede0649181861f",
+        "anli_r3:faed7aa44b760398f553ea7c496d4c0e6f808db38df119e09209834a5f6d571d",
+        "anli_r3:745db5830170a646f44c15a5a5913fa3ef4442ace3121ef4a007102eb5f4b816",
+        "anli_r3:529c7c7640868c43e0c6f3c2a580aae21cecddc9da6e6d0695365a9a63de3a54",
+        "anli_r3:00067cbe3b3fa9e5126228989aefb161006c5d9f66ff1a80e8f413b909ab998d",
+        "anli_r3:cb2dee64056e6e881f9d3f5481c8bce50774ff98713bd7d79c5bf430d1b0068b",
+        "anli_r3:3fbd2b67eaf043347a11bf6fe591e09cd4176289da75a0ce6b4241c92dfb4306",
+        "anli_r3:5adddd666f8580ea5f3d6420c825f0124344042500f9601febc1b5c48843eb56",
+        "anli_r3:07e47091c3dc2d724275be56181cae96a59e57573837f62973e0f34cc0d16bcf",
+        "anli_r3:7427160a35fd935ffc6336a807538054bce67602b585d9661f7e4f2e64e468a2",
+        "anli_r3:0f2d9d4e62795f23c6bc99ba6a8e5e993a471bd83c146a033a08bd055ad7bb65",
+        "anli_r3:ccc79295b05ad6225d1cdc46e77e472c06a096fe77fd5f6b75b1fc2127d0ce89",
+        "anli_r3:58d4864f0aa89f66322b88234fc4a11e2d55e0311b308498b9255538e4e04568",
+        "anli_r3:6856c40c330f38e0bc48ffd8be6954d0edeec532e416dbeb47884f75e98f1770",
+        "anli_r3:dc04b06e931f32ecd1b390a31a4bc8842f1edb08b240e79af41e3ff8c5f7e3bb",
+        "anli_r3:e8aa43f064ebc447785a36e528ba8cd55c292b858a7b17361814edce188169f8",
+        "anli_r3:648c414ebb6749a063c04cae72463b6a1e614f4d38194bd9d5c262fa8fd21290",
+        "anli_r3:007bed3737f8003f8a5ad56f50cc6c27d777c3bacd1eed983f90d8b7deec91f4",
+        "anli_r3:50af27a0dcfba0c80d41418867da87187fd171a25460715dbf89e9448f803855",
+        "anli_r3:4a8d6c4afe64900e0ec0590ba8187df3e85d0b9001e92a8b0272a312d801df3f",
+        "anli_r3:031bf6846380ce0e14f179c413dbec951c107ecf7542182055f799a8892a9d65",
+        "anli_r3:a87ac8b1e0fee14834c214f8ebb89da0e1d8ec65cfff8a263488b821ee5c0058",
+        "anli_r3:93a67216daea5739d2852bf20473b9a985afb2842d67f426286b83325579c6a3",
+        "anli_r3:648329a69ece4e5577191e644a3b47a622610796836348233ec115a3f04eac16",
+        "anli_r3:b4d4cd8a80377a3b65fefa7fee2f12c0d096ccbb7685ead9b1947b84a03bf45c",
+        "anli_r3:34047e8266edd66706ef3e881cc53985c6669d997dfa7d09e6bc27ab2e4e1b1e",
+        "anli_r3:54b8544c4f95b11cc5d264d5e0312a3b3cc63382f6b4b1fe9d3c6bd921a85b6f",
+        "anli_r3:84fbe70e9b4855c9ff28eb1b010d1d83808d545bd8c29b481bba3968c6d612cc",
+        "anli_r3:e52a14fb175e1b889fc566eb68c2a89296b0304d40c86a0aba53b7f4a7621ea2",
+        "anli_r3:4ca00e62ebfeab01727d23bc05873e1484e32e936d2e2bca8f5a535c6b8f2202",
+        "anli_r3:ab164c9b7df44846b7de659b224fd731f431d5291f3b267269ce5641ea2db002",
+        "anli_r3:e793cf75d3618a42a403c2ea2567014932fe9a2edfe95ab6f82c56608f633980",
+        "anli_r3:c7b0d4816b691d68e4b44b34aa06a6f66ad0ed849f4fbc1984f8a4dbf2c8fa9a",
+        "anli_r3:a173afd248bd6152da75b4a68b1f93ed5720134422ca5c15097dbcd6b482456c",
+        "anli_r3:e2055ab418d59a6ae3eb55bb1a80c246763eefd0bc6db92819b85f77eda02bff",
+        "anli_r3:7e81b8043a4ed616088fec7e62a60766d4ef48f012faccda04bd04eae9bf8bef",
+        "anli_r3:65a7e0abe793b71a8c4aed0748dbd06656030971219e5b6025acff925846220b",
+        "anli_r3:0287047f5dd88f4d3db94173e51409af66572a9eb3e8e50fc0bfe020394a0f84",
+        "anli_r3:6a43c060edc00a60712fafb391118a336884bf598eeeabdc9ca5e4591f7df00c",
+        "anli_r3:4e94d1d329696f11721450cf0cd8103d2615c6cb6f0d040d8377f0262c1a03e5",
+        "anli_r3:3ebfcc32ecc57b57e44c6e03f36233f834589d86ed25c804b1d688123bc8dd9b",
+        "anli_r3:36f6c1b5b9ecb1fefdc49d42996a0073395b8c380f291e55aac90b428c74b513",
+        "anli_r3:a02bdcd1c635e8c9f958eb3177cbd99d63460d25825af42da6946dacb3c5ceca",
+        "anli_r3:50dd21cfe81951d1795f91923dcbb0444866853f7433cb4f765427c080be6341",
+        "anli_r3:ed822970a6977297f5e0fd5f1e0b05a4548ee582c1feeff907fe5be1409b077e",
+        "anli_r3:67777a28ff1076d7366e1980bcac5c7d317600a0027329d89c45e20eaaf05bd3",
+        "anli_r3:fb929a260160ebda234d563f5624c746cb459a7956280ddaef8257e7f1e3c83e",
+        "anli_r3:5d46a4494df8bdc6bdc032cfac8fff2441e26c7a8e64b0abe19ca21dc4ee6295",
+        "anli_r3:5ec3a304b49199f1f2a6cc195f1fa6e991ee009ad2b294decf6c0890704cdd6d",
+        "anli_r3:6af644e7dd9ad2aadf2cbfc37ca1ff21a36b764b024eefbb91dd8a9a09d91456",
+        "anli_r3:2d88c17a3d7e28c0d640e82a5f6967a23e5dd15282eae18c33a10469d27a9e9a",
+        "anli_r3:d72a0fb0c985f26d1b9eae2814c6cc87cffad61a07d3d51100b6ce63b3e5c4fa",
+        "anli_r3:0537d94ff22e70ac3e855e20b18e11ec712f7d7c621de01a4cd30b45ad5656a3",
+        "anli_r3:d6b08b1e6ac3631e605df5b3fa7c9dd513259cee95adac4f1000bdf4810ec83a",
+        "anli_r3:c8a5de403d30719201b88943c4ffa84733a9dfbd46d5bd8f244134f06f4cf5dc",
+        "anli_r3:9b7ca178f251788bc3d8a6169185b969ebcb65644de129e563662f12b4dc1828",
+        "anli_r3:cca3e7fe9b402f53c8aa63416628f8629d53508e4ea5e34ced2953fd91f6ff0a",
+        "anli_r3:2df0d14a1cb3300635df833b7d31025c90ef4801dfc9b41b97868fe2e72780ba",
+        "anli_r3:09e7a549ac7338e25178e153f6c4366376fcaeea6fd6dd0e34771035c05faf9d",
+        "anli_r3:fbca0407a2be1e33c693f9feab27fbeb38fc44a1556eff46325155f6b43db89e",
+        "anli_r3:e6080f877232dccd005c3f5da7ddba54296af68a3fa27a7993bd2860d500f242",
+        "anli_r3:2dd7d2d36be5cfe43a7115f25980a51515601c4e1b9522d1e61f134696f80282",
+        "anli_r3:a37b7ae4c089b9c415b6435e0ae3db88f4422c3edc50a39134bd1e594e2703b6",
+        "anli_r3:0f079766f26e32f5c337448393dba9f6c0c93c99abf6ca8d9cf06a3b4d9024d0",
+        "anli_r3:dfed60be072b7a25d1f7d2d328bc07577b733fdaf78cbff081f9c5ce57fc86f3",
+        "anli_r3:2e1f5fae11b4d75b4f6ceb77cdb00522b6aef11a8be10160ebb02699f7821b98",
+        "anli_r3:4c620500f48c0a723eca0fe23fb319428b559f18d1ab2e00d57ace0baeca9077",
+        "anli_r3:4f2e4d3b66442c9c5734371426397c8f91833b4fe260a1a33ee2852ec14d4250",
+        "anli_r3:bcc0289d40a9a8ace008d2fd55b2522c5582a727d35233dda46b3b440a8eec6f",
+        "anli_r3:72e26525be268ff67a6a11bde100f3a18c6ef853a58b139243582ca5f7fa4d3a",
+        "anli_r3:21b8cc68c72517b7c07d8c457fff6bbb54b5ebe264ccb04034874775811c02ef",
+        "anli_r3:3afd1f7ca4e60865e96d0cd65cc69995b03f3ae38b81fa3ed11e69f311072a6c",
+        "anli_r3:978173367233d6205a35b39f05e32bfb492dbba896a466d0866f68e4613c33af",
+        "anli_r3:6d1d2db03fcaa6a7e07a59c2fd4bbbc8dd45940278530c91a7013ca0e41e9879",
+        "anli_r3:37aaf5ccbdf0146e11fcd5beefa244018906f9d52f5e32aa2ee2abf8dc6fd39f",
+        "anli_r3:9edae3ccdb10339874c2c3439bb72e7085368a5a216036a3a0e9b673b75d38cc",
+        "anli_r3:2e8b9b06bf56c18e68e7c5b1be040740082ee8cd5daf3e5bec2db23fc61c4313",
+        "anli_r3:27def0b3cfb932eba1536de97998f5ba0605bfbaf66f6ac0cebdc9823acf81bd",
+        "anli_r3:d552f65a8e7bc3653722139606e9d9f127b8ed01dad72d8c1624b45bd49b7bad",
+        "anli_r3:fd23da4753926451f0a6558644fa650446913d5d5a655cce306ffb5e2027d94b"
+      ],
+      "input_characters": {
+        "min": 187,
+        "max": 727
+      },
+      "classes": [
+        {
+          "name": "entailment",
+          "description": "Given the premise, the hypothesis must be true. Judge the hypothesis only against information supported by the premise."
+        },
+        {
+          "name": "neutral",
+          "description": "Given the premise, the hypothesis could be true or false: the premise does not establish or rule it out."
+        },
+        {
+          "name": "contradiction",
+          "description": "Given the premise, the hypothesis must be false: it conflicts with information in the premise."
+        }
+      ],
+      "fit_sample_ids": [
+        "anli_r3:3b1f53455eee4bd5be359c03e15d002c30823fec3805468cdb3ad5cb430b13a2",
+        "anli_r3:bf3eab14c4de561238c7324f0cbe689eb6e208be1d38eaa833eecc4ef3fa710f",
+        "anli_r3:e26e534620e468a1990ba852b947f93a299debf89c828935412838766f2fabf6",
+        "anli_r3:13158c2f79d4945a65063bd1cc54e60f16a1dc67d45bc34ed94fcdd955499de0",
+        "anli_r3:77864f99fa7819a5572bf62cc77a76b16a9751e6b19be62f449b7bce919aba19",
+        "anli_r3:ec6791039dae20bb90aa3ec87d78dd4b81c98c383bbf535df82d2fd2196068dd",
+        "anli_r3:79f022af87437870b55ab7728fe8e2eae8a864343a9b30feeb39b8fcfe456063",
+        "anli_r3:ddd0c4b0c6c5f8458e44f5c844210008037a62b2dfe24c7678b75218dbad72a1",
+        "anli_r3:1df839f5ad0194e68980ae135d10c49a819ded6403337fda7a13444715c06187",
+        "anli_r3:43a87107dc328dfd31a40cc877e2c44aec0e8a9a2c50489e8070618b91058d98",
+        "anli_r3:abeb5455405b2273014113f96acc3f48670034646c7287640ba4634912d75582",
+        "anli_r3:590ba59398f0d2a90ecf344df79694c8d8ed1cac753fc235446c1db4b3e6c45c",
+        "anli_r3:3d938ef18df7c02942f72734d56b748434910c74b2ba28cdfe5c946329bb458e",
+        "anli_r3:ab4de19d057bb6804487080acb4f74e0645491dd5cc31eb411da80edd28c771f",
+        "anli_r3:295a9b6de543d6a9be92227d74152f4baa78a93c2666ce4068bd65e7d93ef095",
+        "anli_r3:71200f280f272f0437533fd9a32d320285d03186b8594458e5cb0bb6008659ac",
+        "anli_r3:139c5e9ecb189725ba86e3a98d6e0ef23c2cd688cdfba54acf82f447db6ce664",
+        "anli_r3:cfe029fe610eb4335e6b833c616ba8d2cae072b4414abf948c9b05204241741f",
+        "anli_r3:f9fc9e2f1d29c83afbdd60ab7dda50c9d2ac3e2b9e6b142fe385a61c6711a2d9",
+        "anli_r3:c1979113666880506a9be071ad70149227e1465c33be9a368431576184786d81",
+        "anli_r3:5746123cd5587596f2b64987b9232ae2007fefb59c2467449de3c1acc6dab5f9",
+        "anli_r3:f03e9070f7f29bccf263cce4f6c7c0e82a7bfc9a7ca33b40767ca1a570f2f399",
+        "anli_r3:1b8d024276e0491bf3b4aa9190df44456e86926d406dce85d9ffaddd855958b0",
+        "anli_r3:2c4298ebc7cbf1962f7a9ec2ff42258e7917293a429f93c98617569f96c04288",
+        "anli_r3:7c9a26226e72a752bb630b58cb7e97d34d22c89be9aeb83c89d0217603d35139",
+        "anli_r3:801409797e8b5584545f72efdbe9e97b8ff0efabb68aad8a4c578cbe0cd3837b",
+        "anli_r3:bbe021f4621bf0e868cfdf131cd0495c030e7c2530af6ab63217777f2d3eb01c",
+        "anli_r3:ceb239bd23e27861e8e98b35cb68cc62a8fd0c74297ea5ec33f50695096a4602",
+        "anli_r3:a923ac6143165c21f15690fff001f66139c118d099ad6361b2f6a20c83659fe7",
+        "anli_r3:2de2ea3f24f1495fd4fe1cbb5641b631821aeecf747bc48ee471d16c550b61dc",
+        "anli_r3:f8eb7f64d710d3faa41e98524202df4014024e577a6faac8a37db5734cb5d6b3",
+        "anli_r3:bb87abba9f024b360d4d7eb69ee2450f6cd18544d271122e9e566f0a2fb9b9c3",
+        "anli_r3:39368c79cdf27a9fcfa2b338b745c18b0816682183a2de2a7a4a3d73e8d3957a",
+        "anli_r3:e112a5ed5e167f71f1861202f6646de74351f5f8746212e6cedc6293bbfd2acd",
+        "anli_r3:62aae1cddcfa8d3ad9d71970bdd2e62c7cb5b76e57d5642a24344f51b61545a7",
+        "anli_r3:fa892ccc1b22ad5c16f4ca452aa48221debd1c92619b27f2dc03cecc65d997da",
+        "anli_r3:58c7c171a1a0f8cef994ee2482df679004e43cda0607051c3b213740d84e3c3b",
+        "anli_r3:9f68272f3808d01efee90f49320a9440b3a595e589700fe2c662e0540d784511",
+        "anli_r3:45edefbed4c8e004f72b78f0c91a5b6aa6e64b4b3929459bb129e82c2e175b3e",
+        "anli_r3:98d7f29a2fe2da94c0b94b99c1fa83a1e5c8efb1b5a8d65d0bf8ba07bea50c70",
+        "anli_r3:61c44093b11ee489d19caad78699208933ffa462fcbc0eb34407ba308a1f7cab",
+        "anli_r3:85dde3f403bdb283e6078a16993667e605b2cb4a40a07d059b9e2cae5be59be5",
+        "anli_r3:1057c7629ee864163db57013354cd40732bf9950a13062f2b279dbad1f815bca",
+        "anli_r3:e70e56017f41744b895b1e13357fad9aef366af24228f0fbc2280e53bedb62f7",
+        "anli_r3:2a8efc9ffd988982d6b39cca3b7598575d1fd79ef1ab7a1d5fc6cd3cdd2ae4b7",
+        "anli_r3:f5fbbe3722e3d3089dbfa8c59defab0eacea318bd48fd81dbc08bdebc92a76d4",
+        "anli_r3:5ed718c427cee44c03aea3d8e29f527b79eb97dd43241c68978656b49bcc8ee4",
+        "anli_r3:af0b92d25ad9a7f9dd1effac09b289423c2bdd7c6131f7e5cddac5cfc22175d0",
+        "anli_r3:07b6645d78b970dcc2e3fa309d92922c992c0f7c80df8bbcaa9a4b01ed6eb443",
+        "anli_r3:31bbdb1cd52800db17ec31a5ee515c090b6acb28db1f0d2fd8a38489e90c3223",
+        "anli_r3:8fed3ab734d8073e1d618a0b99ccd3dd321b697ff34725fd30d2464a0ec69d5e",
+        "anli_r3:9a9a2cc045202ccb0f49a7b79ad0c3d0f94d06a39824574642f142e5f6357513",
+        "anli_r3:41c10713004dc712bafa4809949187b382d9554b62592d41c9a6d15b68e78599",
+        "anli_r3:fa00ced4fc0740e52f554695ea80eea66ac4820e7425676721084b59c1ba3aa1",
+        "anli_r3:e89dc55113486f57c19dc8c45de55208b0d6a084583f01990ba84a4cad99e9fe",
+        "anli_r3:c6e0cd7bea7d6fdaf0fa4a8835e35a366914c297163e410b1f58a46e0f89c29c",
+        "anli_r3:44748e51ceee0fd62a783f554df6a4ad4d7c73cb5079a27d16010a742c2257cf",
+        "anli_r3:dc491b369592b569608585306d11ddfc705955a18b992c2c4c29bed32484b8f4",
+        "anli_r3:b9cfa527f2f57ea2540b170ddfd44e2b3f577106603ac4366f48d257c6ff5071",
+        "anli_r3:4029a827ad99b9f54c87020443b209d4cbdb83021fc8f446be3362c07c688576"
+      ],
+      "validation_sample_ids": []
+    }
+  },
+  "cells": [
+    {
+      "dataset": "implicit_hate",
+      "method": "tfidf",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 120,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "sentence-transformer",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 120,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "bert",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 120,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "openai",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 983040,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.4300171,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-5-nano",
+            "gpt-5-nano-2025-08-07"
+          ],
+          "service_tiers": [
+            "default"
+          ],
+          "input_usd_per_million": "0.05",
+          "cached_input_usd_per_million": "0.005",
+          "output_usd_per_million": "0.40",
+          "cache_write_usd_per_million": null,
+          "source": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+          "effective_date": "2026-09-16",
+          "date_basis": "Verified on this date; not a claim about the original tariff start date",
+          "assumptions": "Standard text Chat Completions; no Batch/Flex/priority pricing, taxes, tools, audio, discounts or regional surcharges. Snapshot explicitly mapped to its model family."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "openai-context",
+      "blocker": null,
+      "regime": "in_context",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 5,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 894422,
+        "max_input_tokens_proxy": 4427,
+        "output_tokens_reserved_total": 983040,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.43793709999999997,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-5-nano",
+            "gpt-5-nano-2025-08-07"
+          ],
+          "service_tiers": [
+            "default"
+          ],
+          "input_usd_per_million": "0.05",
+          "cached_input_usd_per_million": "0.005",
+          "output_usd_per_million": "0.40",
+          "cache_write_usd_per_million": null,
+          "source": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+          "effective_date": "2026-09-16",
+          "date_basis": "Verified on this date; not a claim about the original tariff start date",
+          "assumptions": "Standard text Chat Completions; no Batch/Flex/priority pricing, taxes, tools, audio, discounts or regional surcharges. Snapshot explicitly mapped to its model family."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "jev",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.030912924,
+        "rate": {
+          "provider": "jev",
+          "models": [
+            "jev-1.13.0"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.typesafe.ai/v1/systemone"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.042",
+          "cached_input_usd_per_million": "0.042",
+          "output_usd_per_million": "0",
+          "source": "https://docs.typesafe.ai/models",
+          "effective_date": "2026-09-25",
+          "date_basis": "Documentation checked on this date; not tariff start date",
+          "assumptions": "Public standard input-token price, output free; no inferred cache discounts, taxes or custom account terms. Estimate, not invoice."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "openai-decisions",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.07360219999999999,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-6-luna"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.openai.com/v1/decisions"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.10",
+          "cached_input_usd_per_million": "0",
+          "cache_write_usd_per_million": "0",
+          "output_usd_per_million": "0",
+          "source": "https://developers.openai.com/api/docs/guides/decisions",
+          "effective_date": "2026-10-07",
+          "date_basis": "Documentation verified on this date; not tariff start date",
+          "assumptions": "Decisions endpoint only: reported input tokens at the published base rate; no additional cache-read, cache-write or output charges. Short text requests without regional or long-context premiums, taxes, discounts or custom terms. Estimate, not invoice. Custom endpoints and unlisted resolved models remain unavailable."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "perplexity-decisions",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.014720440000000001,
+        "rate": {
+          "provider": "perplexity",
+          "models": [
+            "pplx-decider-v1.1-27b",
+            "pplx-decider-v1-27b"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.perplexity.ai/v1/decisions"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.02",
+          "cached_input_usd_per_million": "0",
+          "cache_write_usd_per_million": "0",
+          "output_usd_per_million": "0",
+          "source": "https://docs.perplexity.ai/docs/decisions/quickstart",
+          "effective_date": "2026-10-09",
+          "date_basis": "Documentation verified on this date; not tariff start date",
+          "assumptions": "Reported input tokens at the Decisions API rate. Output tokens are free; no per-request fee. Estimate, not invoice. Taxes, discounts and custom terms excluded. Custom endpoints, unlisted response models and missing usage remain unavailable."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "emissary",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 0,
+        "preparation_cost_usd": null
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "emissary-qwen",
+      "blocker": "Configure emissary.project_id or --emissary-project-id before preparation",
+      "regime": "supervised",
+      "fit_examples": 120,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 1,
+        "preparation_cost_usd": null
+      }
+    },
+    {
+      "dataset": "implicit_hate",
+      "method": "emissary-llama",
+      "blocker": "Configure emissary.project_id or --emissary-project-id before preparation",
+      "regime": "supervised",
+      "fit_examples": 120,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 240,
+      "cost": {
+        "api_calls": 240,
+        "input_tokens_proxy_total": 736022,
+        "max_input_tokens_proxy": 3767,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 1,
+        "preparation_cost_usd": null
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "tfidf",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 60,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "sentence-transformer",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 60,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "bert",
+      "blocker": null,
+      "regime": "supervised",
+      "fit_examples": 60,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 0,
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "reason": "Local compute time and matching hardware rate unknown before execution"
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "openai",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 491520,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.21397865,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-5-nano",
+            "gpt-5-nano-2025-08-07"
+          ],
+          "service_tiers": [
+            "default"
+          ],
+          "input_usd_per_million": "0.05",
+          "cached_input_usd_per_million": "0.005",
+          "output_usd_per_million": "0.40",
+          "cache_write_usd_per_million": null,
+          "source": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+          "effective_date": "2026-09-16",
+          "date_basis": "Verified on this date; not a claim about the original tariff start date",
+          "assumptions": "Standard text Chat Completions; no Batch/Flex/priority pricing, taxes, tools, audio, discounts or regional surcharges. Snapshot explicitly mapped to its model family."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "openai-context",
+      "blocker": null,
+      "regime": "in_context",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 5,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 610333,
+        "max_input_tokens_proxy": 5414,
+        "output_tokens_reserved_total": 491520,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.22712464999999998,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-5-nano",
+            "gpt-5-nano-2025-08-07"
+          ],
+          "service_tiers": [
+            "default"
+          ],
+          "input_usd_per_million": "0.05",
+          "cached_input_usd_per_million": "0.005",
+          "output_usd_per_million": "0.40",
+          "cache_write_usd_per_million": null,
+          "source": "https://developers.openai.com/api/docs/models/gpt-5-nano",
+          "effective_date": "2026-09-16",
+          "date_basis": "Verified on this date; not a claim about the original tariff start date",
+          "assumptions": "Standard text Chat Completions; no Batch/Flex/priority pricing, taxes, tools, audio, discounts or regional surcharges. Snapshot explicitly mapped to its model family."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "jev",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.014591346000000002,
+        "rate": {
+          "provider": "jev",
+          "models": [
+            "jev-1.13.0"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.typesafe.ai/v1/systemone"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.042",
+          "cached_input_usd_per_million": "0.042",
+          "output_usd_per_million": "0",
+          "source": "https://docs.typesafe.ai/models",
+          "effective_date": "2026-09-25",
+          "date_basis": "Documentation checked on this date; not tariff start date",
+          "assumptions": "Public standard input-token price, output free; no inferred cache discounts, taxes or custom account terms. Estimate, not invoice."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "openai-decisions",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.0347413,
+        "rate": {
+          "provider": "openai",
+          "models": [
+            "gpt-6-luna"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.openai.com/v1/decisions"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.10",
+          "cached_input_usd_per_million": "0",
+          "cache_write_usd_per_million": "0",
+          "output_usd_per_million": "0",
+          "source": "https://developers.openai.com/api/docs/guides/decisions",
+          "effective_date": "2026-10-07",
+          "date_basis": "Documentation verified on this date; not tariff start date",
+          "assumptions": "Decisions endpoint only: reported input tokens at the published base rate; no additional cache-read, cache-write or output charges. Short text requests without regional or long-context premiums, taxes, discounts or custom terms. Estimate, not invoice. Custom endpoints and unlisted resolved models remain unavailable."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "perplexity-decisions",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "estimated",
+        "estimated_usd": 0.00694826,
+        "rate": {
+          "provider": "perplexity",
+          "models": [
+            "pplx-decider-v1.1-27b",
+            "pplx-decider-v1-27b"
+          ],
+          "service_tiers": [
+            "standard"
+          ],
+          "endpoints": [
+            "https://api.perplexity.ai/v1/decisions"
+          ],
+          "billing_basis": "all_input_tokens",
+          "input_usd_per_million": "0.02",
+          "cached_input_usd_per_million": "0",
+          "cache_write_usd_per_million": "0",
+          "output_usd_per_million": "0",
+          "source": "https://docs.perplexity.ai/docs/decisions/quickstart",
+          "effective_date": "2026-10-09",
+          "date_basis": "Documentation verified on this date; not tariff start date",
+          "assumptions": "Reported input tokens at the Decisions API rate. Output tokens are free; no per-request fee. Estimate, not invoice. Taxes, discounts and custom terms excluded. Custom endpoints, unlisted response models and missing usage remain unavailable."
+        },
+        "reason": null,
+        "training_jobs": 0,
+        "preparation_cost_usd": 0
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "emissary",
+      "blocker": null,
+      "regime": "zero_shot",
+      "fit_examples": 0,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 0,
+        "preparation_cost_usd": null
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "emissary-qwen",
+      "blocker": "Configure emissary.project_id or --emissary-project-id before preparation",
+      "regime": "supervised",
+      "fit_examples": 60,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 1,
+        "preparation_cost_usd": null
+      }
+    },
+    {
+      "dataset": "anli_r3",
+      "method": "emissary-llama",
+      "blocker": "Configure emissary.project_id or --emissary-project-id before preparation",
+      "regime": "supervised",
+      "fit_examples": 60,
+      "validation_examples": 0,
+      "validation_examples_supplied": 0,
+      "context_examples": 0,
+      "test_examples": 120,
+      "cost": {
+        "api_calls": 120,
+        "input_tokens_proxy_total": 347413,
+        "max_input_tokens_proxy": 3223,
+        "output_tokens_reserved_total": 0,
+        "estimate_policy": "UTF-8 bytes of text, definitions, demonstrations plus 2048 framing per request; no cache discounts",
+        "cost_kind": "unavailable",
+        "estimated_usd": null,
+        "rate": null,
+        "reason": "No matching inference tariff; SFT preparation also unpriced",
+        "training_jobs": 1,
+        "preparation_cost_usd": null
+      }
+    }
+  ],
+  "source_files_sha256": {
+    "anli_test_r3.parquet": "3232c4217979da00b2cd6ed97d099a8a8edf04530193ea52e3c8d69190de92a2",
+    "anli_train_r3.parquet": "c1d3f614d673888ac56b9ab62324e21583c98a11c4fef84e938d0f8fc414b29a",
+    "anli_dev_r3.parquet": "61775ec09351f6011ce4dc9ea313f457bba6e11d7665d34d95c111665023a83e",
+    "implicit_hate.csv": "273d1c9f656d209a217fe25fb051266d8b02cc1bca4b4af5fe8749bf0c44bf6b"
+  }
+}
