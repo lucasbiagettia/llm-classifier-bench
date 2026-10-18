@@ -538,6 +538,17 @@ This plans 42 conditions; the [sweep protocol](docs/hard_datasets.md#fit-budget-
 describes nested fit pools, execution caps and the documented source of the fixed
 class descriptions.
 
+To actually prepare **and execute** the full experiment (training and paid APIs):
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets_experiment.py \
+  --emissary-project-id PROJECT_ID --allow-unpriced
+```
+
+This reads credentials from `.env`, keeps test at the historical 40 examples/class,
+and runs all methods at the applicable fit budgets. Use `--test-per-class 20` for
+a smaller evaluation. See the protocol for required credentials, costs and artifacts.
+
 ## Before formal benchmark claims
 
 The infrastructure is sufficient to begin pilot measurements after the regression/smoke suite passes. Before treating results as publishable benchmark evidence, still freeze:

@@ -241,6 +241,37 @@ single-budget preparation audit below is retained as historical evidence.
 
 From the repository root (use `venv/bin/python` here, or your active environment):
 
+For a **single command that actually prepares and executes all 42 conditions**,
+use the live launcher below. This trains models and makes paid API requests:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets_experiment.py \
+  --emissary-project-id PROJECT_ID --allow-unpriced
+```
+
+It loads `.env`, checks `OPENAI_API_KEY`, `EMISSARY_API_KEY`, `JEV_TOKEN`,
+`PERPLEXITY_API_KEY`, and the existing Emissary Projects workspace before doing
+any work. The project may instead be set as `EMISSARY_PROJECT_ID` in `.env`.
+The default is exactly **40 test examples/class**, matching the historical
+Banking77 experiment: 120 ANLI R3 examples and 240 ImplicitHate examples, shared
+across all budgets and methods. Fit remains 20/50/100 per class. To reduce only
+the evaluation volume, append `--test-per-class 20` (60/120 test examples).
+
+The launcher creates a fresh configured plan under
+`artifacts/hard_experiments/<timestamp>/` and immediately executes it with caps
+of 4,320 inference calls, 12 SFT jobs and USD 2 for the priced estimate. It never
+overwrites an earlier dry-run plan; deterministic sampling reproduces the same
+samples for matching settings. The original dry-run without a Projects workspace
+has blocked SFT cells and cannot be executed as a full campaign as-is.
+Emissary charges remain unknown, hence the explicit `--allow-unpriced` flag.
+Credential presence checks cannot establish whether remote credentials or the
+workspace are valid. Execution stops on the first failure; rerunning creates a
+new campaign and can repeat paid work. Progress prints each condition and budgets,
+and results go to `executions/<timestamp>/summary.csv` and `summary.json`.
+
+Use `--dry-run` on this launcher to validate preparation without training or paid
+inference; the lower-level commands below remain supported for separate stages.
+
 ```bash
 # Default: prepare BOTH datasets and all variants; no fitting or paid API calls.
 PYTHONPATH=src venv/bin/python scripts/run_hard_datasets.py \
@@ -364,7 +395,7 @@ It follows the datasets explicitly requested here; it does not claim to complete
 the issue's SELU candidate review or all future task-selection work.
 
 Validation command: `PYTHONPATH=src venv/bin/python -m pytest -m 'not integration' -q`
-— 505 passed, 3 integration tests deselected, including the 20/50/100 sweep tests.
+— 515 passed, 3 integration tests deselected, including the sweep and live-launcher tests.
 `git diff --check` also passed.
 Prepared CSV/Parquet URL resolution still requires network access even with a
 populated HF cache; the frozen-plan execution path does not resolve dataset URLs.

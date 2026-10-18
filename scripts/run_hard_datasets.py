@@ -286,7 +286,7 @@ def execute(args):
     output.mkdir(parents=True, exist_ok=False)
     write_json(output / "campaign.json", {**plan, "plan_sha256": digest(path)})
     rows = []
-    for cell in plan["cells"]:
+    for index, cell in enumerate(plan["cells"], 1):
         name, method = cell["dataset"], cell["method"]
         budget = cell["fit_per_class"]
         bundle = fit_budget_bundle(bundles[name], budget or min(cfg["train_budgets"]))
@@ -298,6 +298,10 @@ def execute(args):
         if budget and len(cfg["train_budgets"]) > 1:
             run_id += f"__fit{budget}"
         classifier = build_classifier(method, cell_cfg, run_id=f"{campaign_id}-{run_id}", test_count=len(bundle.test))
+        print(f"RUN {index}/{len(plan['cells'])} {run_id}: "
+              f"fit={cell['fit_examples']}, context={cell['context_examples']}, "
+              f"validation={cell['validation_examples']}, "
+              f"test={len(bundle.test)}", flush=True)
         result, error = None, None
         try:
             result = run_benchmark(StaticDataset(bundle), classifier, BenchmarkRunConfig(
