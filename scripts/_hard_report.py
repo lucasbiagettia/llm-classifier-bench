@@ -251,7 +251,7 @@ def render(payload, output, readme=None):
     stream = io.StringIO()
     fields = ['dataset', 'method', 'fit_per_class', 'context_examples', 'n', 'classifications', 'refusals', 'classification_coverage',
               *[m.name for m in QUALITY]]
-    writer = csv.DictWriter(stream, fieldnames=fields)
+    writer = csv.DictWriter(stream, fieldnames=fields, lineterminator='\n')
     writer.writeheader()
     for row in payload['conditions']:
         writer.writerow({**{k: row[k] for k in fields if k in row}, **{k: v['value'] for k, v in row['metrics'].items()}})

@@ -53,6 +53,7 @@ def test_published_full_cohorts_refusals_repairs_and_sft_audits():
     assert set(payload['excluded_methods']) == {'emissary-llama', 'perplexity-decisions'}
     with (ROOT / 'reports/v2/hard_datasets_results.csv').open() as stream:
         assert len(list(csv.DictReader(stream))) == 34
+    assert b'\r' not in (ROOT / 'reports/v2/hard_datasets_results.csv').read_bytes()
 
 
 def test_supplement_is_identical_in_readme_brief_and_report(report):
