@@ -30,7 +30,8 @@ class BenchmarkRunConfig:
     """Configuration for one benchmark run.
 
     The dataset's original ``test`` split is always the final held-out benchmark
-    evaluation set. Only ``train`` is partitioned into fit/validation examples.
+    evaluation set. An explicit ``DatasetBundle.validation`` is used as supplied;
+    otherwise only ``train`` is partitioned into fit/validation examples.
     """
 
     output_root: Path = Path("artifacts/runs")
@@ -132,11 +133,14 @@ def run_benchmark(
             class_definitions_metadata = loaded_definitions.benchmark_metadata()
 
         stage = "splitting_training_data"
-        fit_train, validation = split_train_validation(
-            bundle.train,
-            validation_fraction=resolved_config.validation_fraction,
-            seed=resolved_config.split_seed,
-        )
+        if bundle.validation is None:
+            fit_train, validation = split_train_validation(
+                bundle.train,
+                validation_fraction=resolved_config.validation_fraction,
+                seed=resolved_config.split_seed,
+            )
+        else:
+            fit_train, validation = bundle.train, bundle.validation
 
         # Validate the complete partitions before discarding unused examples.
         validate_partition_disjointness(fit_train, validation, bundle.test)
@@ -636,7 +640,8 @@ def _write_run_config(
         "split": {
             "validation_fraction": config.validation_fraction,
             "seed": config.split_seed,
-            "strategy": "deterministic_stratified_by_label",
+            "strategy": ("provided_validation_partition" if dataset.validation is not None
+                         else "deterministic_stratified_by_label"),
         },
         "classifier": _classifier_metadata(classifier),
         "run_metadata": dict(config.metadata),

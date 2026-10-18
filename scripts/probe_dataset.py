@@ -5,7 +5,9 @@ from __future__ import annotations
 import argparse
 from dataclasses import replace
 
-from llm_classifier_bench.datasets import DATASET_REGISTRY, HuggingFaceClassificationDataset
+from llm_classifier_bench.datasets import (
+    DATASET_REGISTRY, HFDatasetSpec, HuggingFaceClassificationDataset, get_dataset,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -23,12 +25,13 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     base_spec = DATASET_REGISTRY[args.dataset]
-    spec = replace(
-        base_spec,
-        train_split=args.train_split,
-        test_split=args.test_split,
-    )
-    bundle = HuggingFaceClassificationDataset(spec).load()
+    if isinstance(base_spec, HFDatasetSpec):
+        spec = replace(base_spec, train_split=args.train_split, test_split=args.test_split)
+        bundle = HuggingFaceClassificationDataset(spec).load()
+    else:
+        if args.train_split != "train[:8]" or args.test_split != "test[:8]":
+            raise ValueError("Hard tasks preserve full source partitions; use run_hard_datasets.py for sampling")
+        bundle = get_dataset(args.dataset).load()
 
     print(f"dataset={bundle.name}")
     print(f"classes={len(bundle.classes)}")
@@ -39,7 +42,7 @@ def main() -> None:
         print(f"- {class_definition.name}: {class_definition.description}")
 
     print("\nTest examples:")
-    for example in bundle.test:
+    for example in bundle.test[:8]:
         print(f"- [{example.label}] {example.text[:180]}")
 
 

@@ -53,6 +53,7 @@ The current implementation supports eight classifier families:
 - [v2 results: extended report](reports/v2/report.md) and [English brief](reports/v2/brief.md)
 - [Completed experiment design](reports/v2/protocol.md) and [configuration manifest](reports/v2/manifest.json)
 - [Experimental protocol and interpreting results](docs/experimental_protocol_v2.md)
+- [ImplicitHate and ANLI R3: all-label pilot preparation and execution](docs/hard_datasets.md)
 - [Jev setup, capped pilot and result interpretation](docs/jev.md)
 - [GPT-6 Decisions setup and exact Banking77 replay command](docs/gpt6_decisions.md)
 - [Perplexity Decisions setup and exact Banking77 replay command](docs/perplexity_decisions.md)
@@ -105,7 +106,8 @@ prepare(classes)
 
 The dataset's original `test` split is always treated as the final held-out benchmark set. It is never passed to `prepare()` or `fit()`.
 
-Only the original training split is partitioned:
+When a dataset supplies an official validation partition, the runner preserves it.
+For datasets without one, only the original training split is partitioned:
 
 ```text
 DatasetBundle.train
@@ -505,8 +507,47 @@ Currently supported:
 
 - `ag_news`
 - `banking77`
+- `implicit_hate` — six fine-grained implicit-hate labels; explicitly excludes `other`.
+- `anli_r3` — three NLI labels on premise/hypothesis pairs; official R3 holdout.
 
 AG News is suitable for smoke validation. Banking77 is the intended multiclass benchmark source for larger label spaces.
+
+Prepare low-cost experiments on all six ImplicitHate labels and all three ANLI R3
+labels, with 20 fit and 40 test examples per class, without training or paid calls:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets.py \
+  --dry-run --output-dir artifacts/hard_pilot
+```
+
+This plans all eleven implemented method/mode variants, saves identical evaluation
+samples and estimates the priced portion of inference. See the [protocol and
+commands](docs/hard_datasets.md) for explanation metadata, official/synthetic
+partitions, budget caps, unknown Emissary costs and later execution. AG News also
+works with `--datasets ag_news` and uses all four labels.
+
+Prepare the supervised **20/50/100 fit examples per class** sweep on both datasets,
+keeping 40 test examples per class and running each zero-shot variant once:
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets.py \
+  --train-budgets 20 50 100 --dry-run --output-dir artifacts/hard_fit_sweep
+```
+
+This plans 42 conditions; the [sweep protocol](docs/hard_datasets.md#fit-budget-sweep-20--50--100-per-class)
+describes nested fit pools, execution caps and the documented source of the fixed
+class descriptions.
+
+To actually prepare **and execute** the full experiment (training and paid APIs):
+
+```bash
+PYTHONPATH=src venv/bin/python scripts/run_hard_datasets_experiment.py \
+  --emissary-project-id PROJECT_ID --allow-unpriced
+```
+
+This reads credentials from `.env`, keeps test at the historical 40 examples/class,
+and runs all methods at the applicable fit budgets. Use `--test-per-class 20` for
+a smaller evaluation. See the protocol for required credentials, costs and artifacts.
 
 ## Before formal benchmark claims
 

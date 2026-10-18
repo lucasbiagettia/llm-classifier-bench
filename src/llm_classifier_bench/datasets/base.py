@@ -12,7 +12,7 @@ from llm_classifier_bench.core import (
 )
 
 
-SplitName = Literal["train", "test"]
+SplitName = Literal["train", "validation", "test"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,6 +28,8 @@ class DatasetBundle:
     train: tuple[LabeledExample, ...]
     test: tuple[LabeledExample, ...]
     metadata: Mapping[str, Any] = field(default_factory=dict)
+    # None preserves historical train splitting; () explicitly consumes no dev.
+    validation: tuple[LabeledExample, ...] | None = None
 
     def __post_init__(self) -> None:
         if not self.name.strip():
@@ -40,7 +42,7 @@ class DatasetBundle:
             raise ValueError("Dataset class names must be unique")
 
         allowed_labels = set(class_names)
-        for split_name, examples in (("train", self.train), ("test", self.test)):
+        for split_name, examples in (("train", self.train), ("validation", self.validation or ()), ("test", self.test)):
             sample_ids = [example.sample_id for example in examples]
             if len(sample_ids) != len(set(sample_ids)):
                 raise ValueError(f"Duplicate sample ids in {split_name} split")
@@ -56,6 +58,8 @@ class DatasetBundle:
         return tuple(item.name for item in self.classes)
 
     def examples(self, split: SplitName) -> tuple[LabeledExample, ...]:
+        if split == "validation":
+            return self.validation or ()
         return self.train if split == "train" else self.test
 
     def inputs(self, split: SplitName = "test") -> tuple[ClassificationInput, ...]:

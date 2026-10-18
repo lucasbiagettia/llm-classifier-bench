@@ -2,6 +2,7 @@
 
 from .base import ClassificationDataset, DatasetBundle, SplitName
 from .huggingface import HFDatasetSpec, HuggingFaceClassificationDataset
+from .hard_tasks import AnliDataset, ImplicitHateDataset
 from .registry import (
     AG_NEWS_SPEC,
     BANKING77_SPEC,
@@ -11,6 +12,8 @@ from .registry import (
 
 __all__ = [
     "ClassificationDataset",
+    "AnliDataset",
+    "ImplicitHateDataset",
     "DatasetBundle",
     "SplitName",
     "HFDatasetSpec",
