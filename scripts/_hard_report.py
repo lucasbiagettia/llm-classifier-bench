@@ -20,8 +20,9 @@ METHODS = {
     'openai': 'OpenAI zero-shot', 'openai-context': 'OpenAI in-context (5 total)',
     'jev': 'Jev zero-shot', 'openai-decisions': 'GPT-6 Decisions zero-shot',
     'emissary': 'Emissary routing zero-shot', 'emissary-qwen': 'Emissary Qwen SFT',
+    'emissary-llama': 'Emissary Llama SFT',
 }
-SUPERVISED = {'tfidf', 'sentence-transformer', 'bert', 'emissary-qwen'}
+SUPERVISED = {'tfidf', 'sentence-transformer', 'bert', 'emissary-qwen', 'emissary-llama'}
 DATASETS = {'implicit_hate': 'Implicit Hate (6 classes)', 'anli_r3': 'ANLI R3 (3 classes)'}
 QUALITY = DEFAULT_METRICS[:6]
 START, END = '<!-- HARD DATASETS START -->', '<!-- HARD DATASETS END -->'
@@ -60,9 +61,10 @@ def segments(run, seen=None):
     return [run]
 
 
-def collect(root):
+def collect(root, methods=None):
     """Recompute quality from exact full cohorts; audit frozen fit pools and SFT bytes."""
     import run_hard_datasets as campaign
+    methods = set(METHODS) - {'emissary-llama'} if methods is None else set(methods)
     root = Path(root).resolve()
     plan = read(root / 'plan.json')
     if digest(root / 'plan.json') != (root / 'plan.sha256').read_text().strip():
@@ -74,11 +76,11 @@ def collect(root):
     if len(summaries) != 1:
         raise ValueError('Expected exactly one execution summary')
     summary = read(summaries[0])
-    expected = {(d, m, b) for d in DATASETS for m in METHODS
+    expected = {(d, m, b) for d in DATASETS for m in methods
                 for b in ((20, 50, 100) if m in SUPERVISED else (0,))}
     actual = [(r['dataset'], r['classifier_key'], r['fit_per_class']) for r in summary]
-    if len(actual) != 34 or set(actual) != expected or any(r['status'] != 'completed' for r in summary):
-        raise ValueError('Expected exactly 34 completed hard-task conditions')
+    if len(actual) != len(expected) or set(actual) != expected or any(r['status'] != 'completed' for r in summary):
+        raise ValueError(f'Expected exactly {len(expected)} completed hard-task conditions')
     cfg = plan['configuration']
     bundles = {d: campaign.load_snapshot(root / info['snapshot']) for d, info in plan['datasets'].items()}
     datasets = {}
@@ -124,7 +126,7 @@ def collect(root):
                 raise ValueError(f'Recomputed metric differs: {dataset}/{method}/{name}')
         nulls = sum(p['predicted_label'] is None for p in predictions)
         fit_audit = None
-        if method == 'emissary-qwen':
+        if method in ('emissary-qwen', 'emissary-llama'):
             fit = read(run / 'fit_metadata.json')
             selected = fit['selection']['selected_examples']
             by_id = {e.sample_id: e for e in bundle.train}
@@ -133,7 +135,7 @@ def collect(root):
             payload = serialize_classification_dataset([by_id[e['sample_id']] for e in selected], bundle.classes)
             if hashlib.sha256(payload).hexdigest() != fit['dataset_payload_sha256']:
                 raise ValueError('SFT submitted payload checksum differs')
-            if fit['training_response']['status'] != 'Success' or fit['training_response']['base_model'] != 'Qwen3-4B-Base':
+            if fit['training_response']['status'] != 'Success' or fit['training_response']['base_model'] != cfg['models'][method]:
                 raise ValueError('Unexpected SFT training result')
             fit_audit = {'status': 'passed', 'dataset_payload_sha256': fit['dataset_payload_sha256'],
                          'training_job_id': fit['training_job_id'], 'deployment_id': fit['deployment_id'],
@@ -181,6 +183,32 @@ def collect(root):
                        'costs': 'inference only; retain failed attempts and separate resumed segments; unknown costs unavailable'}}
 
 
+def add_llama_retry(payload, root):
+    """Audit a complete retry and pair it with the original frozen campaign."""
+    retry = collect(root, methods={'emissary-llama'})
+    plan = read(Path(root) / 'plan.json')
+    if plan['source_plan_sha256'] != payload['plan_sha256']:
+        raise ValueError('Llama retry source plan differs')
+    if any(r['method'] == 'emissary-llama' for r in payload['conditions']):
+        raise ValueError('Llama retry already included')
+    if (retry['seed'], retry['test_per_class']) != (payload['seed'], payload['test_per_class']):
+        raise ValueError('Llama retry sampling differs')
+    for dataset in DATASETS:
+        if retry['datasets'][dataset] != payload['datasets'][dataset]:
+            raise ValueError('Llama retry frozen dataset differs')
+    for row in retry['conditions']:
+        paired = next(r for r in payload['conditions'] if
+                      (r['dataset'], r['method'], r['fit_per_class']) ==
+                      (row['dataset'], 'emissary-qwen', row['fit_per_class']))
+        if row['fit_audit']['dataset_payload_sha256'] != paired['fit_audit']['dataset_payload_sha256']:
+            raise ValueError('Llama and Qwen training uploads differ')
+    return {**payload, 'conditions': payload['conditions'] + retry['conditions'],
+            'excluded_methods': [m for m in payload['excluded_methods'] if m != 'emissary-llama'],
+            'llama_retry': {k: retry[k] for k in
+                            ('campaign_root', 'summary_sha256', 'plan_sha256', 'configuration')},
+            'llama_retry_policy': plan['retry_policy']}
+
+
 def accuracy_table(payload):
     table = ['| Method | Fit/class | Implicit Hate (6 classes) | ANLI R3 (3 classes) |',
              '| --- | ---: | ---: | ---: |']
@@ -193,14 +221,14 @@ def accuracy_table(payload):
 
 
 def summary_text(payload):
-    return ('**34/34 included conditions completed**, 17 per dataset; seed 42 and 40 held-out test examples/class '
+    return ('**40/40 included conditions completed**, 20 per dataset; seed 42 and 40 held-out test examples/class '
             '(240 Implicit Hate, 120 ANLI R3). Supervised fit budgets are 20/50/100 per class; OpenAI in-context '
             'uses five demonstrations total and zero-shot methods use no fit labels. Validation labels consumed: zero. '
             'These fixed-label tasks test domain difficulty, not label-cardinality scaling.\n\n'
             + accuracy_table(payload) + '\n\n'
             'Implicit Hate: MiniLM+LR at 100/class leads the observed accuracy (57.92%); Qwen at 100/class reaches '
-            '55.83%. ANLI R3: Jev zero-shot leads the observed accuracy (66.67%). These are exploratory point '
-            'estimates on small cohorts; increasing fit labels does not consistently improve every method. '
+            '55.83%, while Llama reaches 44.58%, 45.83% and 51.25% at 20/50/100 per class. ANLI R3: Jev zero-shot leads the observed accuracy (66.67%). These are exploratory point '
+            'estimates on small cohorts; Llama scores 34.17%, 36.67% and 37.50% on ANLI R3. Increasing fit labels does not consistently improve every method. '
             'Comparisons between supervised and zero-shot methods use different label budgets.\n\n'
             'GPT-6 Decisions refused 18/240 Implicit Hate inputs (92.50% classification coverage); its 49.17% '
             'accuracy and 0.5070 macro-F1 include those refusals as errors on all 240 inputs. ANLI Decisions has '
@@ -208,14 +236,16 @@ def summary_text(payload):
             'accepted-only supplement above; those older results remain unchanged.\n\n'
             'Jev Implicit Hate has three probability vectors renormalized for sums within 0.05 of one; original '
             'values and the correction policy remain in raw evidence. All other Jev vectors are unchanged and '
-            'none are missing. This differs from the historical strict sum policy. Emissary Llama is excluded '
-            'after the Implicit Hate 20/class job failed; its remaining jobs were not attempted. Perplexity is '
-            'excluded by user instruction. Neither exclusion is a zero score.\n\n'
+            'none are missing. This differs from the historical strict sum policy. Six Emissary Llama SFT '
+            'conditions completed in the October 20, 2026 retry (Mexico City date), using the original '
+            'frozen fit/test cohorts and byte-identical training uploads to Qwen at equal budgets. '
+            'Earlier failed training attempts remain historical evidence. Perplexity remains excluded '
+            'by user instruction; that exclusion is not a zero score.\n\n'
             'Implicit Hate uses a synthetic stratified 60/20/20 split after grouping identical posts; ANLI '
             'uses official R3 train/dev/test boundaries, removing cross-split exact duplicates from lower-priority '
             'pools. Class descriptions are fixed assistant-authored rubrics, not independently human-reviewed. '
             'Per-example explanations stay outside classifier inputs. Local transformers use CPU, BERT two '
-            'epochs, and Qwen SFT one epoch; BERT length 512 differs from the earlier Banking77 recipe. '
+            'epochs, and Qwen/Llama SFT one epoch; BERT length 512 differs from the earlier Banking77 recipe. '
             'One seed, model-specific truncation and uncontrolled hosted hardware limit interpretation. '
             'No cross-provider cost or latency winner is claimed; Emissary prices remain unavailable.')
 
@@ -238,7 +268,7 @@ def render(payload, output, readme=None):
                 for b in ((20, 50, 100) if m in SUPERVISED else (0,))}
     keys = [(r['dataset'], r['method'], r['fit_per_class']) for r in payload['conditions']]
     if len(keys) != len(expected) or set(keys) != expected:
-        raise ValueError('Publication requires the complete 34-condition matrix')
+        raise ValueError('Publication requires the complete 40-condition matrix')
     for row in payload['conditions']:
         expected_n = 40 * len(payload['datasets'][row['dataset']]['classes'])
         if (row['n'] != expected_n or row['classifications'] + row['refusals'] != expected_n
@@ -293,9 +323,9 @@ def render(payload, output, readme=None):
         if r['method'] in ('openai', 'openai-context', 'openai-decisions', 'jev'):
             detail.append(f"| {DATASETS[r['dataset']]} | {METHODS[r['method']]} | {r['classifications']}/{r['n']} | {r['refusals']} | {r['missing_probability_vectors']} |")
     detail += ['', '## Operations and evidence', '',
-               'There are 6,120 planned evaluation outcomes, including 18 refusals. Those outcomes are not '
-               '6,120 independent input texts: every method uses the same test cohort within a dataset. '
-               'Six Qwen trainings succeeded, one per dataset/budget. Local methods have fixed recipes and '
+               'There are 7,200 planned evaluation outcomes, including 18 refusals. Those outcomes are not '
+               '7,200 independent input texts: every method uses the same test cohort within a dataset. '
+               'Six Qwen and six Llama trainings succeeded, one per model/dataset/budget. Local methods have fixed recipes and '
                'consume the same nested fit pools at equal budgets. SFT selection and serialized upload '
                'hashes were checked against saved metadata; successful training/deployment IDs and provider '
                'hyperparameters are retained in the JSON summary. This verifies client-side evidence, not '
@@ -310,7 +340,10 @@ def render(payload, output, readme=None):
                'unavailable. No total campaign bill or pooled resumed throughput is asserted.', '',
                'The Llama failure was `tr-DfFCVXuyPg6bawDpqSKTFR`, Implicit Hate 20/class, status Failed at '
                '0% progress, with no checkpoints. The provider detail API returned no cause and `/logs` '
-               'returned 404; remaining Llama budgets were excluded, not retried or scored.', '',
+               'returned 404. Llama was initially excluded; the later complete six-condition retry is now '
+               'included. Failed training attempts are not scored as predictions. Llama starts fresh from '
+               'Llama-3.2-1B-Instruct; Qwen starts from Qwen3-4B-Base. This does not isolate model size '
+               'or instruction tuning. Retry plan/summary hashes and per-run evidence are retained in JSON.', '',
                '## Reproduction', '',
                'All model/API runs were performed by the user. This report only reads saved artifacts and '
                'recomputes metrics, integrity checks and uncertainty offline. It does not train or call providers.', '',
@@ -318,7 +351,7 @@ def render(payload, output, readme=None):
                'PYTHONPATH=src venv/bin/python scripts/build_hard_datasets_report.py --update-readme', '```', '',
                'Recompute from the locally retained raw campaign:', '', '```bash',
                'PYTHONPATH=src venv/bin/python scripts/build_hard_datasets_report.py \\',
-               f"  --campaign-root {payload['campaign_root']} --update-readme", '```', '',
+               f"  --campaign-root {payload['campaign_root']} \\\n  --llama-campaign-root {payload['llama_retry']['campaign_root']} --update-readme", '```', '',
                'See [machine-readable results and SHA-256 evidence](hard_datasets_results.json), '
                '[flat quality table](hard_datasets_results.csv), and [execution instructions](../../docs/hard_datasets.md). '
                'The 64 Banking77 historical condition objects and four Decisions supplement conditions remain separate and unchanged.']

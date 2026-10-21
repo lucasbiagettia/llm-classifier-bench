@@ -1,12 +1,13 @@
 # Hard-dataset experiments and preparation
 
 This adds preparation and execution commands for ImplicitHate (all six requested
-fine labels) and ANLI R3 (all three labels). **The user completed 34 included
-conditions**, 17 per dataset, across 20/50/100 fit examples/class and 40 test/class.
+fine labels) and ANLI R3 (all three labels). **The user completed 40 included
+conditions**, 20 per dataset, across 20/50/100 fit examples/class and 40 test/class.
 The [published results](../reports/v2/hard_datasets.md),
 [JSON evidence summary](../reports/v2/hard_datasets_results.json) and
-[brief](../reports/v2/brief.md) describe the actual outcomes. Llama was excluded
-after its first training failed; Perplexity was excluded by user instruction.
+[brief](../reports/v2/brief.md) describe the actual outcomes. Six Llama conditions
+completed in the October 20, 2026 retry (Mexico City date), after the initial
+training failure. Perplexity remains excluded by user instruction.
 The preparation counts and projections below describe the original plan, not
 measured performance or actual billed spending. AG News was already implemented; the new
 entry point also accepts `--datasets ag_news` and uses all four labels.
