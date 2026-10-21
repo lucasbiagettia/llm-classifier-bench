@@ -34,7 +34,7 @@ def test_portable_render_from_versioned_summary_without_artifacts(tmp_path):
 def test_published_full_cohorts_refusals_repairs_and_sft_audits():
     payload = json.loads((ROOT / 'reports/v2/hard_datasets_results.json').read_text())
     conditions = payload['conditions']
-    assert len(conditions) == 34 and sum(r['n'] for r in conditions) == 6120
+    assert len(conditions) == 40 and sum(r['n'] for r in conditions) == 7200
     decisions = next(r for r in conditions if (r['dataset'], r['method']) == ('implicit_hate', 'openai-decisions'))
     assert (decisions['classifications'], decisions['refusals'], decisions['n']) == (222, 18, 240)
     assert decisions['metrics']['accuracy']['value'] == pytest.approx(118 / 240)
@@ -47,12 +47,12 @@ def test_published_full_cohorts_refusals_repairs_and_sft_audits():
     assert len(jev['operations']) == 2  # Failed attempt retained, measurements kept separate.
     assert sum(s['api_attempts'] for s in jev['operations']) == 241
     assert sum(s['api_attempts'] for s in decisions['operations']) == 240  # Refusal not retried.
-    sft = [r for r in conditions if r['method'] == 'emissary-qwen']
-    assert len(sft) == 6 and all(r['fit_audit']['status'] == 'passed' for r in sft)
+    sft = [r for r in conditions if r['method'] in ('emissary-qwen', 'emissary-llama')]
+    assert len(sft) == 12 and all(r['fit_audit']['status'] == 'passed' for r in sft)
     assert all(s['total_cost_usd'] is None for r in sft for s in r['operations'])
-    assert set(payload['excluded_methods']) == {'emissary-llama', 'perplexity-decisions'}
+    assert set(payload['excluded_methods']) == {'perplexity-decisions'}
     with (ROOT / 'reports/v2/hard_datasets_results.csv').open() as stream:
-        assert len(list(csv.DictReader(stream))) == 34
+        assert len(list(csv.DictReader(stream))) == 40
     assert b'\r' not in (ROOT / 'reports/v2/hard_datasets_results.csv').read_bytes()
 
 
@@ -83,3 +83,40 @@ def test_collection_rejects_mutated_plan_before_reading_any_predictions(report, 
     (tmp_path / 'plan.sha256').write_text('wrong')
     with pytest.raises(ValueError, match='checksum'):
         report.collect(tmp_path)
+
+
+def test_llama_retry_matches_paired_training_uploads():
+    payload = json.loads((ROOT / 'reports/v2/hard_datasets_results.json').read_text())
+    llama = [r for r in payload['conditions'] if r['method'] == 'emissary-llama']
+    assert len(llama) == 6
+    for row in llama:
+        qwen = next(r for r in payload['conditions'] if
+                    (r['dataset'], r['method'], r['fit_per_class']) ==
+                    (row['dataset'], 'emissary-qwen', row['fit_per_class']))
+        assert row['fit_audit']['dataset_payload_sha256'] == qwen['fit_audit']['dataset_payload_sha256']
+        assert row['classifications'] == row['n'] and row['refusals'] == 0
+        assert row['missing_probability_vectors'] == 0
+        assert row['classifier_configuration']['training']['base_model'] == 'Llama-3.2-1B-Instruct'
+    assert payload['llama_failure']['status'] == 'Failed'
+
+
+@pytest.mark.parametrize('mutation', ['source_plan', 'dataset', 'upload', 'duplicate'])
+def test_retry_rejects_unpaired_evidence(report, monkeypatch, tmp_path, mutation):
+    payload = report.read(ROOT / 'reports/v2/hard_datasets_results.json')
+    retry = {**payload, 'conditions': [r for r in payload['conditions'] if r['method'] == 'emissary-llama']}
+    original = deepcopy(payload)
+    original['conditions'] = [r for r in original['conditions'] if r['method'] != 'emissary-llama']
+    plan = {'source_plan_sha256': payload['plan_sha256'], 'retry_policy': 'fresh jobs'}
+    if mutation == 'source_plan':
+        plan['source_plan_sha256'] = 'wrong'
+    elif mutation == 'dataset':
+        retry['datasets'] = deepcopy(retry['datasets'])
+        retry['datasets']['implicit_hate']['test_sample_ids'].reverse()
+    elif mutation == 'upload':
+        retry['conditions'][0]['fit_audit']['dataset_payload_sha256'] = 'wrong'
+    else:
+        original = payload
+    (tmp_path / 'plan.json').write_text(json.dumps(plan))
+    monkeypatch.setattr(report, 'collect', lambda *args, **kwargs: retry)
+    with pytest.raises(ValueError, match='differs|differ|already'):
+        report.add_llama_retry(original, tmp_path)

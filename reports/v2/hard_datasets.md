@@ -1,6 +1,6 @@
 # Hard classification tasks — Implicit Hate and ANLI R3
 
-**34/34 included conditions completed**, 17 per dataset; seed 42 and 40 held-out test examples/class (240 Implicit Hate, 120 ANLI R3). Supervised fit budgets are 20/50/100 per class; OpenAI in-context uses five demonstrations total and zero-shot methods use no fit labels. Validation labels consumed: zero. These fixed-label tasks test domain difficulty, not label-cardinality scaling.
+**40/40 included conditions completed**, 20 per dataset; seed 42 and 40 held-out test examples/class (240 Implicit Hate, 120 ANLI R3). Supervised fit budgets are 20/50/100 per class; OpenAI in-context uses five demonstrations total and zero-shot methods use no fit labels. Validation labels consumed: zero. These fixed-label tasks test domain difficulty, not label-cardinality scaling.
 
 | Method | Fit/class | Implicit Hate (6 classes) | ANLI R3 (3 classes) |
 | --- | ---: | ---: | ---: |
@@ -21,14 +21,17 @@
 | Emissary Qwen SFT | 20 | 33.75% | 39.17% |
 | Emissary Qwen SFT | 50 | 45.00% | 38.33% |
 | Emissary Qwen SFT | 100 | 55.83% | 40.83% |
+| Emissary Llama SFT | 20 | 44.58% | 34.17% |
+| Emissary Llama SFT | 50 | 45.83% | 36.67% |
+| Emissary Llama SFT | 100 | 51.25% | 37.50% |
 
-Implicit Hate: MiniLM+LR at 100/class leads the observed accuracy (57.92%); Qwen at 100/class reaches 55.83%. ANLI R3: Jev zero-shot leads the observed accuracy (66.67%). These are exploratory point estimates on small cohorts; increasing fit labels does not consistently improve every method. Comparisons between supervised and zero-shot methods use different label budgets.
+Implicit Hate: MiniLM+LR at 100/class leads the observed accuracy (57.92%); Qwen at 100/class reaches 55.83%, while Llama reaches 44.58%, 45.83% and 51.25% at 20/50/100 per class. ANLI R3: Jev zero-shot leads the observed accuracy (66.67%). These are exploratory point estimates on small cohorts; Llama scores 34.17%, 36.67% and 37.50% on ANLI R3. Increasing fit labels does not consistently improve every method. Comparisons between supervised and zero-shot methods use different label budgets.
 
 GPT-6 Decisions refused 18/240 Implicit Hate inputs (92.50% classification coverage); its 49.17% accuracy and 0.5070 macro-F1 include those refusals as errors on all 240 inputs. ANLI Decisions has 120/120 classification coverage. This full-denominator policy differs from the historical Banking77 accepted-only supplement above; those older results remain unchanged.
 
-Jev Implicit Hate has three probability vectors renormalized for sums within 0.05 of one; original values and the correction policy remain in raw evidence. All other Jev vectors are unchanged and none are missing. This differs from the historical strict sum policy. Emissary Llama is excluded after the Implicit Hate 20/class job failed; its remaining jobs were not attempted. Perplexity is excluded by user instruction. Neither exclusion is a zero score.
+Jev Implicit Hate has three probability vectors renormalized for sums within 0.05 of one; original values and the correction policy remain in raw evidence. All other Jev vectors are unchanged and none are missing. This differs from the historical strict sum policy. Six Emissary Llama SFT conditions completed in the October 20, 2026 retry (Mexico City date), using the original frozen fit/test cohorts and byte-identical training uploads to Qwen at equal budgets. Earlier failed training attempts remain historical evidence. Perplexity remains excluded by user instruction; that exclusion is not a zero score.
 
-Implicit Hate uses a synthetic stratified 60/20/20 split after grouping identical posts; ANLI uses official R3 train/dev/test boundaries, removing cross-split exact duplicates from lower-priority pools. Class descriptions are fixed assistant-authored rubrics, not independently human-reviewed. Per-example explanations stay outside classifier inputs. Local transformers use CPU, BERT two epochs, and Qwen SFT one epoch; BERT length 512 differs from the earlier Banking77 recipe. One seed, model-specific truncation and uncontrolled hosted hardware limit interpretation. No cross-provider cost or latency winner is claimed; Emissary prices remain unavailable.
+Implicit Hate uses a synthetic stratified 60/20/20 split after grouping identical posts; ANLI uses official R3 train/dev/test boundaries, removing cross-split exact duplicates from lower-priority pools. Class descriptions are fixed assistant-authored rubrics, not independently human-reviewed. Per-example explanations stay outside classifier inputs. Local transformers use CPU, BERT two epochs, and Qwen/Llama SFT one epoch; BERT length 512 differs from the earlier Banking77 recipe. One seed, model-specific truncation and uncontrolled hosted hardware limit interpretation. No cross-provider cost or latency winner is claimed; Emissary prices remain unavailable.
 
 ## Dataset protocol
 
@@ -79,6 +82,12 @@ Accuracy intervals are pointwise 95% gold-stratified bootstrap intervals (2,000 
 | ANLI R3 (3 classes) | Emissary Qwen SFT | 20 | 39.17% [30.83, 47.50] | 0.3899 | 0.1441 | 0.1888 | 1.2015 | 0.7197 |
 | ANLI R3 (3 classes) | Emissary Qwen SFT | 50 | 38.33% [31.65, 45.83] | 0.3354 | 0.2383 | 0.2383 | 1.2683 | 0.7609 |
 | ANLI R3 (3 classes) | Emissary Qwen SFT | 100 | 40.83% [32.48, 50.00] | 0.4060 | 0.1652 | 0.2122 | 1.1728 | 0.7056 |
+| Implicit Hate (6 classes) | Emissary Llama SFT | 20 | 44.58% [38.32, 50.43] | 0.4399 | 0.1011 | 0.1324 | 1.5240 | 0.7231 |
+| Implicit Hate (6 classes) | Emissary Llama SFT | 50 | 45.83% [40.41, 51.67] | 0.4474 | 0.1457 | 0.1658 | 1.5275 | 0.7228 |
+| Implicit Hate (6 classes) | Emissary Llama SFT | 100 | 51.25% [45.00, 57.50] | 0.5105 | 0.1596 | 0.1696 | 1.4405 | 0.6799 |
+| ANLI R3 (3 classes) | Emissary Llama SFT | 20 | 34.17% [26.67, 41.67] | 0.2866 | 0.2248 | 0.2233 | 1.3438 | 0.7936 |
+| ANLI R3 (3 classes) | Emissary Llama SFT | 50 | 36.67% [28.33, 45.00] | 0.3590 | 0.2885 | 0.2800 | 1.4366 | 0.8396 |
+| ANLI R3 (3 classes) | Emissary Llama SFT | 100 | 37.50% [29.17, 46.67] | 0.3694 | 0.3363 | 0.3272 | 1.5770 | 0.8784 |
 
 ## Refusals and probability coverage
 
@@ -95,11 +104,11 @@ Accuracy intervals are pointwise 95% gold-stratified bootstrap intervals (2,000 
 
 ## Operations and evidence
 
-There are 6,120 planned evaluation outcomes, including 18 refusals. Those outcomes are not 6,120 independent input texts: every method uses the same test cohort within a dataset. Six Qwen trainings succeeded, one per dataset/budget. Local methods have fixed recipes and consume the same nested fit pools at equal budgets. SFT selection and serialized upload hashes were checked against saved metadata; successful training/deployment IDs and provider hyperparameters are retained in the JSON summary. This verifies client-side evidence, not provider internals or base-model pretraining contamination.
+There are 7,200 planned evaluation outcomes, including 18 refusals. Those outcomes are not 7,200 independent input texts: every method uses the same test cohort within a dataset. Six Qwen and six Llama trainings succeeded, one per model/dataset/budget. Local methods have fixed recipes and consume the same nested fit pools at equal budgets. SFT selection and serialized upload hashes were checked against saved metadata; successful training/deployment IDs and provider hyperparameters are retained in the JSON summary. This verifies client-side evidence, not provider internals or base-model pretraining contamination.
 
 Inference uses batch size one, no warmup and no automatic transport retries. Interrupted conditions were resumed at sample level, preserving earlier predictions. The failed Jev normalization input was requested again; the historical Decisions refusal was recovered from its usage ledger without another request. Cost/latency populations remain separated by segment. `operations` in the JSON retains original attempt counts, failed attempts, known inference subtotals and latency observations for each segment; preparation and training are excluded from inference prices. Unknown Emissary and local hardware prices remain unavailable. No total campaign bill or pooled resumed throughput is asserted.
 
-The Llama failure was `tr-DfFCVXuyPg6bawDpqSKTFR`, Implicit Hate 20/class, status Failed at 0% progress, with no checkpoints. The provider detail API returned no cause and `/logs` returned 404; remaining Llama budgets were excluded, not retried or scored.
+The Llama failure was `tr-DfFCVXuyPg6bawDpqSKTFR`, Implicit Hate 20/class, status Failed at 0% progress, with no checkpoints. The provider detail API returned no cause and `/logs` returned 404. Llama was initially excluded; the later complete six-condition retry is now included. Failed training attempts are not scored as predictions. Llama starts fresh from Llama-3.2-1B-Instruct; Qwen starts from Qwen3-4B-Base. This does not isolate model size or instruction tuning. Retry plan/summary hashes and per-run evidence are retained in JSON.
 
 ## Reproduction
 
@@ -115,7 +124,8 @@ Recompute from the locally retained raw campaign:
 
 ```bash
 PYTHONPATH=src venv/bin/python scripts/build_hard_datasets_report.py \
-  --campaign-root artifacts/hard_experiments/20261018T162808464373Z --update-readme
+  --campaign-root artifacts/hard_experiments/20261018T162808464373Z \
+  --llama-campaign-root artifacts/hard_llama_retry/20261021T011632187851Z --update-readme
 ```
 
 See [machine-readable results and SHA-256 evidence](hard_datasets_results.json), [flat quality table](hard_datasets_results.csv), and [execution instructions](../../docs/hard_datasets.md). The 64 Banking77 historical condition objects and four Decisions supplement conditions remain separate and unchanged.
